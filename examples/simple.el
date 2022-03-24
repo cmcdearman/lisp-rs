@@ -1,0 +1,6 @@
+(+ 2 2)
+(* 2 581)
+(let (a (- 6 1)))
+((lambda (arg) (+ arg 1)) 5)
+(let (mod (lambda (x y) (% x y))))
+(/ a (mod a 3))
