@@ -1,24 +1,23 @@
-use std::io::Read;
+use std::{fs, io};
+use crate::token;
 
-struct Lexer {
-    src: Vec<u8>,
-    pos: u32,
-    read_pos: u32,
-    ch: char
+type Span = (u32, u32);
+
+pub struct Lexer {
+    tokens: Vec<token::Token>,
+    spans: Vec<Span>
 }
 
 impl Lexer {
-    fn new(src: Vec<u8>) -> Self {
-        Self { src, pos: 0, read_pos: 0, ch: *&'0' }
+    pub fn new(src: &str) -> Self {
+        Self
     }
 
-    fn read(&self) {
-        if self.read_pos >= self.src.len() {
-            &self.ch = &'0';
-        } else {
-            &self.ch = self.src[self.read_pos]
-        }
-        &self.pos = &self.read_pos;
-        &self.read_pos += 1;
+    fn lex(&self) -> (Vec<token::Token>, Vec<Span>) {
+        let tokens : Vec<token::Token> = vec![];
+        let spans : Vec<Span> = vec![];
+        (tokens, spans)
     }
 }
+
+

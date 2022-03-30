@@ -1,37 +1,25 @@
-type TokenType = u32;
+#[derive(Debug, Clone)]
+pub enum Token {
+    ILLEGAL(str),
+    EOF(i32),
+    COMMENT(str),
 
-struct Token {
-    token_type: TokenType,
-    lit: String
-}
+    IDENT(str),
+    INT(i32),
+    STRING(str),
 
-enum TokenTypes {
-    ILLEGAL,
-    EOF,
-    COMMENT,
+    ADD(char), // +
+    SUB(char), // -
+    MUL(char), // *
+    QUO(char), // /
+    MOD(char), // %
 
-    IDENT,
-    INT,
-    STRING,
+    LPAREN(char), // (
+    RPAREN(char), // )
 
-    ADD, // +
-    SUB, // -
-    MUL, // *
-    QUO, // /
-    MOD, // %
-
-    LPAREN, // (
-    RPAREN, // )
-
-    LET,
-    LAMBDA
+    LET(str),
+    LAMBDA(str)
     // STRUCT,
     // IF,
     // ELSE
-}
-
-impl Token {
-    fn new() -> Self {
-        Self { token_type: 0, lit: String::from("") }
-    }
 }
