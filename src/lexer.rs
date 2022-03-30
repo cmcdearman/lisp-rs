@@ -1,4 +1,5 @@
 use std::{fs, io};
+use std::fmt::Error;
 use crate::token;
 
 type Span = (u32, u32);
@@ -8,15 +9,17 @@ pub struct Lexer {
     spans: Vec<Span>
 }
 
-impl Lexer {
-    pub fn new(src: &str) -> Self {
-        Self
-    }
+pub struct LexerError;
 
-    fn lex(&self) -> (Vec<token::Token>, Vec<Span>) {
+impl Lexer {
+    pub fn new(src: &str) -> Result<Self, Error> {
         let tokens : Vec<token::Token> = vec![];
         let spans : Vec<Span> = vec![];
-        (tokens, spans)
+        Ok(Self { tokens, spans })
+    }
+
+    pub fn next(self) -> (token::Token, Span) {
+        todo!()
     }
 }
 

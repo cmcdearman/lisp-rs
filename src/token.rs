@@ -1,12 +1,12 @@
 #[derive(Debug, Clone)]
 pub enum Token {
-    ILLEGAL(str),
+    ILLEGAL(String),
     EOF(i32),
-    COMMENT(str),
+    COMMENT(String),
 
-    IDENT(str),
+    IDENT(String),
     INT(i32),
-    STRING(str),
+    STRING(String),
 
     ADD(char), // +
     SUB(char), // -
@@ -17,8 +17,8 @@ pub enum Token {
     LPAREN(char), // (
     RPAREN(char), // )
 
-    LET(str),
-    LAMBDA(str)
+    LET(String),
+    LAMBDA(String)
     // STRUCT,
     // IF,
     // ELSE
