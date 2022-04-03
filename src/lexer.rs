@@ -24,7 +24,7 @@ impl Lexer {
         while let Some(&c) = s.peek() {
             match c {
                 '0'..='9' => {
-                    let n = read_number(c, &mut it);
+                    let n = read_number(c, &mut s);
                     tokens.push(Token::INT(n));
                 }
                 '+' => {
