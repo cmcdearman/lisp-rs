@@ -17,9 +17,9 @@ pub enum Token {
     LPAREN(char), // (
     RPAREN(char), // )
 
-    LET(String),
-    LAMBDA(String)
-    // STRUCT,
-    // IF,
-    // ELSE
+    LET,
+    LAMBDA,
+    STRUCT,
+    IF,
+    ELSE
 }

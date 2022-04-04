@@ -53,7 +53,7 @@ impl Lexer {
 
                     } else {
                         tokens.push(Token::ILLEGAL(String::from(c)));
-                        Err(format!("Illegal character: {}", c))
+                        // Err(format!("Illegal character: {}", c));
                     }
                 }
             }
@@ -66,8 +66,8 @@ impl Lexer {
         (self.tokens.next(), self.spans.next())
     }
 
-    pub fn peek(&mut self) -> (Option<token::Token>, Option<Span>) {
-        (*self.tokens.peek(), *self.spans.peek())
+    pub fn peek(&mut self) -> (Option<&token::Token>, Option<&Span>) {
+        (self.tokens.peek(), self.spans.peek())
     }
 }
 
