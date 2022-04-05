@@ -20,6 +20,8 @@ impl Lexer {
 
         let mut s = src.chars().peekable();
         // Lex tokens
+
+        let mut pos: usize = 0;
         while let Some(&c) = s.peek() {
             // println!("char: {}", c);
             match c {
@@ -57,7 +59,7 @@ impl Lexer {
                 }
                 _ => {
                     if c.is_alphabetic() {
-                        tokens.push(read_ident(&c, &mut s));
+                        tokens.push(read_ident(&mut s));
                         s.next();
                     } else {
                         tokens.push(Token::ILLEGAL(String::from(c)));
@@ -78,7 +80,7 @@ impl Lexer {
     }
 }
 
-fn read_ident<T: Iterator<Item = char>>(c: &char, iter: &mut Peekable<T>) -> Token {
+fn read_ident<T: Iterator<Item = char>>(iter: &mut Peekable<T>) -> Token {
     let mut ident = iter.next().unwrap().to_string();
     while let Some(ch) = iter.peek() {
         if ch.is_whitespace() {
