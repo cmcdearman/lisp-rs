@@ -1,23 +1,23 @@
 #[derive(Debug, Clone)]
 pub enum Token {
-    ILLEGAL(String),
-    EOF,
-    COMMENT(String),
+    Illegal(String),
+    Eof,
+    Comment(String),
 
-    IDENT(String),
-    INT(i32),
-    STRING(String),
+    Ident(String),
+    Int(i32),
+    String(String),
 
-    ADD(char), // +
-    SUB(char), // -
-    MUL(char), // *
-    QUO(char), // /
-    MOD(char), // %
+    Add(char), // +
+    Sub(char), // -
+    Mul(char), // *
+    Quo(char), // /
+    Mod(char), // %
 
-    LPAREN(char), // (
-    RPAREN(char), // )
+    LParen(char), // (
+    RParen(char), // )
 
-    LET,
+    Let,
     // LAMBDA,
     // STRUCT,
     // IF,

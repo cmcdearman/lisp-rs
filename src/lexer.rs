@@ -1,7 +1,7 @@
-use std::fmt::{Error};
+use crate::token::Token;
+
 use std::iter::Peekable;
 use std::vec::IntoIter;
-use crate::token::Token;
 
 type Span = (usize, usize);
 
@@ -15,46 +15,48 @@ pub struct LexerError;
 
 impl Lexer {
     pub fn new(src: &str) -> Self {
-        let mut tokens : Vec<Token> = vec![];
-        let mut spans : Vec<Span> = vec![];
+        let mut tokens: Vec<Token> = vec![];
+        let spans: Vec<Span> = vec![];
 
         let mut s = src.chars().peekable();
         // Lex tokens
 
-        let mut pos: usize = 0;
+        let _pos: usize = 0;
         while let Some(&c) = s.peek() {
             // println!("char: {}", c);
             match c {
-                ' ' | '\t' | '\n' | '\r' => { s.next(); }
+                ' ' | '\t' | '\n' | '\r' => {
+                    s.next();
+                }
                 '0'..='9' => {
                     tokens.push(read_number(&mut s));
                 }
                 '+' => {
-                    tokens.push(Token::ADD(c));
+                    tokens.push(Token::Add(c));
                     s.next();
                 }
                 '-' => {
-                    tokens.push(Token::SUB(c));
+                    tokens.push(Token::Sub(c));
                     s.next();
                 }
                 '*' => {
-                    tokens.push(Token::MUL(c));
+                    tokens.push(Token::Mul(c));
                     s.next();
                 }
                 '/' => {
-                    tokens.push(Token::QUO(c));
+                    tokens.push(Token::Quo(c));
                     s.next();
                 }
                 '%' => {
-                    tokens.push(Token::MOD(c));
+                    tokens.push(Token::Mod(c));
                     s.next();
                 }
                 '(' => {
-                    tokens.push(Token::LPAREN(c));
+                    tokens.push(Token::LParen(c));
                     s.next();
                 }
                 ')' => {
-                    tokens.push(Token::RPAREN(c));
+                    tokens.push(Token::RParen(c));
                     s.next();
                 }
                 _ => {
@@ -62,13 +64,16 @@ impl Lexer {
                         tokens.push(read_ident(&mut s));
                         s.next();
                     } else {
-                        tokens.push(Token::ILLEGAL(String::from(c)));
+                        tokens.push(Token::Illegal(String::from(c)));
                         s.next();
                     }
                 }
             }
         }
-        Self { tokens: tokens.into_iter().peekable(), spans: spans.into_iter().peekable()}
+        Self {
+            tokens: tokens.into_iter().peekable(),
+            spans: spans.into_iter().peekable(),
+        }
     }
 
     pub fn next(&mut self) -> (Option<Token>, Option<Span>) {
@@ -85,23 +90,28 @@ fn read_ident<T: Iterator<Item = char>>(iter: &mut Peekable<T>) -> Token {
     while let Some(ch) = iter.peek() {
         if ch.is_whitespace() {
             return match &*ident {
-                "let" => { Token::LET }
-                _ => { Token::IDENT((&*ident).parse().unwrap()) }
-            }
+                "let" => Token::Let,
+                _ => Token::Ident((&*ident).parse().unwrap()),
+            };
         }
         if ch.is_ascii_alphanumeric() {
             ident.push(*ch);
             iter.next();
         }
     }
-    Token::EOF
+    Token::Eof
 }
 
 fn read_number<T: Iterator<Item = char>>(iter: &mut Peekable<T>) -> Token {
-    let mut number = iter.next().unwrap().to_string().parse::<i32>().expect("The caller should have passed a digit.");
+    let mut number = iter
+        .next()
+        .unwrap()
+        .to_string()
+        .parse::<i32>()
+        .expect("The caller should have passed a digit.");
     while let Some(Ok(digit)) = iter.peek().map(|c| c.to_string().parse::<i32>()) {
         number = number * 10 + digit;
         iter.next();
     }
-    Token::INT(number)
+    Token::Int(number)
 }
