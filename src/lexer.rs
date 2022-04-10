@@ -32,31 +32,31 @@ impl Lexer {
                     tokens.push(read_number(&mut s));
                 }
                 '+' => {
-                    tokens.push(Token::Add(c));
+                    tokens.push(Token::Add);
                     s.next();
                 }
                 '-' => {
-                    tokens.push(Token::Sub(c));
+                    tokens.push(Token::Sub);
                     s.next();
                 }
                 '*' => {
-                    tokens.push(Token::Mul(c));
+                    tokens.push(Token::Mul);
                     s.next();
                 }
                 '/' => {
-                    tokens.push(Token::Quo(c));
+                    tokens.push(Token::Quo);
                     s.next();
                 }
                 '%' => {
-                    tokens.push(Token::Mod(c));
+                    tokens.push(Token::Mod);
                     s.next();
                 }
                 '(' => {
-                    tokens.push(Token::LParen(c));
+                    tokens.push(Token::LParen);
                     s.next();
                 }
                 ')' => {
-                    tokens.push(Token::RParen(c));
+                    tokens.push(Token::RParen);
                     s.next();
                 }
                 _ => {

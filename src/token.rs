@@ -8,14 +8,14 @@ pub enum Token {
     Int(i32),
     String(String),
 
-    Add(char), // +
-    Sub(char), // -
-    Mul(char), // *
-    Quo(char), // /
-    Mod(char), // %
+    Add, // +
+    Sub, // -
+    Mul, // *
+    Quo, // /
+    Mod, // %
 
-    LParen(char), // (
-    RParen(char), // )
+    LParen, // (
+    RParen, // )
 
     Let,
     // LAMBDA,
