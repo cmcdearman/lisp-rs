@@ -1,6 +1,7 @@
 mod lexer;
 mod parser;
 mod token;
+mod ast;
 
 use crate::lexer::Lexer;
 use std::{env, fs};
