@@ -21,7 +21,7 @@ impl Lexer {
         let mut s = src.chars().peekable();
         // Lex tokens
 
-        let mut pos: usize = 0;
+        let mut pos: usize = 0; 
         while let Some(&c) = s.peek() {
             // println!("char: {}", c);
             match c {
