@@ -17,7 +17,7 @@ fn main() {
     // println!("With text:\n{}", contents);
 
     let mut lex = Lexer::new(contents.as_str());
-    while let (Some(t), s) = lex.next() {
+    while let (Some(t), Some(s)) = lex.next() {
         println!("Token: {:?} Span: {:?}", t, s);
     }
 }
