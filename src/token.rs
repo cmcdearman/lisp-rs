@@ -2,11 +2,11 @@
 pub enum Token {
     Illegal(String),
     Eof,
-    Comment(String),
+    // Comment(String),
 
     Ident(String),
     Int(i32),
-    String(String),
+    // String(String),
 
     Add, // +
     Sub, // -
