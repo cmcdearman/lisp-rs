@@ -5,7 +5,7 @@ pub enum Token {
     // Comment(String),
 
     Ident(String),
-    Int(i32),
+    Number(i32),
     // String(String),
 
     Add, // +

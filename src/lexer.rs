@@ -77,6 +77,8 @@ impl Lexer {
                 }
             }
         }
+        tokens.push(Token::Eof);
+        spans.push(spans.last().map(|s| s.end + 1..s.end + 1).unwrap());
         Self {
             tokens: tokens.into_iter().peekable(),
             spans: spans.into_iter().peekable(),
@@ -124,5 +126,5 @@ fn read_number<T: Iterator<Item = char>>(iter: &mut Peekable<Enumerate<T>>) -> (
         end = i;
         iter.next();
     }
-    (Token::Int(n), start..end+1)
+    (Token::Number(n), start..end+1)
 }
