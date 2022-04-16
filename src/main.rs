@@ -1,3 +1,5 @@
+extern crate core;
+
 mod lexer;
 mod parser;
 mod token;
@@ -17,7 +19,9 @@ fn main() {
     // println!("With text:\n{}", contents);
 
     let mut lex = Lexer::new(contents.as_str());
-    while let (Some(t), Some(s)) = lex.next() {
-        println!("Token: {:?} Span: {:?}", t, s);
-    }
+    // while let (Some(t), Some(s)) = lex.next() {
+    //     println!("Token: {:?} Span: {:?}", t, s);
+    // }
+    let ast = parser::parse(&mut lex);
+    println!("Ast: {:?}", ast)
 }
