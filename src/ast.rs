@@ -4,12 +4,6 @@ pub enum Sexpr {
     List(Vec<Sexpr>)
 }
 
-// impl Sexpr {
-//     pub fn to_string(&self) -> String {
-//         s
-//     }
-// }
-
 #[derive(Debug)]
 pub enum Atom {
     Symbol(String),

@@ -1,25 +1,33 @@
 #[derive(Debug, Clone)]
-pub enum Token {
-    Illegal(String),
+pub enum TokenType {
+    Illegal,
     Eof,
-    // Comment(String),
+    Comment,
 
-    Ident(String),
-    Number(i32),
-    // String(String),
+    // Literals
+    Ident,
+    Number,
+    String,
 
-    Add, // +
-    Sub, // -
-    Mul, // *
-    Quo, // /
-    Mod, // %
+    // Operators
+    Add,    // +
+    Sub,    // -
+    Mul,    // *
+    Quo,    // /
+    Mod,    // %
 
+    // Parentheses
     LParen, // (
     RParen, // )
 
-    Let,
-    // LAMBDA,
-    // STRUCT,
-    // IF,
-    // ELSE
+    // Keywords
+    Let,    // let
+    Lambda, // lambda
 }
+
+// #[macro_export]
+// macro_rules! T {
+//     [+] => {
+//         $crate::token::TokenType::Add
+//     };
+// }

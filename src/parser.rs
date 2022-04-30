@@ -24,10 +24,11 @@ fn read_atom(l: &mut Lexer) -> Sexpr {
     let tok_span = l.next();
     let t = tok_span.0.unwrap();
     return match t {
+        Token::Add => { Sexpr::Atom(Atom::Symbol(String::from("+")))}
+        Token::Sub => { Sexpr::Atom(Atom::Symbol(String::from("-")))}
         Token::Let => { Sexpr::Atom(Atom::Symbol(String::from("let"))) }
         Token::Ident(s) => { Sexpr::Atom(Atom::Symbol(s)) }
         Token::Number(n) => { Sexpr::Atom(Atom::Literal(Literal::Number(n))) }
         _ => { Sexpr::Atom(Atom::Literal(Literal::Number(0)))}
     };
-
 }
