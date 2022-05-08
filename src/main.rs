@@ -1,16 +1,16 @@
 extern crate core;
 
-mod lexer;
-mod parser;
+// mod lexer;
+// mod parser;
 mod token;
-mod ast;
+// mod ast;
 
-use crate::lexer::Lexer;
+// use crate::lexer::Lexer;
 use std::{env, fs};
 
 fn main() {
     let dir = env::current_dir().unwrap();
-    let contents = fs::read_to_string(format!(
+    fs::read_to_string(format!(
         "{}/examples/simple.eli",
         dir.as_path().to_str().unwrap()
     ))
@@ -18,10 +18,10 @@ fn main() {
 
     // println!("With text:\n{}", contents);
 
-    let mut lex = Lexer::new(contents.as_str());
-    while let (Some(t), Some(s)) = lex.next() {
-        println!("Token: {:?} Span: {:?}", t, s);
-    }
+    // let mut lex = Lexer::new(contents.as_str());
+    // while let (Some(t), Some(s)) = lex.next() {
+    //     println!("Token: {:?} Span: {:?}", t, s);
+    // }
     // let ast = parser::parse(&mut lex);
     // println!("Ast: {:?}", ast)
 }
