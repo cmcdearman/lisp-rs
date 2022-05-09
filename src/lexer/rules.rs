@@ -1,4 +1,5 @@
-use token::TokenKind
+use crate::T;
+use crate::token::TokenKind;
 
 pub(crate) const fn unambiguous_single_char(c: char) -> Option<TokenKind> {
     Some(match c {

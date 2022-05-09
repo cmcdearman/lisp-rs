@@ -1,4 +1,7 @@
-use token::Token;
+mod rules;
+
+use crate::lexer::rules::unambiguous_single_char;
+use crate::token::{Token, Span};
 
 pub struct Lexer;
 

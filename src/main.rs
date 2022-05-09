@@ -1,11 +1,8 @@
-extern crate core;
-
-// mod lexer;
+mod lexer;
 // mod parser;
 mod token;
 // mod ast;
 
-// use crate::lexer::Lexer;
 use std::{env, fs};
 
 fn main() {
