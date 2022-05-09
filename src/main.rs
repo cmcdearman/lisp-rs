@@ -4,10 +4,11 @@ mod token;
 // mod ast;
 
 use std::{env, fs};
+use crate::lexer::Lexer;
 
 fn main() {
     let dir = env::current_dir().unwrap();
-    fs::read_to_string(format!(
+    let input = fs::read_to_string(format!(
         "{}/examples/simple.eli",
         dir.as_path().to_str().unwrap()
     ))
@@ -15,10 +16,11 @@ fn main() {
 
     // println!("With text:\n{}", contents);
 
-    // let mut lex = Lexer::new(contents.as_str());
-    // while let (Some(t), Some(s)) = lex.next() {
-    //     println!("Token: {:?} Span: {:?}", t, s);
-    // }
+    let mut lexer = Lexer::new();
+    let mut tokens = lexer.tokenize(input.as_str());
+    for t in tokens {
+        println!("{}", t);
+    }
     // let ast = parser::parse(&mut lex);
     // println!("Ast: {:?}", ast)
 }
