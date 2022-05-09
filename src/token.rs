@@ -1,7 +1,7 @@
 use std::{fmt, ops::{Range, Index}};
 
 #[derive(Debug, PartialEq, Eq, Hash, Copy, Clone)]
-pub enum TokenType {
+pub enum TokenKind {
     Illegal,
     Eof,
     Comment,
@@ -30,53 +30,53 @@ pub enum TokenType {
 #[macro_export]
 macro_rules! T {
     [illegal] => {
-        $crate::token::TokenType::Illegal
+        $crate::token::TokenKind::Illegal
     };
     [EOF] => {
-        $crate::token::TokenType::Eof
+        $crate::token::TokenKind::Eof
     };
     [comment] => {
-        $crate::token::TokenType::Comment
+        $crate::token::TokenKind::Comment
     };
     [ident] => {
-        $crate::token::TokenType::Ident
+        $crate::token::TokenKind::Ident
     };
     [number] => {
-        $crate::token::TokenType::Number
+        $crate::token::TokenKind::Number
     };
     [string] => {
-        $crate::token::TokenType::String
+        $crate::token::TokenKind::String
     };
     [+] => {
-        $crate::token::TokenType::Add
+        $crate::token::TokenKind::Add
     };
     [-] => {
-        $crate::token::TokenType::Sub
+        $crate::token::TokenKind::Sub
     };
     [*] => {
-        $crate::token::TokenType::Mul
+        $crate::token::TokenKind::Mul
     };
     [/] => {
-        $crate::token::TokenType::Quo
+        $crate::token::TokenKind::Quo
     };
     [%] => {
-        $crate::token::TokenType::Mod
+        $crate::token::TokenKind::Mod
     };
     ['('] => {
-        $crate::token::TokenType::LParen
+        $crate::token::TokenKind::LParen
     };
     [')'] => {
-        $crate::token::TokenType::RParen
+        $crate::token::TokenKind::RParen
     };
     [let] => {
-        $crate::token::TokenType::Let
+        $crate::token::TokenKind::Let
     };
     [lambda] => {
-        $crate::token::TokenType::Lambda
+        $crate::token::TokenKind::Lambda
     };
 }
 
-impl fmt::Display for TokenType {
+impl fmt::Display for TokenKind {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
@@ -157,7 +157,7 @@ impl Index<Span> for str {
 
 #[derive(Eq, PartialEq, Copy, Clone, Hash)]
 pub struct Token {
-    pub tok_type: TokenType,
+    pub kind: TokenKind,
     pub span: Span,
 }
 
@@ -173,12 +173,12 @@ impl Token {
 
 impl fmt::Debug for Token {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:?} - <{}, {}>", self.tok_type, self.span.start, self.span.end)
+        write!(f, "{:?} - <{}, {}>", self.kind, self.span.start, self.span.end)
     }
 }
 
 impl fmt::Display for Token {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.tok_type)
+        write!(f, "{}", self.kind)
     }
 }
