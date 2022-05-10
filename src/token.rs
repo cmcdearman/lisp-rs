@@ -5,6 +5,7 @@ pub enum TokenKind {
     Illegal,
     Eof,
     Comment,
+    Whitespace,
 
     // Literals
     Ident,
@@ -37,6 +38,9 @@ macro_rules! T {
     };
     [comment] => {
         $crate::token::TokenKind::Comment
+    };
+    [ws] => {
+        $crate::token::TokenKind::Whitespace
     };
     [ident] => {
         $crate::token::TokenKind::Ident
@@ -85,6 +89,7 @@ impl fmt::Display for TokenKind {
                 T![illegal] => "<ILLEGAL>",
                 T![EOF] => "<EOF>",
                 T![comment] => "Comment",
+                T![ws] => "<WHITESPACE>",
                 T![ident] => "Ident",
                 T![number] => "Number",
                 T![string] => "String",
@@ -109,6 +114,7 @@ mod tests {
         assert_eq!(T![illegal].to_string(), "<ILLEGAL>");
         assert_eq!(T![EOF].to_string(), "<EOF>");
         assert_eq!(T![comment].to_string(), "Comment");
+        assert_eq!(T![ws].to_string(), "<WHITESPACE>");
         assert_eq!(T![ident].to_string(), "Ident");
         assert_eq!(T![number].to_string(), "Number");
         assert_eq!(T![string].to_string(), "String");

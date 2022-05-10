@@ -10,7 +10,6 @@ pub struct Lexer<'input> {
     eof: bool
 }
 
-
 impl<'input> Lexer<'input> {
     pub fn new(input: &'input str) -> Self {
         Self { input, position: 0, eof: false }
@@ -27,7 +26,18 @@ impl<'input> Lexer<'input> {
     /// Returns `None` if the lexer cannot find a token at the start of `input`.
     fn valid_token(&mut self, input: &str) -> Option<Token> {
         let next = input.chars().next().unwrap();
-        let (len, kind) = if let Some(kind) = unambiguous_single_char(next) {
+        let (len, kind) = if next.is_whitespace() {
+            (
+                input
+                    .char_indices()
+                    .take_while(|(_, c)| c.is_whitespace())
+                    .last()
+                    .unwrap() // we know there is at least one whitespace character
+                    .0 as u32
+                    + 1,
+                T![ws],
+            )
+        } else if let Some(kind) = unambiguous_single_char(next) {
             (1, kind)
         } else {
             return None;
