@@ -1,7 +1,7 @@
-mod lexer;
-// mod parser;
 mod token;
+mod lexer;
 // mod ast;
+// mod parser;
 
 use std::{env, fs};
 use crate::lexer::Lexer;
@@ -16,10 +16,10 @@ fn main() {
 
     // println!("With text:\n{}", contents);
 
-    let mut lexer = Lexer::new();
-    let mut tokens = lexer.tokenize(input.as_str());
+    let mut lexer = Lexer::new(input.as_str());
+    let mut tokens = lexer.tokenize();
     for t in tokens {
-        println!("{}", t);
+        println!("{:?}", t);
     }
     // let ast = parser::parse(&mut lex);
     // println!("Ast: {:?}", ast)
