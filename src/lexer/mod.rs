@@ -1,18 +1,19 @@
 mod rules;
 
-use crate::lexer::rules::unambiguous_single_char;
+use crate::lexer::rules::{Rule, unambiguous_single_char};
 use crate::token::{Token, Span};
 use crate::T;
 
 pub struct Lexer<'input> {
     input: &'input str,
     position: u32,
-    eof: bool
+    eof: bool,
+    rules: Vec<Rule>
 }
 
 impl<'input> Lexer<'input> {
     pub fn new(input: &'input str) -> Self {
-        Self { input, position: 0, eof: false }
+        Self { input, position: 0, eof: false, rules: rules::get_rules() }
     }
 
     pub fn tokenize(&mut self) -> Vec<Token> {
@@ -40,7 +41,14 @@ impl<'input> Lexer<'input> {
         } else if let Some(kind) = unambiguous_single_char(next) {
             (1, kind)
         } else {
-            return None;
+            self.rules
+                .iter()
+                // `max_by_key` returns the last element if multiple
+                // rules match, but we want earlier rules to "win"
+                // against later ones
+                .rev()
+                .filter_map(|rule| Some(((rule.matches)(input)?, rule.kind)))
+                .max_by_key(|&(len, _)| len)?
         };
 
         let start = self.position;
