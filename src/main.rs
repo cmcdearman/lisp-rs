@@ -1,14 +1,13 @@
 mod token;
 mod lexer;
-// mod ast;
-// mod parser;
+mod parser;
 
 use std::{env, fs};
 use crate::lexer::Lexer;
 
 fn main() {
     let dir = env::current_dir().unwrap();
-    let input = fs::read_to_string(format!(
+    let mut input = fs::read_to_string(format!(
         "{}/examples/simple.eli",
         dir.as_path().to_str().unwrap()
     ))
@@ -19,7 +18,7 @@ fn main() {
     let mut lexer = Lexer::new(input.as_str());
     let mut tokens = lexer.tokenize();
     for t in tokens {
-        println!("{:?}", t);
+        println!("{} {:?}", t.text(input.as_str()), t);
     }
     // let ast = parser::parse(&mut lex);
     // println!("Ast: {:?}", ast)

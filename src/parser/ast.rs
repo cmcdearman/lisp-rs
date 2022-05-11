@@ -1,18 +1,19 @@
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Sexpr {
     Atom(Atom),
     List(Vec<Sexpr>)
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Atom {
     Symbol(String),
     Literal(Literal)
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Literal {
-  Number(i32)
+  Number(f64),
+  String(String)
 }
 
 
