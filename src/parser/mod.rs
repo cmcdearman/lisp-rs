@@ -1,5 +1,6 @@
 mod ast;
 mod sexpr;
+mod env;
 
 use std::iter::Peekable;
 use crate::token::{Token, TokenKind};

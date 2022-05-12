@@ -23,5 +23,7 @@ fn main() {
     // }
     let mut parser = Parser::new(input.as_str());
     let mut ast = parser.parse();
-    println!("Ast: {:?}", ast)
+    for n in ast {
+        println!("{:?}", n);
+    }
 }
