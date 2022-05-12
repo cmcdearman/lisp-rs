@@ -4,6 +4,7 @@ mod parser;
 
 use std::{env, fs};
 use crate::lexer::Lexer;
+use crate::parser::Parser;
 
 fn main() {
     let dir = env::current_dir().unwrap();
@@ -15,11 +16,12 @@ fn main() {
 
     // println!("With text:\n{}", contents);
 
-    let mut lexer = Lexer::new(input.as_str());
-    let mut tokens = lexer.tokenize();
-    for t in tokens {
-        println!("{} {:?}", t.text(input.as_str()), t);
-    }
-    // let ast = parser::parse(&mut lex);
-    // println!("Ast: {:?}", ast)
+    // let mut lexer = Lexer::new(input.as_str());
+    // let mut tokens = lexer.tokenize();
+    // for t in tokens {
+    //     println!("{} {:?}", t.text(input.as_str()), t);
+    // }
+    let mut parser = Parser::new(input.as_str());
+    let mut ast = parser.parse();
+    println!("Ast: {:?}", ast)
 }

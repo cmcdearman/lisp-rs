@@ -1,13 +1,39 @@
 use crate::parser::{ast, Parser};
+use crate::parser::ast::Sexpr;
 use crate::T;
 use crate::token::{Token, TokenKind};
 
 impl<'input, I> Parser<'input, I> where I: Iterator<Item = Token> {
-    pub fn parse_sexpr(&mut self) -> Vec<ast::Sexpr> {
-       todo!()
+    pub fn parse(&mut self) -> Vec<ast::Sexpr> {
+        let mut list: Vec<Sexpr> = vec![];
+        loop {
+            list.push(self.parse_sexpr());
+            if self.peek() == T![EOF] {
+                return list;
+            }
+        }
     }
 
-    pub fn parse_atom(&mut self) -> ast::Sexpr {
+    pub(crate) fn parse_sexpr(&mut self) -> ast::Sexpr {
+        match self.peek() {
+           T!['('] => self.parse_list(),
+           _ => self.parse_atom()
+        }
+    }
+
+    pub(crate) fn parse_list(&mut self) -> Sexpr {
+        let mut list: Vec<Sexpr> = vec![];
+        self.next();
+        loop {
+            list.push(self.parse_sexpr());
+            if self.peek() == T![')'] {
+                self.next();
+                return ast::Sexpr::List(list);
+            }
+        }
+    }
+
+    pub(crate) fn parse_atom(&mut self) -> ast::Sexpr {
         match self.peek() {
             lit @ T![number] | lit @ T![string] => {
                 let literal_text = {
@@ -37,7 +63,13 @@ impl<'input, I> Parser<'input, I> where I: Iterator<Item = Token> {
                 ast::Sexpr::Atom(ast::Atom::Symbol({
                     let ident_token = self.next().unwrap();
                     self.text(ident_token).to_string() // <- now we need a copy
-                    }))
+                }))
+            }
+            T![+] | T![-] | T![*] | T![/] | T![%] => {
+                ast::Sexpr::Atom(ast::Atom::Symbol({
+                    let tok = self.next().unwrap();
+                    self.text(tok).to_string()
+                }))
             }
             kind => {
                 panic!("Unknown start of atom: `{}`", kind);
