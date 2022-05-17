@@ -5,7 +5,11 @@ pub struct Env {
     data: HashMap<String, Sexpr>
 }
 
-pub fn default_env() -> Env {
-    let mut data: HashMap<String, Sexpr> = HashMap::new();
-    Env{data}
-}
+// pub fn default_env() -> Env {
+//     let mut data: HashMap<String, Sexpr> = HashMap::new();
+//     data.insert(
+//         "+".to_string(),
+//
+//     )
+//     Env{data}
+// }

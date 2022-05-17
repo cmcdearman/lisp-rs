@@ -1,3 +1,5 @@
+pub type Ast = Vec<Sexpr>;
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum Sexpr {
     Atom(Atom),
