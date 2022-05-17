@@ -1,9 +1,11 @@
-pub type Ast = Vec<Sexpr>;
+use std::collections::VecDeque;
+
+pub type Ast = VecDeque<Sexpr>;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Sexpr {
     Atom(Atom),
-    List(Vec<Sexpr>)
+    List(VecDeque<Sexpr>)
 }
 
 #[derive(Debug, Clone, PartialEq)]

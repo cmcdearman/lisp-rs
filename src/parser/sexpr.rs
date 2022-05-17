@@ -1,13 +1,14 @@
+use std::collections::VecDeque;
 use crate::parser::{ast, Parser};
 use crate::parser::ast::Sexpr;
 use crate::T;
 use crate::token::{Token, TokenKind};
 
 impl<'input, I> Parser<'input, I> where I: Iterator<Item = Token> {
-    pub fn parse(&mut self) -> Vec<ast::Sexpr> {
-        let mut list: Vec<Sexpr> = vec![];
+    pub fn parse(&mut self) -> VecDeque<ast::Sexpr> {
+        let mut list: VecDeque<Sexpr> = VecDeque::new();
         loop {
-            list.push(self.parse_sexpr());
+            list.push_back(self.parse_sexpr());
             if self.peek() == T![EOF] {
                 return list;
             }
@@ -22,10 +23,10 @@ impl<'input, I> Parser<'input, I> where I: Iterator<Item = Token> {
     }
 
     pub(crate) fn parse_list(&mut self) -> Sexpr {
-        let mut list: Vec<Sexpr> = vec![];
+        let mut list: VecDeque<Sexpr> = VecDeque::new();
         self.next();
         loop {
-            list.push(self.parse_sexpr());
+            list.push_back(self.parse_sexpr());
             if self.peek() == T![')'] {
                 self.next();
                 return ast::Sexpr::List(list);
