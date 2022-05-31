@@ -8,7 +8,7 @@ use std::path::Iter;
 use logos::Logos;
 use crate::lex::lex;
 use crate::token::LogosToken;
-use crate::parse::parse;
+use crate::parse::Parser;
 
 fn main() {
     let dir = env::current_dir().unwrap();
@@ -21,8 +21,9 @@ fn main() {
     // while let Some(t) = stream.next() {
     //     println!("{:?}", t)
     // }
-
-    let mut ast = parse(&mut lex(input.as_str()), input.as_str());
+    let mut parser = Parser::new(
+        lex(input.as_str()), input.as_str());
+    let mut ast = parser.parse();
     for n in ast {
         println!("{:?}", n);
     }

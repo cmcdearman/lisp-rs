@@ -239,18 +239,12 @@ pub struct TokenStream {
 
 impl TokenStream  {
     pub fn new(tokens: Vec<Token>) -> Self { Self { token_iter: tokens.into_iter().peekable() } }
+}
 
-    pub fn peek(&mut self) -> TokenKind {
-        loop {
-            let peek_kind =
-                self.token_iter.peek().map(|token| token.kind).unwrap_or(T![EOF]);
-            if !matches!(peek_kind, T![comment]) {
-                return peek_kind;
-            }
-        }
-    }
+impl Iterator for TokenStream {
+    type Item = Token;
 
-    pub fn next(&mut self) -> Option<Token> {
+    fn next(&mut self) -> Option<Self::Item> {
         loop {
             let next_token = self.token_iter.next()?;
             if !matches!(next_token.kind, T![comment]) {
