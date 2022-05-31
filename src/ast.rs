@@ -16,8 +16,6 @@ pub enum Atom {
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Literal {
-  Number(f64),
-  String(String)
+    Number(f64),
+    String(String)
 }
-
-

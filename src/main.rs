@@ -1,29 +1,28 @@
 mod token;
-mod lexer;
-mod parser;
-// mod eval;
+mod parse;
+mod ast;
+mod lex;
 
 use std::{env, fs};
-use crate::lexer::Lexer;
-use crate::parser::Parser;
+use std::path::Iter;
+use logos::Logos;
+use crate::lex::lex;
+use crate::token::LogosToken;
+use crate::parse::parse;
 
 fn main() {
     let dir = env::current_dir().unwrap();
     let mut input = fs::read_to_string(format!(
-        "{}/examples/simple.eli",
+        "{}/examples/simple.lir",
         dir.as_path().to_str().unwrap()
-    ))
-    .expect("Something went wrong reading the file");
+    )).expect("Something went wrong reading the file");
 
-    // println!("With text:\n{}", contents);
-
-    // let mut lexer = Lexer::new(input.as_str());
-    // let mut tokens = lexer.tokenize();
-    // for t in tokens {
-    //     println!("{} {:?}", t.text(input.as_str()), t);
+    // let mut stream = lex(input.as_str());
+    // while let Some(t) = stream.next() {
+    //     println!("{:?}", t)
     // }
-    let mut parser = Parser::new(input.as_str());
-    let mut ast = parser.parse();
+
+    let mut ast = parse(&mut lex(input.as_str()), input.as_str());
     for n in ast {
         println!("{:?}", n);
     }

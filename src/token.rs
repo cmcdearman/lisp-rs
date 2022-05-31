@@ -1,8 +1,77 @@
-use std::{fmt, ops::{Range, Index}};
+use std::fmt;
+use std::iter::Peekable;
+use std::ops::{Index, Range};
+use std::vec::IntoIter;
+use logos::Logos;
+
+#[derive(Logos, Debug, PartialEq)]
+pub enum LogosToken {
+    #[regex(r##"([A-Za-z]|_)([A-Za-z]|_|\d)*"##)]
+    Ident,
+    #[regex(r#"((\d+(\.\d+)?)|(\.\d+))([Ee](\+|-)?\d+)?"#)]
+    Number,
+    #[regex(r#""((\\"|\\\\)|[^\\"])*""#)]
+    String,
+
+    #[token("+")]
+    Add,
+    #[token("-")]
+    Sub,
+    #[token("*")]
+    Mul,
+    #[token("/")]
+    Quo,
+    #[token("%")]
+    Mod,
+
+    #[token("(")]
+    LParen,
+    #[token(")")]
+    RParen,
+
+    #[token("let")]
+    Let,
+    #[token("lambda")]
+    Lambda,
+
+    #[regex(r"[ \t\r\n\f]+", logos::skip)]
+    Whitespace,
+    #[error]
+    Error,
+    #[regex(r#"//[^\n]*"#)]
+    Comment,
+    Eof,
+}
+
+impl LogosToken {
+    #[rustfmt::skip]
+    pub fn kind(&self) -> TokenKind {
+        use LogosToken::*;
+        use crate::T;
+        match self {
+            Ident => T![ident],
+            String => T![string],
+            Number => T![number],
+            Add => T![+],
+            Sub => T![-],
+            Mul => T![*],
+            Quo => T![/],
+            Mod => T![%],
+            LParen => T!['('],
+            RParen => T![')'],
+            Let => T![let],
+            Lambda => T![lambda],
+            Comment => T![comment],
+            Whitespace => T![ws],
+            Error => T![error],
+            Eof => T![EOF]
+        }
+    }
+}
 
 #[derive(Debug, PartialEq, Eq, Hash, Copy, Clone)]
 pub enum TokenKind {
-    Illegal,
+    Error,
     Eof,
     Comment,
     Whitespace,
@@ -30,17 +99,17 @@ pub enum TokenKind {
 
 #[macro_export]
 macro_rules! T {
-    [illegal] => {
-        $crate::token::TokenKind::Illegal
+    [ws] => {
+        $crate::token::TokenKind::Whitespace
+    };
+    [error] => {
+        $crate::token::TokenKind::Error
     };
     [EOF] => {
         $crate::token::TokenKind::Eof
     };
     [comment] => {
         $crate::token::TokenKind::Comment
-    };
-    [ws] => {
-        $crate::token::TokenKind::Whitespace
     };
     [ident] => {
         $crate::token::TokenKind::Ident
@@ -86,10 +155,10 @@ impl fmt::Display for TokenKind {
             f,
             "{}",
             match self {
-                T![illegal] => "<ILLEGAL>",
+                T![ws] => "Whitespace",
+                T![error] => "Error",
                 T![EOF] => "<EOF>",
                 T![comment] => "Comment",
-                T![ws] => "<WHITESPACE>",
                 T![ident] => "Ident",
                 T![number] => "Number",
                 T![string] => "String",
@@ -107,35 +176,10 @@ impl fmt::Display for TokenKind {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn token_type_display() {
-        assert_eq!(T![illegal].to_string(), "<ILLEGAL>");
-        assert_eq!(T![EOF].to_string(), "<EOF>");
-        assert_eq!(T![comment].to_string(), "Comment");
-        assert_eq!(T![ws].to_string(), "<WHITESPACE>");
-        assert_eq!(T![ident].to_string(), "Ident");
-        assert_eq!(T![number].to_string(), "Number");
-        assert_eq!(T![string].to_string(), "String");
-        assert_eq!(T![+].to_string(), "+");
-        assert_eq!(T![-].to_string(), "-");
-        assert_eq!(T![*].to_string(), "*");
-        assert_eq!(T![/].to_string(), "/");
-        assert_eq!(T![%].to_string(), "%");
-        assert_eq!(T!['('].to_string(), "(");
-        assert_eq!(T![')'].to_string(), ")");
-        assert_eq!(T![let].to_string(), "let");
-        assert_eq!(T![lambda].to_string(), "lambda");
-    }
-}
-
 #[derive(Eq, PartialEq, Clone, Copy, Hash, Default, Debug)]
 pub struct Span {
-    /// inclusive
     pub start: u32,
-    /// exclusive
-    pub end:   u32,
+    pub end: u32
 }
 
 impl From<Span> for Range<usize> {
@@ -164,7 +208,7 @@ impl Index<Span> for str {
 #[derive(Eq, PartialEq, Copy, Clone, Hash)]
 pub struct Token {
     pub kind: TokenKind,
-    pub span: Span,
+    pub span: Span
 }
 
 impl Token {
@@ -186,5 +230,32 @@ impl fmt::Debug for Token {
 impl fmt::Display for Token {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.kind)
+    }
+}
+
+pub struct TokenStream {
+    token_iter: Peekable<IntoIter<Token>>
+}
+
+impl TokenStream  {
+    pub fn new(tokens: Vec<Token>) -> Self { Self { token_iter: tokens.into_iter().peekable() } }
+
+    pub fn peek(&mut self) -> TokenKind {
+        loop {
+            let peek_kind =
+                self.token_iter.peek().map(|token| token.kind).unwrap_or(T![EOF]);
+            if !matches!(peek_kind, T![comment]) {
+                return peek_kind;
+            }
+        }
+    }
+
+    pub fn next(&mut self) -> Option<Token> {
+        loop {
+            let next_token = self.token_iter.next()?;
+            if !matches!(next_token.kind, T![comment]) {
+                return Some(next_token);
+            }
+        }
     }
 }
