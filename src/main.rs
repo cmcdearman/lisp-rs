@@ -6,15 +6,12 @@ mod eval;
 mod env;
 
 use std::{env as fs_env, fs};
-use std::path::Iter;
-use logos::Logos;
 use crate::lex::lex;
-use crate::token::LogosToken;
 use crate::parser::Parser;
 
 fn main() {
     let dir = fs_env::current_dir().unwrap();
-    let mut input = fs::read_to_string(format!(
+    let input = fs::read_to_string(format!(
         "{}/examples/simple.lir",
         dir.as_path().to_str().unwrap()
     )).expect("Something went wrong reading the file");

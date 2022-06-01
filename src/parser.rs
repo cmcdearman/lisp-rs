@@ -1,7 +1,6 @@
-use crate::token::{Token, TokenKind, TokenStream};
+use crate::token::{Token, TokenKind};
 use std::collections::VecDeque;
 use std::iter::Peekable;
-use std::path::Iter;
 use crate::ast::{Ast, Atom, Literal, Sexpr};
 use crate::T;
 
