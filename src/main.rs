@@ -1,17 +1,19 @@
 mod token;
-mod parse;
+mod parser;
 mod ast;
 mod lex;
+mod eval;
+mod env;
 
-use std::{env, fs};
+use std::{env as fs_env, fs};
 use std::path::Iter;
 use logos::Logos;
 use crate::lex::lex;
 use crate::token::LogosToken;
-use crate::parse::Parser;
+use crate::parser::Parser;
 
 fn main() {
-    let dir = env::current_dir().unwrap();
+    let dir = fs_env::current_dir().unwrap();
     let mut input = fs::read_to_string(format!(
         "{}/examples/simple.lir",
         dir.as_path().to_str().unwrap()
