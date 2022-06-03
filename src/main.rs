@@ -20,9 +20,7 @@ fn main() {
     // while let Some(t) = stream.next() {
     //     println!("{:?}", t)
     // }
-    let mut parser = Parser::new(
-        lex(input.as_str()), input.as_str());
-    let mut ast = parser.parse();
+    let mut ast = Parser::new(input.as_str()).parse();
     for n in ast {
         println!("{:?}", n);
     }

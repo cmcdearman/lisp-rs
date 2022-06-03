@@ -1,16 +1,16 @@
-use crate::token::{Token, TokenKind};
+use crate::token::{Token, TokenKind, TokenStream};
 use std::collections::VecDeque;
 use std::iter::Peekable;
 use crate::ast::{Ast, Atom, Literal, Sexpr};
-use crate::T;
+use crate::{lex, T};
 
-pub struct Parser<'src, I> where I: Iterator<Item = Token> {
-    tokens: Peekable<I>,
+pub struct Parser<'src> {
+    tokens: Peekable<TokenStream>,
     src: &'src str
 }
 
-impl<'src, I> Parser<'src, I> where I: Iterator<Item = Token> {
-    pub fn new(tokens: Peekable<I>, src: &'src str) -> Self { Self { tokens, src } }
+impl<'src> Parser<'src> {
+    pub fn new(src: &'src str) -> Self { Self { tokens: lex(src), src } }
 
     fn peek(&mut self) -> TokenKind {
         self.tokens.peek().map(|token| token.kind).unwrap_or(T![EOF])

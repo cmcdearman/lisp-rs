@@ -5,5 +5,5 @@ use crate::token::{LogosToken, TokenKind, Token, Span, TokenStream};
 
 pub fn lex(src: &str) -> Peekable<TokenStream> {
    TokenStream::new(LogosToken::lexer(src).spanned().map(|(t, s)|
-        Token { kind: t.kind(), span: Span::from(s)}).collect::<Vec<Token>>()).peekable()
+        Token { kind: t.kind(), span: Span::from(s) }).collect::<Vec<Token>>()).peekable()
 }
