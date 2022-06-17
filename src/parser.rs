@@ -1,7 +1,6 @@
 use std::error::Error;
 use std::fmt;
 use std::fmt::{Debug, Formatter};
-use std::rc::Rc;
 use crate::token::{Token, TokenKind, TokenStream};
 use std::iter::Peekable;
 use crate::ast::{Atom, Literal, Sexpr};
@@ -12,7 +11,7 @@ pub struct ParseError {
 }
 
 impl fmt::Display for ParseError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         write!(f, "Parse error: {}", self.err)
     }
 }
