@@ -59,7 +59,7 @@ impl<'src> Parser<'src> {
             cdr = self.parse_list();
         }
        
-        Sexpr::Cons((Rc::new(car), Rc::new(cdr)))
+        Sexpr::Cons { car: Box::new(car), cdr: Box::new(cdr) }
     }
 
     fn parse_atom(&mut self) -> Sexpr {
