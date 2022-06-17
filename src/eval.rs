@@ -1,5 +1,5 @@
-use crate::ast::{Ast, Sexpr};
+use crate::ast::{Sexpr};
 
-pub fn eval(ast: Ast) -> Ast {
+pub fn eval(ast: Sexpr) -> Sexpr {
     todo!()
 }

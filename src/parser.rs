@@ -1,8 +1,29 @@
+use std::error::Error;
+use std::fmt;
+use std::fmt::{Debug, Formatter};
+use std::rc::Rc;
 use crate::token::{Token, TokenKind, TokenStream};
-use std::collections::VecDeque;
 use std::iter::Peekable;
-use crate::ast::{Ast, Atom, Literal, Sexpr};
+use crate::ast::{Atom, Literal, Sexpr};
 use crate::{lex, T};
+
+pub struct ParseError {
+    err: String
+}
+
+impl fmt::Display for ParseError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Parse error: {}", self.err)
+    }
+}
+
+impl Debug for ParseError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "Parse error: {}", self.err)
+    }
+}
+
+impl Error for ParseError {}
 
 pub struct Parser<'src> {
     tokens: Peekable<TokenStream>,
@@ -20,33 +41,25 @@ impl<'src> Parser<'src> {
         self.tokens.next()
     }
 
-    pub fn parse(&mut self) -> Ast {
-        let mut list: VecDeque<Sexpr> = VecDeque::new();
-        loop {
-            list.push_back(self.parse_sexpr());
-            if self.peek() == T![EOF] {
-                return list;
-            }
-        }
-    }
-
-    fn parse_sexpr(&mut self) -> Sexpr {
+    pub fn parse(&mut self) -> Sexpr {
         match self.peek() {
-            T!['('] => self.parse_list(),
+            T!['('] =>  { self.next(); self.parse_list() },
             _ => self.parse_atom()
         }
     }
 
     fn parse_list(&mut self) -> Sexpr {
-        let mut list: VecDeque<Sexpr> = VecDeque::new();
-        self.next();
-        loop {
-            list.push_back(self.parse_sexpr());
-            if self.peek() == T![')'] {
-                self.next();
-                return Sexpr::List(list);
-            }
+        let car = self.parse();
+        let cdr: Sexpr;
+        
+        if self.peek() == T![')'] {
+            self.next();
+            cdr = Sexpr::Nil;              
+        } else {
+            cdr = self.parse_list();
         }
+       
+        Sexpr::Cons((Rc::new(car), Rc::new(cdr)))
     }
 
     fn parse_atom(&mut self) -> Sexpr {
@@ -90,6 +103,3 @@ impl<'src> Parser<'src> {
         }
     }
 }
-
-
-

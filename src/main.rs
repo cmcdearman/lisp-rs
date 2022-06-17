@@ -16,12 +16,8 @@ fn main() {
         dir.as_path().to_str().unwrap()
     )).expect("Something went wrong reading the file");
 
-    // let mut stream = lex(input.as_str());
-    // while let Some(t) = stream.next() {
-    //     println!("{:?}", t)
-    // }
-    let mut ast = Parser::new(input.as_str()).parse();
-    for n in ast {
-        println!("{:?}", n);
-    }
+    let mut ast = Parser::new(
+        format!("({})", input).as_str())
+        .parse();
+    println!("{:?}", ast);
 }

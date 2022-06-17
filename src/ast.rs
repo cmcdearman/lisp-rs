@@ -1,11 +1,10 @@
-use std::collections::VecDeque;
+use std::rc::Rc;
 
-pub type Ast = VecDeque<Sexpr>;
-
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone)]
 pub enum Sexpr {
     Atom(Atom),
-    List(VecDeque<Sexpr>)
+    Cons((Rc<Sexpr>, Rc<Sexpr>)),
+    Nil
 }
 
 #[derive(Debug, Clone, PartialEq)]
