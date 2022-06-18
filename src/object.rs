@@ -1,3 +1,4 @@
+use std::borrow::{Borrow, BorrowMut};
 use std::rc::Rc;
 
 // Object is the AST that will actually be used for eval. Here we use reference counters
@@ -12,3 +13,21 @@ pub enum Object {
     Nil
 }
 
+// pub struct ObjectIter {
+//     cur: Rc<Object>
+// }
+//
+// impl Iterator for ObjectIter {
+//     type Item = Object;
+//
+//     fn next(&mut self) -> Option<Self::Item> {
+//         match &self.cur.as_ref() {
+//             Object::Cons { car: _car, cdr } => {
+//                 let cur = Some(*self.cur.as_ref());
+//                 &self.cur = cdr;
+//                 cur
+//             }
+//             _ => { None }
+//         }
+//     }
+// }
