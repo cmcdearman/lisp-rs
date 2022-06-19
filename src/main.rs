@@ -4,7 +4,6 @@ mod ast;
 mod lex;
 mod eval;
 mod env;
-mod object;
 
 use std::{env as fs_env, fs};
 use crate::lex::lex;

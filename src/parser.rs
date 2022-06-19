@@ -3,6 +3,7 @@ use std::fmt;
 use std::fmt::{Debug, Formatter};
 use crate::token::{Token, TokenKind, TokenStream};
 use std::iter::Peekable;
+use std::rc::Rc;
 use crate::ast::{Atom, Literal, Sexpr};
 use crate::{lex, T};
 
@@ -58,7 +59,7 @@ impl<'src> Parser<'src> {
             cdr = self.parse_list();
         }
        
-        Sexpr::Cons { car: Box::new(car), cdr: Box::new(cdr) }
+        Sexpr::Cons { car: Rc::new(car), cdr: Rc::new(cdr) }
     }
 
     fn parse_atom(&mut self) -> Sexpr {
