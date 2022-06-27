@@ -43,7 +43,7 @@ impl<'src> Parser<'src> {
 
     pub fn parse(&mut self) -> Sexpr {
         match self.peek() {
-            T!['('] =>  { self.next(); self.parse_list() },
+            T!['('] => { self.next(); self.parse_list() },
             _ => self.parse_atom()
         }
     }

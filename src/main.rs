@@ -16,7 +16,7 @@ fn main() {
         dir.as_path().to_str().unwrap()
     )).expect("Something went wrong reading the file");
 
-    let mut ast = Parser::new(
+    let ast = Parser::new(
         format!("({})", input).as_str())
         .parse();
     println!("{:?}", ast);
