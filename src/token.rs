@@ -1,8 +1,8 @@
+use logos::Logos;
 use std::fmt;
 use std::iter::Peekable;
 use std::ops::{Index, Range};
 use std::vec::IntoIter;
-use logos::Logos;
 
 #[derive(Logos, Debug, PartialEq)]
 pub enum LogosToken {
@@ -38,7 +38,7 @@ pub enum LogosToken {
     Whitespace,
     #[error]
     Error,
-    #[regex(r#"//[^\n]*"#)]
+    #[regex(r#";[^\n]*"#)]
     Comment,
     Eof,
 }
@@ -82,11 +82,11 @@ pub enum TokenKind {
     String,
 
     // Operators
-    Add,    // +
-    Sub,    // -
-    Mul,    // *
-    Quo,    // /
-    Mod,    // %
+    Add, // +
+    Sub, // -
+    Mul, // *
+    Quo, // /
+    Mod, // %
 
     // Parentheses
     LParen, // (
@@ -179,7 +179,7 @@ impl fmt::Display for TokenKind {
 #[derive(Eq, PartialEq, Clone, Copy, Hash, Default, Debug)]
 pub struct Span {
     pub start: u32,
-    pub end: u32
+    pub end: u32,
 }
 
 impl From<Span> for Range<usize> {
@@ -192,7 +192,7 @@ impl From<Range<usize>> for Span {
     fn from(range: Range<usize>) -> Self {
         Self {
             start: range.start as u32,
-            end:   range.end as u32,
+            end: range.end as u32,
         }
     }
 }
@@ -208,7 +208,7 @@ impl Index<Span> for str {
 #[derive(Eq, PartialEq, Copy, Clone, Hash)]
 pub struct Token {
     pub kind: TokenKind,
-    pub span: Span
+    pub span: Span,
 }
 
 impl Token {
@@ -223,7 +223,11 @@ impl Token {
 
 impl fmt::Debug for Token {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:?} - <{}, {}>", self.kind, self.span.start, self.span.end)
+        write!(
+            f,
+            "{:?} - <{}, {}>",
+            self.kind, self.span.start, self.span.end
+        )
     }
 }
 
@@ -234,11 +238,15 @@ impl fmt::Display for Token {
 }
 
 pub struct TokenStream {
-    token_iter: Peekable<IntoIter<Token>>
+    token_iter: Peekable<IntoIter<Token>>,
 }
 
-impl TokenStream  {
-    pub fn new(tokens: Vec<Token>) -> Self { Self { token_iter: tokens.into_iter().peekable() } }
+impl TokenStream {
+    pub fn new(tokens: Vec<Token>) -> Self {
+        Self {
+            token_iter: tokens.into_iter().peekable(),
+        }
+    }
 }
 
 impl Iterator for TokenStream {

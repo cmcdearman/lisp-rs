@@ -6,6 +6,10 @@ pub struct Env {
    data: HashMap<String, Sexpr>
 }
 
+pub enum Object {
+    Func(fn())
+}
+
 impl Env {
    pub fn new() -> Self { Self { data: HashMap::new() }}
 

@@ -1,5 +1,5 @@
 (+ 2 4)
-// Comment
+;; Comment
 (* 2 581)
-(let (a (- 6 1))) // Comment
+(let (a (- 6 1))) ; Comment
 (/ a (% a 3))
