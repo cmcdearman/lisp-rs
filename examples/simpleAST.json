@@ -1,0 +1,70 @@
+{
+    "car": {
+        "car": "+",
+        "cdr": {
+            "car": 2.0,
+            "cdr": {
+                "car": 4.0,
+                "cdr": null
+            }
+        }
+    },
+    "cdr": {
+        "car": {
+            "car": "*",
+            "cdr": {
+                "car": 2.0,
+                "cdr": {
+                    "car": 581.0,
+                    "cdr": null
+                }
+            }
+        },
+        "cdr": {
+            "car": {
+                "car": "let",
+                "cdr": {
+                    "car": {
+                        "car": "a",
+                        "cdr": {
+                            "car": {
+                                "car": "-",
+                                "cdr": {
+                                    "car": 6.0,
+                                    "cdr": {
+                                        "car": 1.0,
+                                        "cdr": null
+                                    }
+                                }
+                            },
+                            "cdr": null
+                        }
+                    },
+                    "cdr": null
+                }
+            },
+            "cdr": {
+                "car": {
+                    "car": "/",
+                    "cdr": {
+                        "car": "a",
+                        "cdr": {
+                            "car": {
+                                "car": "%",
+                                "cdr": {
+                                    "car": "a",
+                                    "cdr": {
+                                        "car": 3.0,
+                                        "cdr": null
+                                    }
+                                }
+                            },
+                            "cdr": null
+                        }
+                    }
+                },
+                "cdr": null
+            }
+        }
+    }
+}
