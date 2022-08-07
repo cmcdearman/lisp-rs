@@ -1,0 +1,13 @@
+{
+    "car": {
+        "car": "+",
+        "cdr": {
+            "car": 2.0,
+            "cdr": {
+                "car": 4.0,
+                "cdr": null
+            }
+        }
+    },
+    "cdr": null
+}

@@ -12,7 +12,7 @@ use crate::parser::Parser;
 fn main() {
     let dir = fs_env::current_dir().unwrap();
     let input = fs::read_to_string(format!(
-        "{}/examples/simple.lir",
+        "{}/examples/deadSimple.lir",
         dir.as_path().to_str().unwrap()
     )).expect("Something went wrong reading the file");
 

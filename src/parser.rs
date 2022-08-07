@@ -1,3 +1,4 @@
+use std::cell::RefCell;
 use std::error::Error;
 use std::fmt;
 use std::fmt::{Debug, Formatter};
@@ -59,7 +60,7 @@ impl<'src> Parser<'src> {
             cdr = self.parse_list();
         }
        
-        Sexpr::Cons { car: Rc::new(car), cdr: Rc::new(cdr) }
+        Sexpr::Cons { car: Rc::new(RefCell::new(car)), cdr: Rc::new(RefCell::new(cdr)) }
     }
 
     fn parse_atom(&mut self) -> Sexpr {

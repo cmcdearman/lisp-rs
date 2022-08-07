@@ -2,12 +2,10 @@ use std::collections::HashMap;
 use crate::ast::{Atom, Literal, Sexpr};
 use crate::parser::ParseError;
 
+
+#[derive(Debug, Clone)]
 pub struct Env {
    data: HashMap<String, Sexpr>
-}
-
-pub enum Object {
-    Func(fn())
 }
 
 impl Env {
