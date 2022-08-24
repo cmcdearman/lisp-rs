@@ -1,26 +1,20 @@
-use std::{rc::Rc, cell::RefCell, collections::HashMap};
-
-use crate::{parser::ParseError, env::Env};
-
 #[derive(Debug, Clone)]
 pub enum Sexpr {
     Atom(Atom),
-    Cons { car: Rc<RefCell<Sexpr>>, cdr: Rc<RefCell<Sexpr>> },
-    Func(fn(Sexpr) -> Result<Sexpr, ParseError>),
-    Env(Env),
+    Cons(u32, u32),
     Nil
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Atom {
-    Symbol(String),
-    Literal(Literal)
+    Sym(String),
+    Lit(Lit)
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub enum Literal {
-    Number(f64),
-    String(String)
+pub enum Lit {
+    Num(f64),
+    Str(String)
 }
 
 

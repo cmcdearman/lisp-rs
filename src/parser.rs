@@ -1,106 +1,37 @@
-use std::cell::RefCell;
-use std::error::Error;
-use std::fmt;
-use std::fmt::{Debug, Formatter};
-use crate::token::{Token, TokenKind, TokenStream};
 use std::iter::Peekable;
-use std::rc::Rc;
-use crate::ast::{Atom, Literal, Sexpr};
-use crate::{lex, T};
 
-pub struct ParseError {
-    err: String
-}
+use crate::token::{Token, TokenStream, TokenKind};
+use crate::ast::Sexpr;
 
-impl fmt::Display for ParseError {
-    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        write!(f, "Parse error: {}", self.err)
+// [
+// /* 0 */ Node::Nil,
+// /* 1 */ Node::Num(3.0),
+// /* 2 */ Node::Cons(0, 1),
+// /* 3 */ Node::Num(2.0),
+// /* 4 */ Node::Cons(2, 3),
+// /* 5 */ Node::Num(1.0),
+// /* 6 */ Node::Cons(4, 5),
+// ]
+pub fn parse(tokens: Vec<Token>) -> Vec<Sexpr> {
+    let mut stream = TokenStream::new(tokens).peekable();
+    let mut ast = Vec::new();
+    match stream.peek().unwrap().kind {
+       TokenKind::LParen => { stream.next(); parse_list(stream) } 
+       _ => parse_atom(stream)
     }
 }
 
-impl Debug for ParseError {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(f, "Parse error: {}", self.err)
-    }
+// let mut new_tail = elements.len();
+// elements.push(SExpr::Cons(0, 0));
+// match &mut elements[tail] {
+//     Atom(_) => unreachable!(), // Sadly, this is neccessary
+//     Cons(_, tail) => *tail = new_tail,
+// }
+// tail = new_tail;
+fn parse_list(stream: Peekable<TokenStream>) -> Sexpr {
+    todo!()
 }
 
-impl Error for ParseError {}
-
-pub struct Parser<'src> {
-    tokens: Peekable<TokenStream>,
-    src: &'src str
-}
-
-impl<'src> Parser<'src> {
-    pub fn new(src: &'src str) -> Self { Self { tokens: lex(src), src } }
-
-    fn peek(&mut self) -> TokenKind {
-        self.tokens.peek().map(|token| token.kind).unwrap_or(T![EOF])
-    }
-
-    fn next(&mut self) -> Option<Token> {
-        self.tokens.next()
-    }
-
-    pub fn parse(&mut self) -> Sexpr {
-        match self.peek() {
-            T!['('] => { self.next(); self.parse_list() },
-            _ => self.parse_atom()
-        }
-    }
-
-    fn parse_list(&mut self) -> Sexpr {
-        let car = self.parse();
-        let cdr: Sexpr;
-        
-        if self.peek() == T![')'] {
-            self.next();
-            cdr = Sexpr::Nil;              
-        } else {
-            cdr = self.parse_list();
-        }
-       
-        Sexpr::Cons { car: Rc::new(RefCell::new(car)), cdr: Rc::new(RefCell::new(cdr)) }
-    }
-
-    fn parse_atom(&mut self) -> Sexpr {
-        match self.peek() {
-            lit @ T![number] | lit @ T![string] => {
-                let literal_text = {
-                    // the calls on `self` need to be split, because `next` takes `&mut self`
-                    // if `peek` is not `T![EOF]`, then there must be a next token
-                    self.next().unwrap().text(self.src)
-                };
-                let lit = match lit {
-                    T![number] => Literal::Number(
-                        literal_text
-                            .parse()
-                            .expect(&format!(
-                                "invalid floating point literal: `{}`",
-                                literal_text)
-                            ),
-                    ),
-                    T![string] => Literal::String(
-                        // trim the quotation marks
-                        literal_text[1..(literal_text.len() - 1)].to_string()
-                    ),
-                    _ => unreachable!(),
-                };
-                Sexpr::Atom(Atom::Literal(lit))
-            }
-            T![ident] | T![let] | T![lambda] => {
-                Sexpr::Atom(Atom::Symbol({
-                    self.next().unwrap().text(self.src).to_string()
-                }))
-            }
-            T![+] | T![-] | T![*] | T![/] | T![%] => {
-                Sexpr::Atom(Atom::Symbol({
-                    self.next().unwrap().text(self.src).to_string()
-                }))
-            }
-            kind => {
-                panic!("Unknown start of atom: `{}`", kind);
-            }
-        }
-    }
+fn parse_atom(stream: Peekable<TokenStream>) -> Sexpr {
+    todo!()
 }

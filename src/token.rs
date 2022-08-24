@@ -4,12 +4,12 @@ use std::iter::Peekable;
 use std::ops::{Index, Range};
 use std::vec::IntoIter;
 
-#[derive(Logos, Debug, PartialEq)]
-pub enum LogosToken {
+#[derive(Logos, Debug, PartialEq, Eq, Hash, Copy, Clone)]
+pub enum TokenKind {
     #[regex(r##"([A-Za-z]|_)([A-Za-z]|_|\d)*"##)]
     Ident,
     #[regex(r#"((\d+(\.\d+)?)|(\.\d+))([Ee](\+|-)?\d+)?"#)]
-    Number,
+    Num,
     #[regex(r#""((\\"|\\\\)|[^\\"])*""#)]
     String,
 
@@ -37,116 +37,10 @@ pub enum LogosToken {
     #[regex(r"[ \t\r\n\f]+", logos::skip)]
     Whitespace,
     #[error]
-    Error,
+    Err,
     #[regex(r#";[^\n]*"#)]
     Comment,
     Eof,
-}
-
-impl LogosToken {
-    #[rustfmt::skip]
-    pub fn kind(&self) -> TokenKind {
-        use LogosToken::*;
-        use crate::T;
-        match self {
-            Ident => T![ident],
-            String => T![string],
-            Number => T![number],
-            Add => T![+],
-            Sub => T![-],
-            Mul => T![*],
-            Quo => T![/],
-            Mod => T![%],
-            LParen => T!['('],
-            RParen => T![')'],
-            Let => T![let],
-            Lambda => T![lambda],
-            Comment => T![comment],
-            Whitespace => T![ws],
-            Error => T![error],
-            Eof => T![EOF]
-        }
-    }
-}
-
-#[derive(Debug, PartialEq, Eq, Hash, Copy, Clone)]
-pub enum TokenKind {
-    Error,
-    Eof,
-    Comment,
-    Whitespace,
-
-    // Literals
-    Ident,
-    Number,
-    String,
-
-    // Operators
-    Add, // +
-    Sub, // -
-    Mul, // *
-    Quo, // /
-    Mod, // %
-
-    // Parentheses
-    LParen, // (
-    RParen, // )
-
-    // Keywords
-    Let,    // let
-    Lambda, // lambda
-}
-
-#[macro_export]
-macro_rules! T {
-    [ws] => {
-        $crate::token::TokenKind::Whitespace
-    };
-    [error] => {
-        $crate::token::TokenKind::Error
-    };
-    [EOF] => {
-        $crate::token::TokenKind::Eof
-    };
-    [comment] => {
-        $crate::token::TokenKind::Comment
-    };
-    [ident] => {
-        $crate::token::TokenKind::Ident
-    };
-    [number] => {
-        $crate::token::TokenKind::Number
-    };
-    [string] => {
-        $crate::token::TokenKind::String
-    };
-    [+] => {
-        $crate::token::TokenKind::Add
-    };
-    [-] => {
-        $crate::token::TokenKind::Sub
-    };
-    [*] => {
-        $crate::token::TokenKind::Mul
-    };
-    [/] => {
-        $crate::token::TokenKind::Quo
-    };
-    [%] => {
-        $crate::token::TokenKind::Mod
-    };
-    ['('] => {
-        $crate::token::TokenKind::LParen
-    };
-    [')'] => {
-        $crate::token::TokenKind::RParen
-    };
-    [let] => {
-        $crate::token::TokenKind::Let
-    };
-    [lambda] => {
-        $crate::token::TokenKind::Lambda
-    };
 }
 
 impl fmt::Display for TokenKind {
@@ -155,22 +49,22 @@ impl fmt::Display for TokenKind {
             f,
             "{}",
             match self {
-                T![ws] => "Whitespace",
-                T![error] => "Error",
-                T![EOF] => "<EOF>",
-                T![comment] => "Comment",
-                T![ident] => "Ident",
-                T![number] => "Number",
-                T![string] => "String",
-                T![+] => "+",
-                T![-] => "-",
-                T![*] => "*",
-                T![/] => "/",
-                T![%] => "%",
-                T!['('] => "(",
-                T![')'] => ")",
-                T![let] => "let",
-                T![lambda] => "lambda",
+                TokenKind::Whitespace => "Whitespace",
+                TokenKind::Err => "Error",
+                TokenKind::Eof => "<EOF>",
+                TokenKind::Comment => "Comment",
+                TokenKind::Ident => "Ident",
+                TokenKind::Num => "Number",
+                TokenKind::String => "String",
+                TokenKind::Add => "+",
+                TokenKind::Sub => "-",
+                TokenKind::Mul => "*",
+                TokenKind::Quo => "/",
+                TokenKind::Mod => "%",
+                TokenKind::LParen => "(",
+                TokenKind::RParen => ")",
+                TokenKind::Let => "let",
+                TokenKind::Lambda => "lambda",
             }
         )
     }
@@ -180,6 +74,12 @@ impl fmt::Display for TokenKind {
 pub struct Span {
     pub start: u32,
     pub end: u32,
+}
+
+impl Span {
+    pub fn new(start: u32, end: u32) -> Self {
+        Self { start, end }
+    }
 }
 
 impl From<Span> for Range<usize> {
@@ -205,19 +105,16 @@ impl Index<Span> for str {
     }
 }
 
-#[derive(Eq, PartialEq, Copy, Clone, Hash)]
+#[derive(Eq, PartialEq, Clone, Hash)]
 pub struct Token {
     pub kind: TokenKind,
     pub span: Span,
+    pub lit: String,
 }
 
 impl Token {
     pub fn len(&self) -> usize {
         (self.span.end - self.span.start) as usize
-    }
-
-    pub fn text<'input>(&self, input: &'input str) -> &'input str {
-        &input[self.span]
     }
 }
 
@@ -255,7 +152,7 @@ impl Iterator for TokenStream {
     fn next(&mut self) -> Option<Self::Item> {
         loop {
             let next_token = self.token_iter.next()?;
-            if !matches!(next_token.kind, T![comment]) {
+            if !matches!(next_token.kind, TokenKind::Comment) {
                 return Some(next_token);
             }
         }
