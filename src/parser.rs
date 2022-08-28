@@ -28,7 +28,7 @@ pub fn parse(tokens: Vec<Token>) -> Vec<Sexpr> {
 //     Cons(_, tail) => *tail = new_tail,
 // }
 // tail = new_tail;
-fn parse_list(stream: Peekable<TokenStream>) -> Sexpr {
+fn parse_list(stream: Peekable<TokenStream>) -> Vec<Sexpr> {
     todo!()
 }
 
