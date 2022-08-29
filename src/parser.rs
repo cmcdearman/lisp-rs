@@ -1,7 +1,5 @@
-use std::iter::Peekable;
-
-use crate::token::{Token, TokenStream, TokenKind};
-use crate::ast::Sexpr;
+use crate::ast::{Atom, Lit, Sexpr};
+use crate::token::{Token, TokenKind, TokenStream};
 
 // [
 // /* 0 */ Node::Nil,
@@ -16,9 +14,40 @@ pub fn parse(tokens: Vec<Token>) -> Vec<Sexpr> {
     let mut stream = TokenStream::new(tokens).peekable();
     let mut ast = Vec::new();
     match stream.peek().unwrap().kind {
-       TokenKind::LParen => { stream.next(); parse_list(stream) } 
-       _ => parse_atom(stream)
+        TokenKind::LParen => {
+            // Consume Rparen at start of list
+            stream.next();
+            
+
+        }
+        lit @ TokenKind::Num | lit @ TokenKind::String => {
+            let lit_text = stream.next().unwrap().lit;
+            let lit = match lit {
+                TokenKind::Num => Lit::Num(
+                    lit_text
+                        .parse()
+                        .expect(&format!("invalid floating point literal: `{}`", lit_text)),
+                ),
+                TokenKind::String => Lit::Str(lit_text[1..(lit_text.len() - 1)].to_string()),
+                _ => unreachable!(),
+            };
+            ast.push(Sexpr::Atom(Atom::Lit(lit)));
+        }
+        TokenKind::Ident
+        | TokenKind::Add
+        | TokenKind::Sub
+        | TokenKind::Mul
+        | TokenKind::Quo
+        | TokenKind::Mod
+        | TokenKind::Let
+        | TokenKind::Lambda => ast.push(Sexpr::Atom(Atom::Sym(
+            stream.next().unwrap().lit.to_string(),
+        ))),
+        kind => {
+            panic!("Unknown start of atom: `{}`", kind);
+        }
     }
+    ast
 }
 
 // let mut new_tail = elements.len();
@@ -28,10 +57,3 @@ pub fn parse(tokens: Vec<Token>) -> Vec<Sexpr> {
 //     Cons(_, tail) => *tail = new_tail,
 // }
 // tail = new_tail;
-fn parse_list(stream: Peekable<TokenStream>) -> Vec<Sexpr> {
-    todo!()
-}
-
-fn parse_atom(stream: Peekable<TokenStream>) -> Sexpr {
-    todo!()
-}
