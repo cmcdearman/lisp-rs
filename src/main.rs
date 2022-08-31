@@ -1,13 +1,14 @@
-mod token;
-mod parser;
 mod ast;
-mod lex;
-mod eval;
 mod env;
+mod eval;
+mod lex;
+mod parse;
+mod token;
 
-use std::{env as fs_env, fs};
 use crate::lex::lex;
-use crate::parser::parse;
+use crate::parse::parse;
+use crate::token::TokenStream;
+use std::{env as fs_env, fs};
 
 fn main() {
     // let dir = fs_env::current_dir().unwrap();
@@ -59,9 +60,9 @@ fn main() {
     let input = "(1 2 3)";
     let mut tokens = lex(input);
     for t in &tokens {
-       println!("{:?}", t);
+        println!("{:?}", t);
     }
 
-    let ast = parse(tokens);
+    let ast = parse(&mut TokenStream::new(tokens).peekable(), &mut Vec::new());
     println!("{:?}", ast);
 }

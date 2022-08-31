@@ -1,3 +1,5 @@
+use std::iter::Peekable;
+
 use crate::ast::{Atom, Lit, Sexpr};
 use crate::token::{Token, TokenKind, TokenStream};
 
@@ -10,18 +12,18 @@ use crate::token::{Token, TokenKind, TokenStream};
 // /* 5 */ Node::Num(1.0),
 // /* 6 */ Node::Cons(4, 5),
 // ]
-pub fn parse(tokens: Vec<Token>) -> Vec<Sexpr> {
-    let mut stream = TokenStream::new(tokens).peekable();
-    let mut ast = Vec::new();
-    match stream.peek().unwrap().kind {
+pub fn parse(tokens: &mut Peekable<TokenStream>, ast: &mut Vec<Sexpr>) -> Vec<Sexpr> {
+    match tokens.peek().unwrap().kind {
         TokenKind::LParen => {
-            // Consume Rparen at start of list
-            stream.next();
-            
-
+            tokens.next();
+            let car = parse(tokens, ast);
+            let cons = 
+            while tokens.peek().unwrap().kind != TokenKind::RParen {
+                todo!()
+            }
         }
         lit @ TokenKind::Num | lit @ TokenKind::String => {
-            let lit_text = stream.next().unwrap().lit;
+            let lit_text = tokens.next().unwrap().lit;
             let lit = match lit {
                 TokenKind::Num => Lit::Num(
                     lit_text
@@ -41,13 +43,13 @@ pub fn parse(tokens: Vec<Token>) -> Vec<Sexpr> {
         | TokenKind::Mod
         | TokenKind::Let
         | TokenKind::Lambda => ast.push(Sexpr::Atom(Atom::Sym(
-            stream.next().unwrap().lit.to_string(),
+            tokens.next().unwrap().lit.to_string(),
         ))),
         kind => {
             panic!("Unknown start of atom: `{}`", kind);
         }
     }
-    ast
+    *ast
 }
 
 // let mut new_tail = elements.len();
