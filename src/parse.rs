@@ -25,10 +25,10 @@ pub fn parse(tokens: &mut Peekable<TokenStream>, ast: &mut Vec<Sexpr>) -> Vec<Se
         TokenKind::LParen => {
             tokens.next();
             let car = parse(tokens, ast);
-            let cons = 
+            let cons = ();
             while tokens.peek().unwrap().kind != TokenKind::RParen {
                 todo!()
-            }
+            };
         }
         lit @ TokenKind::Num | lit @ TokenKind::String => {
             let lit_text = tokens.next().unwrap().lit;
@@ -57,7 +57,7 @@ pub fn parse(tokens: &mut Peekable<TokenStream>, ast: &mut Vec<Sexpr>) -> Vec<Se
             panic!("Unknown start of atom: `{}`", kind);
         }
     }
-    *ast
+    ast.to_vec()
 }
 
 // let mut new_tail = elements.len();
