@@ -10,6 +10,13 @@ use crate::token::{Token, TokenKind, TokenStream};
 // /* 5 */ Node::Num(1.0),
 // /* 6 */ Node::Cons(4, 5),
 // ]
+
+/*
+ * (1 2 3)
+ * LParen => parse_list
+ * next()
+ * 
+ */
 pub fn parse(tokens: Vec<Token>) -> Vec<Sexpr> {
     let mut stream = TokenStream::new(tokens).peekable();
     let mut ast = Vec::new();
@@ -17,8 +24,10 @@ pub fn parse(tokens: Vec<Token>) -> Vec<Sexpr> {
         TokenKind::LParen => {
             // Consume Rparen at start of list
             stream.next();
-            
+            let tail = 
+            while stream.peek().unwrap().kind != TokenKind::RParen {
 
+            }
         }
         lit @ TokenKind::Num | lit @ TokenKind::String => {
             let lit_text = stream.next().unwrap().lit;
