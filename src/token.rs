@@ -12,6 +12,8 @@ pub enum TokenKind {
     Num,
     #[regex(r#""((\\"|\\\\)|[^\\"])*""#)]
     String,
+    #[regex(r#"(true|false)"#)]
+    Bool,
 
     #[token("+")]
     Add,
@@ -56,6 +58,7 @@ impl fmt::Display for TokenKind {
                 TokenKind::Ident => "Ident",
                 TokenKind::Num => "Number",
                 TokenKind::String => "String",
+                TokenKind::Bool => "Bool",
                 TokenKind::Add => "+",
                 TokenKind::Sub => "-",
                 TokenKind::Mul => "*",

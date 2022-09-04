@@ -14,7 +14,8 @@ pub enum Atom {
 #[derive(Debug, Clone, PartialEq)]
 pub enum Lit {
     Num(f64),
-    Str(String)
+    Str(String),
+    Bool(bool)
 }
 
 
