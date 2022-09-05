@@ -12,11 +12,15 @@ pub fn parse(tokens: &mut Peekable<TokenStream>, alloc: &mut impl FnMut(Sexpr) -
 
 fn cons(tokens: &mut Peekable<TokenStream>, alloc: &mut impl FnMut(Sexpr) -> u32) -> u32 {
     tokens.next();
-    let mut last = alloc(Sexpr::Nil);
+    let mut items = Vec::new();
     while tokens.peek().unwrap().kind != TokenKind::RParen {
-        let next = parse(tokens, alloc);
-        last = alloc(Sexpr::Cons(last, next));
+        items.push(parse(tokens, alloc));
     };
+    tokens.next();
+    let mut last = alloc(Sexpr::Nil);
+    for item in items.into_iter().rev() {
+        last = alloc(Sexpr::Cons(item, last));
+    }
     last
 }
 
@@ -50,10 +54,3 @@ fn atom(tokens: &mut Peekable<TokenStream>) -> Sexpr {
     }
 }
 
-// let mut new_tail = elements.len();
-// elements.push(SExpr::Cons(0, 0));
-// match &mut elements[tail] {
-//     Atom(_) => unreachable!(), // Sadly, this is neccessary
-//     Cons(_, tail) => *tail = new_tail,
-// }
-// tail = new_tail;
