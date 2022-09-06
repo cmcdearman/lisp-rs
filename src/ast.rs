@@ -1,17 +1,10 @@
 pub struct Ast {
-    data: Vec<Sexpr>,
-    pos: usize,
+    data: std::vec::IntoIter<Sexpr>,
 }
 
 impl Ast {
-    pub fn new() -> Self {
-        Self { data: Vec::new(), pos: 0 }
-    }
-
-    pub fn push(&mut self, expr: Sexpr) -> usize {
-        self.data.push(expr);
-        self.pos = (self.data.len() - 1) as usize;
-        self.pos
+    pub fn new(data: Vec<Sexpr>) -> Self {
+        Self { data: data.into_iter() }
     }
 }
 
@@ -19,12 +12,7 @@ impl Iterator for Ast {
     type Item = Sexpr;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.pos <= 0 {
-            return None;
-        }
-        let expr = &self.data[self.pos];
-        self.pos -= 1;
-        Some(*expr)
+        self.data.next_back()
     }
 }
 
@@ -32,6 +20,7 @@ impl Iterator for Ast {
 pub enum Sexpr {
     Atom(Atom),
     Cons(u32, u32),
+    Fn(fn(Vec<Sexpr>) -> Result<Sexpr, String>),
     Nil
 }
 
