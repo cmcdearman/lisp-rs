@@ -17,8 +17,11 @@ impl Env {
         self.data.insert(name, value);
     }
 
-    pub fn find(&mut self, name: String) -> Option<&Sexpr> {
-        self.data.get(&name)
+    pub fn find(&self, name: String) -> Result<Sexpr, String> {
+        match self.data.get(&name) {
+            Some(sexpr) => Ok(sexpr.clone()),
+            None => Err(String::from("could not find name in env"))
+        }
     }
 
     pub fn pop(&mut self, name: String) {
@@ -37,7 +40,7 @@ pub fn default_env() -> Env {
     data.insert(
         String::from("-"),
         Sexpr::Fn(|args: Vec<Sexpr>| -> Result<Sexpr, String> {
-            Ok(Sexpr::Atom(Atom::Lit(Lit::Num(sum_num_list(args)?))))
+            Ok(Sexpr::Atom(Atom::Lit(Lit::Num(sub_num_list(args)?))))
         }),
     );
     data.insert(
@@ -79,5 +82,10 @@ fn sum_num_list(args: Vec<Sexpr>) -> Result<f64, String> {
 }
 
 fn sub_num_list(args: Vec<Sexpr>) -> Result<f64, String> {
-    todo!()
+    let first = match args[0] {
+        Sexpr::Atom(Atom::Lit(Lit::Num(n))) => n,
+        _ => Err("error converting sub arguments to numbers")?
+    };
+
+    Ok(first - sum_num_list(args[1..].to_vec())?)
 }
