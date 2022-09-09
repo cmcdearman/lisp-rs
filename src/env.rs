@@ -46,13 +46,13 @@ pub fn default_env() -> Env {
     data.insert(
         String::from("*"),
         Sexpr::Fn(|args: Vec<Sexpr>| -> Result<Sexpr, String> {
-            Ok(Sexpr::Atom(Atom::Lit(Lit::Num(sum_num_list(args)?))))
+            Ok(Sexpr::Atom(Atom::Lit(Lit::Num(mul_num_list(args)?))))
         }),
     );
     data.insert(
         String::from("/"),
         Sexpr::Fn(|args: Vec<Sexpr>| -> Result<Sexpr, String> {
-            Ok(Sexpr::Atom(Atom::Lit(Lit::Num(sum_num_list(args)?))))
+            Ok(Sexpr::Atom(Atom::Lit(Lit::Num(quo_num_list(args)?))))
         }),
     );
     data.insert(
@@ -84,8 +84,28 @@ fn sum_num_list(args: Vec<Sexpr>) -> Result<f64, String> {
 fn sub_num_list(args: Vec<Sexpr>) -> Result<f64, String> {
     let first = match args[0] {
         Sexpr::Atom(Atom::Lit(Lit::Num(n))) => n,
-        _ => Err("error converting sub arguments to numbers")?
+        _ => Err(String::from("error converting sub arguments to numbers"))?
     };
 
     Ok(first - sum_num_list(args[1..].to_vec())?)
+}
+
+fn mul_num_list(args: Vec<Sexpr>) -> Result<f64, String> {
+    args.iter()
+        .map(|s| -> Result<f64, String> {
+            match s {
+                Sexpr::Atom(Atom::Lit(Lit::Num(n))) => Ok(*n),
+                _ => Err(String::from("error converting mul arguments to numbers"))?
+            }
+        })
+        .product()
+}
+
+fn quo_num_list(args: Vec<Sexpr>) -> Result<f64, String> {
+    let first = match args[0] {
+        Sexpr::Atom(Atom::Lit(Lit::Num(n))) => n,
+        _ => Err(String::from("error converting quo arguments to numbers"))?
+    };
+
+    Ok(first / mul_num_list(args[1..].to_vec())?)
 }
