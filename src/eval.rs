@@ -5,6 +5,7 @@ pub fn eval(ast: &Vec<Sexpr>, pos: usize, env: Env) -> Result<Sexpr, String> {
         lit @ Sexpr::Atom(Atom::Lit(_)) => Ok(lit.clone()),
         Sexpr::Atom(Atom::Sym(name)) => Ok(env.find(name.clone())?.clone()),
         Sexpr::Cons(d, n) => {
+
             todo!()
         }
         Sexpr::Fn(f) => todo!(),
