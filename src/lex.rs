@@ -1,9 +1,9 @@
+use crate::token::{Span, Token, TokenKind};
 use logos::Logos;
-use crate::token::{Token, Span, TokenKind};
 
 pub fn lex(src: &str) -> Vec<Token> {
     let mut last_span = Span::new(0, 0);
-    let  mut tokens = TokenKind::lexer(src)
+    let mut tokens: Vec<Token> = TokenKind::lexer(src)
         .spanned()
         .map(|(t, s)| {
             let span = &mut last_span;
@@ -14,10 +14,10 @@ pub fn lex(src: &str) -> Vec<Token> {
                 lit: src[*span].to_string(),
             }
         })
-        .collect::<Vec<Token>>();
+        .collect();
     tokens.push(Token {
         kind: TokenKind::Eof,
-        span: Span::new(last_span.end+1, last_span.end+1),
+        span: Span::new(last_span.end + 1, last_span.end + 1),
         lit: String::from("EOF"),
     });
     tokens

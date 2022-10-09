@@ -12,6 +12,8 @@ pub enum TokenKind {
     Num,
     #[regex(r#""((\\"|\\\\)|[^\\"])*""#)]
     String,
+    #[regex(r#"(true|false)"#)]
+    Bool,
 
     #[token("+")]
     Add,
@@ -21,8 +23,6 @@ pub enum TokenKind {
     Mul,
     #[token("/")]
     Quo,
-    #[token("%")]
-    Mod,
 
     #[token("(")]
     LParen,
@@ -33,6 +33,12 @@ pub enum TokenKind {
     Let,
     #[token("lambda")]
     Lambda,
+    #[token("mod")]
+    Mod,
+    // #[token("cond")]
+    // Cond,
+    // #[token("set")]
+    // Set,
 
     #[regex(r"[ \t\r\n\f]+", logos::skip)]
     Whitespace,
@@ -56,15 +62,16 @@ impl fmt::Display for TokenKind {
                 TokenKind::Ident => "Ident",
                 TokenKind::Num => "Number",
                 TokenKind::String => "String",
+                TokenKind::Bool => "Bool",
                 TokenKind::Add => "+",
                 TokenKind::Sub => "-",
                 TokenKind::Mul => "*",
                 TokenKind::Quo => "/",
-                TokenKind::Mod => "%",
                 TokenKind::LParen => "(",
                 TokenKind::RParen => ")",
                 TokenKind::Let => "let",
                 TokenKind::Lambda => "lambda",
+                TokenKind::Mod => "mod",
             }
         )
     }
