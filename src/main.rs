@@ -26,8 +26,10 @@ fn main() {
 
     let mut ast = Vec::new();
 
-    parse(&mut TokenStream::new(tokens).peekable(),
-        &mut |expr| { ast.push(expr); (ast.len() - 1) as u32}, );
+    parse(&mut TokenStream::new(tokens).peekable(), &mut |expr| {
+        ast.push(expr);
+        (ast.len() - 1) as u32
+    });
 
     for (i, node) in ast.iter().enumerate() {
         println!("{} => {:?}", i, node);

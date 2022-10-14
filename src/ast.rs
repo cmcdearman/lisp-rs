@@ -21,21 +21,18 @@ pub enum Sexpr {
     Atom(Atom),
     Cons(u32, u32),
     Fn(fn(Vec<Sexpr>) -> Result<Sexpr, String>),
-    Nil
+    Nil,
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Atom {
     Sym(String),
-    Lit(Lit)
+    Lit(Lit),
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Lit {
     Num(f64),
     Str(String),
-    Bool(bool)
+    Bool(bool),
 }
-
-
-
