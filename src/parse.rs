@@ -3,25 +3,27 @@ use std::iter::Peekable;
 use crate::ast::{Atom, Lit, Sexpr};
 use crate::token::{TokenKind, TokenStream};
 
-pub fn parse(tokens: &mut Peekable<TokenStream>, alloc: &mut impl FnMut(Sexpr) -> u32) -> u32 {
+pub fn parse(tokens: &mut Peekable<TokenStream>) -> Sexpr {
     match tokens.peek().unwrap().kind {
-        TokenKind::LParen => cons(tokens, alloc),
-        _ => alloc(atom(tokens)),
+        TokenKind::LParen => {
+            tokens.next();
+            list(tokens)
+        }
+        _ => atom(tokens),
     }
 }
 
-fn cons(tokens: &mut Peekable<TokenStream>, alloc: &mut impl FnMut(Sexpr) -> u32) -> u32 {
-    tokens.next();
-    let mut items = Vec::new();
+fn list(tokens: &mut Peekable<TokenStream>) -> Sexpr {
+    let mut list = Vec::new();
+
     while tokens.peek().unwrap().kind != TokenKind::RParen {
-        items.push(parse(tokens, alloc));
+        tokens.next(); 
+        list.push(parse(tokens));
     }
+    println!("{}", tokens.peek().unwrap());
     tokens.next();
-    let mut last = alloc(Sexpr::Nil);
-    for item in items.into_iter().rev() {
-        last = alloc(Sexpr::Cons(item, last));
-    }
-    last
+
+    Sexpr::List(list)
 }
 
 fn atom(tokens: &mut Peekable<TokenStream>) -> Sexpr {
