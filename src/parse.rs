@@ -17,10 +17,8 @@ fn list(tokens: &mut Peekable<TokenStream>) -> Sexpr {
     let mut list = Vec::new();
 
     while tokens.peek().unwrap().kind != TokenKind::RParen {
-        tokens.next(); 
         list.push(parse(tokens));
     }
-    println!("{}", tokens.peek().unwrap());
     tokens.next();
 
     Sexpr::List(list)

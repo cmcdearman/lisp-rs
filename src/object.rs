@@ -1,8 +1,7 @@
-#[derive(Debug, Clone)]
-pub enum Sexpr {
+pub enum Object {
     Atom(Atom),
-    List(Vec<Sexpr>),
-    Fn(fn(Vec<Sexpr>) -> Result<Sexpr, String>),
+    List(Vec<Object>),
+    Fn(fn(Vec<Object>) -> Result<Object, String>),
     Nil,
 }
 
