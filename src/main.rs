@@ -8,6 +8,7 @@ mod token;
 use crate::lex::lex;
 use crate::parse::parse;
 use crate::token::TokenStream;
+use crate::eval::eval;
 use std::{env as fs_env, fs};
 
 fn main() {
@@ -24,13 +25,9 @@ fn main() {
     //     println!("{:?}", t);
     // }
 
-    let mut ast = Vec::new();
+    let ast = parse(&mut TokenStream::new(tokens).peekable());
 
-    parse(&mut TokenStream::new(tokens).peekable(),
-        &mut |expr| { ast.push(expr); (ast.len() - 1) as u32}, );
-
-    for (i, node) in ast.iter().enumerate() {
-        println!("{} => {:?}", i, node);
-    }
-    // println!("{:?}", ast);
+    println!("{}", ast);
+    let val = eval(&ast, &mut env::default_env());
+    println!("{}", eval(&ast, &mut env::default_env()).expect("invalid ast"));
 }

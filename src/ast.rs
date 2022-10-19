@@ -1,41 +1,45 @@
-// pub struct Ast {
-//     data: std::vec::IntoIter<Sexpr>,
-// }
-
-// impl Ast {
-//     pub fn new(data: Vec<Sexpr>) -> Self {
-//         Self { data: data.into_iter() }
-//     }
-// }
-
-// impl Iterator for Ast {
-//     type Item = Sexpr;
-
-//     fn next(&mut self) -> Option<Self::Item> {
-//         self.data.next_back()
-//     }
-// }
-
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub enum Sexpr {
     Atom(Atom),
-    Cons(u32, u32),
-    Fn(fn(Vec<Sexpr>) -> Result<Sexpr, String>),
-    Nil
+    List(Vec<Sexpr>),
+    Fn(fn(&[Sexpr]) -> Result<Sexpr, String>),
+}
+
+impl std::fmt::Display for Sexpr {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        let str = match self {
+            Sexpr::Atom(a) => {
+                match a {
+                    Atom::Sym(s) => s.clone(),
+                    Atom::Lit(l) => {
+                        match l {
+                            Lit::Num(n) => n.to_string(),
+                            Lit::Str(s) => s.to_string(),
+                            Lit::Bool(b) => b.to_string(),
+                        }
+                    }
+                }
+            }
+            Sexpr::List(list) => {
+                let xs: Vec<String> = list.iter().map(|x| x.to_string()).collect();
+                format!("({})", xs.join(","))
+            }
+            Sexpr::Fn(_) => "Function {}".to_string(),
+        };
+
+        write!(f, "{}", str)
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Atom {
     Sym(String),
-    Lit(Lit)
+    Lit(Lit),
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Lit {
     Num(f64),
     Str(String),
-    Bool(bool)
+    Bool(bool),
 }
-
-
-
