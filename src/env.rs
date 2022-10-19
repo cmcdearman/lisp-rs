@@ -64,7 +64,7 @@ pub fn default_env() -> Env {
     data.insert(
         String::from("mod"),
         Sexpr::Fn(|args: &[Sexpr]| -> Result<Sexpr, String> {
-            Ok(Sexpr::Atom(Atom::Lit(Lit::Num(sum_num_list(args)?))))
+            Ok(Sexpr::Atom(Atom::Lit(Lit::Num(mod_num_list(args)?))))
         }),
     );
     Env { data }
@@ -108,4 +108,18 @@ fn quo_num_list(args: &[Sexpr]) -> Result<f64, String> {
     };
 
     Ok(first / mul_num_list(&args[1..])?)
+}
+
+fn mod_num_list(args: &[Sexpr]) -> Result<f64, String> {
+    if args.len() != 2 { return Err("need two args for mod".to_string()); }
+    let num = match args[0] {
+        Sexpr::Atom(Atom::Lit(Lit::Num(n))) => n,
+        _ => Err(String::from("error converting quo arguments to numbers"))?
+    };
+    let div = match args[1] {
+        Sexpr::Atom(Atom::Lit(Lit::Num(n))) => n,
+        _ => Err(String::from("error converting quo arguments to numbers"))?
+    };
+
+    Ok(num % div)
 }
