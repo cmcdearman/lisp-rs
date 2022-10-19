@@ -8,6 +8,7 @@ mod token;
 use crate::lex::lex;
 use crate::parse::parse;
 use crate::token::TokenStream;
+use crate::eval::eval;
 use std::{env as fs_env, fs};
 
 fn main() {
@@ -26,5 +27,7 @@ fn main() {
 
     let ast = parse(&mut TokenStream::new(tokens).peekable());
 
-    println!("{:?}", ast);
+    println!("{}", ast);
+    let val = eval(&ast, &mut env::default_env());
+    println!("{}", eval(&ast, &mut env::default_env()).expect("invalid ast"));
 }
