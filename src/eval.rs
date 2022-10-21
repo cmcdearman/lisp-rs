@@ -22,7 +22,6 @@ pub fn eval(sexpr: &Sexpr, env: &mut Env) -> Result<Sexpr, String> {
                 _ => Err("first form must be a function".to_string())
             }
         }
-        Sexpr::Fn(_) => Err("unexpected form".to_string()),
         _ => Err("unexpected form".to_string()),
     }
 }

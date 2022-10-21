@@ -35,10 +35,8 @@ pub enum TokenKind {
     Lambda,
     #[token("mod")]
     Mod,
-    // #[token("cond")]
-    // Cond,
-    // #[token("set")]
-    // Set,
+    #[token("cond")]
+    Cond,
 
     #[regex(r"[ \t\r\n\f]+", logos::skip)]
     Whitespace,
@@ -72,6 +70,7 @@ impl fmt::Display for TokenKind {
                 TokenKind::Let => "let",
                 TokenKind::Lambda => "lambda",
                 TokenKind::Mod => "mod",
+                TokenKind::Cond => "cond"
             }
         )
     }
