@@ -32,41 +32,53 @@ impl Env {
 pub fn default_env() -> Env {
     let mut data: HashMap<String, Sexpr> = HashMap::new();
     data.insert(
-        String::from("+"),
+        "+".to_string(),
         Sexpr::Fn(|args: &[Sexpr]| -> Result<Sexpr, String> {
             Ok(Sexpr::Atom(Atom::Lit(Lit::Num(sum_num_list(args)?))))
         }),
     );
     data.insert(
-        String::from("-"),
+        "-".to_string(),
         Sexpr::Fn(|args: &[Sexpr]| -> Result<Sexpr, String> {
             Ok(Sexpr::Atom(Atom::Lit(Lit::Num(sub_num_list(args)?))))
         }),
     );
     data.insert(
-        String::from("*"),
+        "*".to_string(),
         Sexpr::Fn(|args: &[Sexpr]| -> Result<Sexpr, String> {
             Ok(Sexpr::Atom(Atom::Lit(Lit::Num(mul_num_list(args)?))))
         }),
     );
     data.insert(
-        String::from("/"),
+        "/".to_string(),
         Sexpr::Fn(|args: &[Sexpr]| -> Result<Sexpr, String> {
             Ok(Sexpr::Atom(Atom::Lit(Lit::Num(quo_num_list(args)?))))
         }),
     );
     data.insert(
-        String::from("let"),
+        "let".to_string(),
         Sexpr::Fn(|args: &[Sexpr]| -> Result<Sexpr, String> {
             Ok(Sexpr::Atom(Atom::Lit(Lit::Num(sum_num_list(args)?))))
         }),
     );
     data.insert(
-        String::from("mod"),
+        "mod".to_string(),
         Sexpr::Fn(|args: &[Sexpr]| -> Result<Sexpr, String> {
             Ok(Sexpr::Atom(Atom::Lit(Lit::Num(mod_num_list(args)?))))
         }),
     );
+    data.insert("lambda".to_string(), Sexpr::Fn(|args: &[Sexpr]| -> Result<Sexpr, String> {
+        if !(2..4).contains(&args.len()) {
+            return Err("not enough arguments for lambda expression".to_string());
+        }
+        let params = &args[0];
+        let body = &args[1];
+        let mut lambda_args; 
+        if args.len() == 3 {
+            lambda_args = &args[2];
+        }
+        todo!()
+    }));
     Env { data }
 }
 
