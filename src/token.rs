@@ -70,7 +70,7 @@ impl fmt::Display for TokenKind {
                 TokenKind::Let => "let",
                 TokenKind::Lambda => "lambda",
                 TokenKind::Mod => "mod",
-                TokenKind::Cond => "cond"
+                TokenKind::Cond => "cond",
             }
         )
     }
