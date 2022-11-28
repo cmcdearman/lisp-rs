@@ -67,15 +67,15 @@ pub fn default_env() -> Env {
             Ok(Sexpr::Atom(Atom::Lit(Lit::Num(mod_num_list(args)?))))
         }),
     );
-    data.insert("lambda".to_string(), Sexpr::Fn(|args: &[Sexpr]| -> Result<Sexpr, String> {
+    data.insert("fn".to_string(), Sexpr::Fn(|args: &[Sexpr]| -> Result<Sexpr, String> {
         if !(2..4).contains(&args.len()) {
-            return Err("not enough arguments for lambda expression".to_string());
+            return Err("not enough arguments for function declaration".to_string());
         }
         let params = &args[0];
         let body = &args[1];
-        let mut lambda_args; 
+        let mut fn_args; 
         if args.len() == 3 {
-            lambda_args = &args[2];
+            fn_args = &args[2];
         }
         todo!()
     }));

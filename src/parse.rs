@@ -46,7 +46,7 @@ fn atom(tokens: &mut Peekable<TokenStream>) -> Sexpr {
         | TokenKind::Mul
         | TokenKind::Quo
         | TokenKind::Let
-        | TokenKind::Lambda
+        | TokenKind::Fn
         | TokenKind::Mod => Sexpr::Atom(Atom::Sym(tokens.next().unwrap().lit.to_string())),
         kind => {
             panic!("Unknown start of atom: `{}`", kind);

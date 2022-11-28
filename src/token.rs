@@ -31,8 +31,12 @@ pub enum TokenKind {
 
     #[token("let")]
     Let,
-    #[token("lambda")]
-    Lambda,
+    #[token("fn")]
+    Fn,
+    #[token("def")]
+    Def,
+    #[token("apply")]
+    Apply,
     #[token("mod")]
     Mod,
     #[token("cond")]
@@ -68,7 +72,9 @@ impl fmt::Display for TokenKind {
                 TokenKind::LParen => "(",
                 TokenKind::RParen => ")",
                 TokenKind::Let => "let",
-                TokenKind::Lambda => "lambda",
+                TokenKind::Fn => "fn",
+                TokenKind::Def => "def",
+                TokenKind::Apply => "apply",
                 TokenKind::Mod => "mod",
                 TokenKind::Cond => "cond",
             }
