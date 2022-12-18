@@ -1,0 +1,12 @@
+(+ 2 2)
+;; lust=> 4
+
+(defn square (x) (* x x))
+(square 4)
+;; lust=> 16
+
+(def a (fn (arg) (+ arg 1)) 5)
+
+(if ((1 == 2 && 3 != 5) || 5 <= 5))
+
+((fn (arg) (+ arg 1)) 5)
