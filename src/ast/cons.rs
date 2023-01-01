@@ -4,8 +4,8 @@ use super::object::Object;
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct Cons {
-    car: Object,
-    cdr: Option<Rc<RefCell<Cons>>>
+    pub car: Object,
+    pub cdr: Option<Rc<RefCell<Cons>>>
 }
 
 impl Display for Cons {

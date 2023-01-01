@@ -3,7 +3,7 @@ use std::{
     ops::{Add, Sub, Mul, Div, Rem},
 };
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Number(pub f64);
 
 impl Add for Number {
