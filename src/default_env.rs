@@ -1,44 +1,44 @@
-use crate::ast::env::Env;
+use crate::ast::{env::Env, object::Object, symbol::Symbol, number::Number};
 
 pub fn default_env() -> Env {
     let mut env = Env::new();
     env.push(
         Symbol::from("+"),
-        Sexpr::Fn(|args: &[Sexpr]| -> Result<Sexpr, String> {
-            Ok(Sexpr::Atom(Atom::Lit(Lit::Num(sum_num_list(args)?))))
+        Object::NativeFn(|env, args| {
+            Ok(Object::Num(sum_num_list(args)?))
         }),
     );
     env.push(
-        "-".to_string(),
-        Sexpr::Fn(|args: &[Sexpr]| -> Result<Sexpr, String> {
-            Ok(Sexpr::Atom(Atom::Lit(Lit::Num(sub_num_list(args)?))))
+        Symbol::from("-"),
+        Object::NativeFn(|env, args| {
+            Ok(Object::Num(sub_num_list(args)?))
         }),
     );
     env.push(
         "*".to_string(),
-        Sexpr::Fn(|args: &[Sexpr]| -> Result<Sexpr, String> {
-            Ok(Sexpr::Atom(Atom::Lit(Lit::Num(mul_num_list(args)?))))
+        Object::Fn(|args: &[Object]| -> Result<Object, String> {
+            Ok(Object::Atom(Atom::Lit(Lit::Num(mul_num_list(args)?))))
         }),
     );
     env.push(
         "/".to_string(),
-        Sexpr::Fn(|args: &[Sexpr]| -> Result<Sexpr, String> {
-            Ok(Sexpr::Atom(Atom::Lit(Lit::Num(quo_num_list(args)?))))
+        Object::Fn(|args: &[Object]| -> Result<Object, String> {
+            Ok(Object::Atom(Atom::Lit(Lit::Num(quo_num_list(args)?))))
         }),
     );
     env.push(
         "let".to_string(),
-        Sexpr::Fn(|args: &[Sexpr]| -> Result<Sexpr, String> {
-            Ok(Sexpr::Atom(Atom::Lit(Lit::Num(sum_num_list(args)?))))
+        Object::Fn(|args: &[Object]| -> Result<Object, String> {
+            Ok(Object::Atom(Atom::Lit(Lit::Num(sum_num_list(args)?))))
         }),
     );
     env.push(
         "mod".to_string(),
-        Sexpr::Fn(|args: &[Sexpr]| -> Result<Sexpr, String> {
-            Ok(Sexpr::Atom(Atom::Lit(Lit::Num(mod_num_list(args)?))))
+        Object::Fn(|args: &[Object]| -> Result<Object, String> {
+            Ok(Object::Atom(Atom::Lit(Lit::Num(mod_num_list(args)?))))
         }),
     );
-    env.push("fn".to_string(), Sexpr::Fn(|args: &[Sexpr]| -> Result<Sexpr, String> {
+    env.push("fn".to_string(), Object::Fn(|args: &[Object]| -> Result<Object, String> {
         if !(2..4).contains(&args.len()) {
             return Err("not enough arguments for function declaration".to_string());
         }
@@ -53,54 +53,54 @@ pub fn default_env() -> Env {
     env
 }
 
-fn sum_num_list(args: &[Sexpr]) -> Result<f64, String> {
+fn sum_num_list(args: Vec<Object>) -> Result<Number, String> {
     args.iter()
-        .map(|s| -> Result<f64, String> {
+        .map(|s| -> Result<Number, String> {
             match s {
-                Sexpr::Atom(Atom::Lit(Lit::Num(n))) => Ok(*n),
+                Object::Num(n) => Ok(*n),
                 _ => Err(String::from("error converting arguments to numbers")),
             }
         })
         .sum()
 }
 
-fn sub_num_list(args: &[Sexpr]) -> Result<f64, String> {
+fn sub_num_list(args: Vec<Object>) -> Result<Number, String> {
     let first = match args[0] {
-        Sexpr::Atom(Atom::Lit(Lit::Num(n))) => n,
+        Object::Num(n) => n,
         _ => Err(String::from("error converting sub arguments to numbers"))?
     };
 
-    Ok(first - sum_num_list(&args[1..])?)
+    Ok(first - sum_num_list(args[1..].to_vec())?)
 }
 
-fn mul_num_list(args: &[Sexpr]) -> Result<f64, String> {
+fn mul_num_list(args: Vec<Object>) -> Result<Number, String> {
     args.iter()
-        .map(|s| -> Result<f64, String> {
+        .map(|s| -> Result<Number, String> {
             match s {
-                Sexpr::Atom(Atom::Lit(Lit::Num(n))) => Ok(*n),
+                Object::Num(n) => Ok(*n),
                 _ => Err(String::from("error converting mul arguments to numbers"))?
             }
         })
         .product()
 }
 
-fn quo_num_list(args: &[Sexpr]) -> Result<f64, String> {
+fn quo_num_list(args: Vec<Object>) -> Result<Number, String> {
     let first = match args[0] {
-        Sexpr::Atom(Atom::Lit(Lit::Num(n))) => n,
+        Object::Num(n) => n,
         _ => Err(String::from("error converting quo arguments to numbers"))?
     };
 
-    Ok(first / mul_num_list(&args[1..])?)
+    Ok(first / mul_num_list(args[1..].to_vec())?)
 }
 
-fn mod_num_list(args: &[Sexpr]) -> Result<f64, String> {
+fn mod_num_list(args: &[Object]) -> Result<Number, String> {
     if args.len() != 2 { return Err("need two args for mod".to_string()); }
     let num = match args[0] {
-        Sexpr::Atom(Atom::Lit(Lit::Num(n))) => n,
+        Object::Num(n) => n,
         _ => Err(String::from("error converting quo arguments to numbers"))?
     };
     let div = match args[1] {
-        Sexpr::Atom(Atom::Lit(Lit::Num(n))) => n,
+        Object::Num(n) => n,
         _ => Err(String::from("error converting quo arguments to numbers"))?
     };
 

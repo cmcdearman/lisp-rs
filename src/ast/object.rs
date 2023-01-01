@@ -1,6 +1,6 @@
-use std::fmt::Debug;
+use std::{cell::RefCell, fmt::Debug, rc::Rc};
 
-use super::{list::List, lambda::Lambda, number::Number, symbol::Symbol};
+use super::{env::Env, lambda::Lambda, list::List, number::Number, symbol::Symbol};
 
 #[derive(Clone)]
 pub enum Object {
@@ -9,8 +9,11 @@ pub enum Object {
     Bool(bool),
     Str(String),
     List(List),
-    Lambda(Lambda)
+    Lambda(Lambda),
+    NativeFn(NativeFn),
 }
+
+pub type NativeFn = fn(env: Rc<RefCell<Env>>, args: Vec<Object>) -> Result<Object, String>;
 
 impl std::fmt::Display for Object {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
@@ -47,6 +50,7 @@ impl Debug for Object {
             Object::Str(_) => todo!(),
             Object::List(_) => todo!(),
             Object::Lambda(_) => todo!(),
+            Object::NativeFn(_) => todo!(),
         }
     }
 }

@@ -2,7 +2,7 @@ use std::iter::Peekable;
 
 use crate::{token::{TokenKind, TokenStream}, ast::object::Object};
 
-pub fn parse(tokens: &mut Peekable<TokenStream>) -> Sexpr {
+pub fn parse(tokens: &mut Peekable<TokenStream>) -> Object {
     match tokens.peek().unwrap().kind {
         TokenKind::LParen => {
             tokens.next();

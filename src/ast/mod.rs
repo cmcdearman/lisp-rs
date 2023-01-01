@@ -1,4 +1,3 @@
-pub mod atom;
 pub mod cons;
 pub mod env;
 pub mod lambda;
