@@ -1,40 +1,9 @@
-use crate::ast::{Atom, Lit, Sexpr};
-use std::{collections::HashMap, cell::RefCell, rc::Rc};
-
-#[derive(Clone)]
-pub struct Env {
-    parent: Option<Rc<RefCell<Env>>>,
-    entries: HashMap<String, Sexpr>,
-}
-
-impl Env {
-    pub fn new() -> Self {
-        Self {
-            parent: None,
-            entries: HashMap::new(),
-        }
-    }
-
-    pub fn push(&mut self, name: String, value: Sexpr) {
-        self.entries.insert(name, value);
-    }
-
-    pub fn find(&self, name: String) -> Result<Sexpr, String> {
-        match self.entries.get(&name) {
-            Some(sexpr) => Ok(sexpr.clone()),
-            None => Err(String::from("could not find name in env"))
-        }
-    }
-
-    pub fn pop(&mut self, name: String) {
-        self.entries.remove(&*name);
-    }
-}
+use crate::ast::env::Env;
 
 pub fn default_env() -> Env {
     let mut env = Env::new();
     env.push(
-        "+".to_string(),
+        Symbol::from("+"),
         Sexpr::Fn(|args: &[Sexpr]| -> Result<Sexpr, String> {
             Ok(Sexpr::Atom(Atom::Lit(Lit::Num(sum_num_list(args)?))))
         }),

@@ -1,6 +1,5 @@
 use logos::Logos;
 use std::fmt;
-use std::iter::Peekable;
 use std::ops::{Index, Range};
 use std::vec::IntoIter;
 
@@ -147,13 +146,13 @@ impl fmt::Display for Token {
 }
 
 pub struct TokenStream {
-    token_iter: Peekable<IntoIter<Token>>,
+    token_iter: IntoIter<Token>,
 }
 
 impl TokenStream {
     pub fn new(tokens: Vec<Token>) -> Self {
         Self {
-            token_iter: tokens.into_iter().peekable(),
+            token_iter: tokens.into_iter(),
         }
     }
 }
@@ -170,3 +169,4 @@ impl Iterator for TokenStream {
         }
     }
 }
+

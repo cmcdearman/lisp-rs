@@ -1,5 +1,4 @@
 use std::iter::Peekable;
-
 use crate::token::{Span, Token, TokenKind, TokenStream};
 use logos::Logos;
 

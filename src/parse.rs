@@ -1,7 +1,6 @@
 use std::iter::Peekable;
 
-use crate::ast::{Atom, Lit, Sexpr};
-use crate::token::{TokenKind, TokenStream};
+use crate::{token::{TokenKind, TokenStream}, ast::object::Object};
 
 pub fn parse(tokens: &mut Peekable<TokenStream>) -> Sexpr {
     match tokens.peek().unwrap().kind {
@@ -13,15 +12,15 @@ pub fn parse(tokens: &mut Peekable<TokenStream>) -> Sexpr {
     }
 }
 
-fn list(tokens: &mut Peekable<TokenStream>) -> Sexpr {
-    let mut list = Vec::new();
+fn list(tokens: &mut Peekable<TokenStream>) -> Object {
+    let mut list = None;
 
     while tokens.peek().unwrap().kind != TokenKind::RParen {
         list.push(parse(tokens));
     }
     tokens.next();
 
-    Sexpr::List(list)
+    Object::List(list)
 }
 
 fn atom(tokens: &mut Peekable<TokenStream>) -> Sexpr {

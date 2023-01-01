@@ -1,4 +1,4 @@
-use crate::{env::Env, eval::eval, lex::lex, parse::parse};
+use crate::{ast::env::Env, eval::eval, lex::lex, parse::parse};
 use std::io::{self, Write};
 
 pub fn repl(env: &mut Env) {
