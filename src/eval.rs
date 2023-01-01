@@ -1,5 +1,5 @@
 use crate::{
-    ast::{Atom, Lit, Sexpr},
+    ast::{Atom, Sexpr},
     env::Env,
 };
 

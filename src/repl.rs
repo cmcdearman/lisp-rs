@@ -1,4 +1,4 @@
-use crate::{env::Env, eval::eval, lex::lex, parse::parse, token::TokenStream};
+use crate::{env::Env, eval::eval, lex::lex, parse::parse};
 use std::io::{self, Write};
 
 pub fn repl(env: &mut Env) {
@@ -9,7 +9,7 @@ pub fn repl(env: &mut Env) {
         io::stdin()
             .read_line(&mut raw)
             .expect("failed to read line");
-        match eval(&parse(&mut TokenStream::new(lex(&raw)).peekable()), env) {
+        match eval(&parse(&mut lex(&raw)), env) {
             Ok(r) => println!("{}", r),
             Err(e) => eprintln!("{}", e),
         }

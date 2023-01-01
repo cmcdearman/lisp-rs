@@ -1,73 +1,75 @@
 use crate::ast::{Atom, Lit, Sexpr};
-use std::collections::HashMap;
+use std::{collections::HashMap, cell::RefCell, rc::Rc};
 
 #[derive(Clone)]
 pub struct Env {
-    data: HashMap<String, Sexpr>,
+    parent: Option<Rc<RefCell<Env>>>,
+    entries: HashMap<String, Sexpr>,
 }
 
 impl Env {
     pub fn new() -> Self {
         Self {
-            data: HashMap::new(),
+            parent: None,
+            entries: HashMap::new(),
         }
     }
 
     pub fn push(&mut self, name: String, value: Sexpr) {
-        self.data.insert(name, value);
+        self.entries.insert(name, value);
     }
 
     pub fn find(&self, name: String) -> Result<Sexpr, String> {
-        match self.data.get(&name) {
+        match self.entries.get(&name) {
             Some(sexpr) => Ok(sexpr.clone()),
             None => Err(String::from("could not find name in env"))
         }
     }
 
     pub fn pop(&mut self, name: String) {
-        self.data.remove(&*name);
+        self.entries.remove(&*name);
     }
 }
 
 pub fn default_env() -> Env {
-    let mut data: HashMap<String, Sexpr> = HashMap::new();
-    data.insert(
+    let mut env = Env::new();
+    env.push(
         "+".to_string(),
         Sexpr::Fn(|args: &[Sexpr]| -> Result<Sexpr, String> {
             Ok(Sexpr::Atom(Atom::Lit(Lit::Num(sum_num_list(args)?))))
         }),
     );
-    data.insert(
+    env.push(
         "-".to_string(),
         Sexpr::Fn(|args: &[Sexpr]| -> Result<Sexpr, String> {
             Ok(Sexpr::Atom(Atom::Lit(Lit::Num(sub_num_list(args)?))))
         }),
     );
-    data.insert(
+    env.push(
         "*".to_string(),
         Sexpr::Fn(|args: &[Sexpr]| -> Result<Sexpr, String> {
             Ok(Sexpr::Atom(Atom::Lit(Lit::Num(mul_num_list(args)?))))
         }),
     );
-    data.insert(
+    env.push(
         "/".to_string(),
         Sexpr::Fn(|args: &[Sexpr]| -> Result<Sexpr, String> {
             Ok(Sexpr::Atom(Atom::Lit(Lit::Num(quo_num_list(args)?))))
         }),
     );
-    data.insert(
+    env.push(
         "let".to_string(),
         Sexpr::Fn(|args: &[Sexpr]| -> Result<Sexpr, String> {
             Ok(Sexpr::Atom(Atom::Lit(Lit::Num(sum_num_list(args)?))))
         }),
     );
-    data.insert(
+    env.push(
         "mod".to_string(),
         Sexpr::Fn(|args: &[Sexpr]| -> Result<Sexpr, String> {
             Ok(Sexpr::Atom(Atom::Lit(Lit::Num(mod_num_list(args)?))))
         }),
     );
-    data.insert("fn".to_string(), Sexpr::Fn(|args: &[Sexpr]| -> Result<Sexpr, String> {
+    env.push("fn".to_string(), Sexpr::Fn(|args: &[Sexpr]| -> Result<Sexpr, String> {
         if !(2..4).contains(&args.len()) {
             return Err("not enough arguments for function declaration".to_string());
         }
@@ -79,7 +81,7 @@ pub fn default_env() -> Env {
         }
         todo!()
     }));
-    Env { data }
+    env
 }
 
 fn sum_num_list(args: &[Sexpr]) -> Result<f64, String> {
