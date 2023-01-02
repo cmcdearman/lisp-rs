@@ -1,5 +1,6 @@
-use crate::{
-    ast::{object::{Object, Atom}, env::Env},
+use crate::ast::{
+    env::Env,
+    object::{Atom, Object},
 };
 
 pub fn eval(obj: &Object, env: &mut Env) -> Result<Object, String> {

@@ -1,11 +1,11 @@
-use std::{rc::Rc, cell::RefCell, fmt::Display};
+use std::{cell::RefCell, fmt::Display, rc::Rc};
 
 use super::object::Object;
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct Cons {
     pub car: Object,
-    pub cdr: Option<Rc<RefCell<Cons>>>
+    pub cdr: Option<Rc<RefCell<Cons>>>,
 }
 
 impl Display for Cons {

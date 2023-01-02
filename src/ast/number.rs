@@ -1,6 +1,6 @@
 use std::{
-    iter::{Sum, Product},
-    ops::{Add, Sub, Mul, Div, Rem},
+    iter::{Product, Sum},
+    ops::{Add, Div, Mul, Rem, Sub},
 };
 
 #[derive(Debug, Clone, Copy, PartialEq)]

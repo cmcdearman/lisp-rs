@@ -1,5 +1,5 @@
-use std::{rc::Rc, cell::RefCell};
-use super::{symbol::Symbol, object::Object, env::Env};
+use super::{env::Env, object::Object, symbol::Symbol};
+use std::{cell::RefCell, rc::Rc};
 
 #[derive(Debug, Clone)]
 pub struct Lambda {

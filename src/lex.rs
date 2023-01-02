@@ -1,6 +1,6 @@
-use std::iter::Peekable;
 use crate::token::{Span, Token, TokenKind, TokenStream};
 use logos::Logos;
+use std::iter::Peekable;
 
 pub fn lex(src: &str) -> Peekable<TokenStream> {
     let mut last_span = Span::new(0, 0);

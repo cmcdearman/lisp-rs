@@ -1,10 +1,10 @@
-use std::{cell::RefCell, rc::Rc, fmt::Display};
+use std::{cell::RefCell, fmt::Display, rc::Rc};
 
 use super::{cons::Cons, object::Object};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct List {
-    head: Option<Rc<RefCell<Cons>>>
+    head: Option<Rc<RefCell<Cons>>>,
 }
 
 impl List {
@@ -14,9 +14,9 @@ impl List {
         self.head
             .as_ref()
             .map(|rc| rc.borrow().car.clone())
-            .ok_or_else(|| String::from("Attempted to apply car on nil"),
-            )
+            .ok_or_else(|| String::from("Attempted to apply car on nil"))
     }
+
     #[must_use]
     pub fn cdr(&self) -> List {
         List {
