@@ -5,7 +5,7 @@ use crate::{
         list::List,
         number::Number,
         object::{Atom, Lit, Object},
-        symbol::Symbol, cons,
+        symbol::Symbol,
     },
     token::{TokenKind, TokenStream},
 };
