@@ -1,5 +1,6 @@
 use crate::ast::{
     env::Env,
+    lambda::Lambda,
     number::Number,
     object::{Atom, Lit, Object},
     symbol::Symbol,
@@ -7,42 +8,43 @@ use crate::ast::{
 
 pub fn default_env() -> Env {
     let mut env = Env::new();
-    env.push(
+    env.define(
         Symbol::from("+"),
-        Object::NativeFn(|env, args| Ok(Object::Atom(Atom::Lit(Lit::Num(sum_num_list(args)?))))),
+        Object::NativeFn(|_, args| Ok(Object::Atom(Atom::Lit(Lit::Num(sum_num_list(args)?))))),
     );
-    env.push(
+    env.define(
         Symbol::from("-"),
-        Object::NativeFn(|env, args| Ok(Object::Atom(Atom::Lit(Lit::Num(sub_num_list(args)?))))),
+        Object::NativeFn(|_, args| Ok(Object::Atom(Atom::Lit(Lit::Num(sub_num_list(args)?))))),
     );
-    env.push(
+    env.define(
         Symbol::from("*"),
-        Object::NativeFn(|env, args| Ok(Object::Atom(Atom::Lit(Lit::Num(mul_num_list(args)?))))),
+        Object::NativeFn(|_, args| Ok(Object::Atom(Atom::Lit(Lit::Num(mul_num_list(args)?))))),
     );
-    env.push(
+    env.define(
         Symbol::from("/"),
-        Object::NativeFn(|env, args| Ok(Object::Atom(Atom::Lit(Lit::Num(quo_num_list(args)?))))),
+        Object::NativeFn(|_, args| Ok(Object::Atom(Atom::Lit(Lit::Num(quo_num_list(args)?))))),
     );
-    env.push(
+    env.define(
         Symbol::from("let"),
-        Object::NativeFn(|env, args| Ok(Object::Atom(Atom::Lit(Lit::Num(sum_num_list(args)?))))),
+        Object::NativeFn(|_, args| Ok(Object::Atom(Atom::Lit(Lit::Num(sum_num_list(args)?))))),
     );
-    env.push(
+    env.define(
         Symbol::from("mod"),
-        Object::NativeFn(|env, args| Ok(Object::Atom(Atom::Lit(Lit::Num(mod_num_list(args)?))))),
+        Object::NativeFn(|_, args| Ok(Object::Atom(Atom::Lit(Lit::Num(mod_num_list(args)?))))),
     );
-    env.push(
+    env.define(
         Symbol::from("lambda"),
         Object::NativeFn(|env, args| {
             if !(2..4).contains(&args.len()) {
                 return Err("not enough arguments for function declaration".to_string());
             }
-            let params = &args[0];
+            let lambda_args = &args[0];
             let body = &args[1];
             let mut fn_args;
             if args.len() == 3 {
                 fn_args = &args[2];
             }
+            // Ok(Object::Lambda(Lambda { env, args: lambda_args, body }))
             todo!()
         }),
     );
@@ -53,7 +55,7 @@ fn sum_num_list(args: Vec<Object>) -> Result<Number, String> {
     args.iter()
         .map(|s| -> Result<Number, String> {
             match s {
-                Object::Atom(Atom::Lit(Lit::Num(n))) => Ok(*n),
+                Object::Atom(Atom::Lit(Lit::Num(n))) => Ok(n.clone()),
                 _ => Err(String::from("error converting arguments to numbers")),
             }
         })
@@ -66,14 +68,14 @@ fn sub_num_list(args: Vec<Object>) -> Result<Number, String> {
         _ => Err(String::from("error converting sub arguments to numbers"))?,
     };
 
-    Ok(*first - sum_num_list(args[1..].to_vec())?)
+    Ok(first.clone() - sum_num_list(args[1..].to_vec())?)
 }
 
 fn mul_num_list(args: Vec<Object>) -> Result<Number, String> {
     args.iter()
         .map(|s| -> Result<Number, String> {
             match s {
-                Object::Atom(Atom::Lit(Lit::Num(n))) => Ok(*n),
+                Object::Atom(Atom::Lit(Lit::Num(n))) => Ok(n.clone()),
                 _ => Err(String::from("error converting mul arguments to numbers"))?,
             }
         })
@@ -81,26 +83,26 @@ fn mul_num_list(args: Vec<Object>) -> Result<Number, String> {
 }
 
 fn quo_num_list(args: Vec<Object>) -> Result<Number, String> {
-    let first = match args[0] {
+    let first = match &args[0] {
         Object::Atom(Atom::Lit(Lit::Num(n))) => n,
         _ => Err(String::from("error converting quo arguments to numbers"))?,
     };
 
-    Ok(first / mul_num_list(args[1..].to_vec())?)
+    Ok(first.clone() / mul_num_list(args[1..].to_vec())?)
 }
 
 fn mod_num_list(args: Vec<Object>) -> Result<Number, String> {
     if args.len() != 2 {
         return Err("need two args for mod".to_string());
     }
-    let num = match args[0] {
+    let num = match &args[0] {
         Object::Atom(Atom::Lit(Lit::Num(n))) => n,
         _ => Err(String::from("error converting quo arguments to numbers"))?,
     };
-    let div = match args[1] {
+    let div = match &args[1] {
         Object::Atom(Atom::Lit(Lit::Num(n))) => n,
         _ => Err(String::from("error converting quo arguments to numbers"))?,
     };
 
-    Ok(num % div)
+    Ok(num.clone() % div.clone())
 }

@@ -1,4 +1,4 @@
-use std::{cell::RefCell, fmt::Display, rc::Rc};
+use std::{cell::RefCell, fmt::{Display, Debug}, rc::Rc};
 
 use super::{cons::Cons, object::Object};
 

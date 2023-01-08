@@ -1,5 +1,5 @@
 use crate::ast::{object::Object, symbol::Symbol};
-use std::{collections::HashMap, cell::RefCell, rc::Rc};
+use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
 #[derive(Debug, Clone)]
 pub struct Env {
@@ -15,18 +15,21 @@ impl Env {
         }
     }
 
-    pub fn push(&mut self, name: Symbol, value: Object) {
+    pub fn define(&mut self, name: Symbol, value: Object) {
         self.entries.insert(name, value);
     }
 
-    pub fn find(&self, name: Symbol) -> Result<Object, String> {
-        match self.entries.get(&name) {
-            Some(obj) => Ok(obj.clone()),
-            None => Err(String::from("could not find name in env"))
+    pub fn find(&self, name: &Symbol) -> Option<Object> {
+        if let Some(v) = self.entries.get(name) {
+            Some(v.clone())
+        } else if let Some(parent) = &self.parent {
+            parent.borrow().find(name)
+        } else {
+            None
         }
     }
 
-    pub fn pop(&mut self, name: Symbol) {
+    pub fn remove(&mut self, name: Symbol) {
         self.entries.remove(&name);
     }
 }

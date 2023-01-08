@@ -5,42 +5,20 @@ use std::vec::IntoIter;
 
 #[derive(Logos, Debug, PartialEq, Eq, Hash, Copy, Clone)]
 pub enum TokenKind {
-    #[regex(r##"([A-Za-z]|_)([A-Za-z]|_|\d)*"##)]
+    #[regex(r##"([A-Za-z]|_|\+)([A-Za-z]|_|\d)*"##)]
     Ident,
+    #[regex(r#"\d+"#, priority = 2)]
+    Int,
     #[regex(r#"((\d+(\.\d+)?)|(\.\d+))([Ee](\+|-)?\d+)?"#)]
-    Num,
+    Float,
     #[regex(r#""((\\"|\\\\)|[^\\"])*""#)]
     String,
     #[regex(r#"(true|false)"#)]
     Bool,
-
-    #[token("+")]
-    Add,
-    #[token("-")]
-    Sub,
-    #[token("*")]
-    Mul,
-    #[token("/")]
-    Quo,
-
     #[token("(")]
     LParen,
     #[token(")")]
     RParen,
-
-    #[token("let")]
-    Let,
-    #[token("fn")]
-    Fn,
-    #[token("def")]
-    Def,
-    #[token("apply")]
-    Apply,
-    #[token("mod")]
-    Mod,
-    #[token("cond")]
-    Cond,
-
     #[regex(r"[ \t\r\n\f]+", logos::skip)]
     Whitespace,
     #[error]
@@ -61,21 +39,12 @@ impl fmt::Display for TokenKind {
                 TokenKind::Eof => "<EOF>",
                 TokenKind::Comment => "Comment",
                 TokenKind::Ident => "Ident",
-                TokenKind::Num => "Number",
+                TokenKind::Int => "Int",
+                TokenKind::Float => "Float",
                 TokenKind::String => "String",
                 TokenKind::Bool => "Bool",
-                TokenKind::Add => "+",
-                TokenKind::Sub => "-",
-                TokenKind::Mul => "*",
-                TokenKind::Quo => "/",
                 TokenKind::LParen => "(",
                 TokenKind::RParen => ")",
-                TokenKind::Let => "let",
-                TokenKind::Fn => "fn",
-                TokenKind::Def => "def",
-                TokenKind::Apply => "apply",
-                TokenKind::Mod => "mod",
-                TokenKind::Cond => "cond",
             }
         )
     }
@@ -112,7 +81,7 @@ impl Index<Span> for str {
     type Output = str;
 
     fn index(&self, index: Span) -> &Self::Output {
-        &self[Range::<usize>::from(index)]
+        &self[Range::from(index)]
     }
 }
 
@@ -161,11 +130,6 @@ impl Iterator for TokenStream {
     type Item = Token;
 
     fn next(&mut self) -> Option<Self::Item> {
-        loop {
-            let next_token = self.token_iter.next()?;
-            if !matches!(next_token.kind, TokenKind::Comment) {
-                return Some(next_token);
-            }
-        }
+        self.token_iter.next()
     }
 }

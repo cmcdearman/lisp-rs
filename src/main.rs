@@ -8,8 +8,22 @@ mod token;
 
 use default_env::default_env;
 
-use crate::repl::repl;
+use crate::{repl::repl, token::{TokenStream, TokenKind}};
+
+// fn main() {
+//     repl(&mut default_env());
+// }
 
 fn main() {
-    repl(&mut default_env());
+    let input = "(+ 3 4)";
+
+    let ast = parse::parse(&mut TokenStream::new(
+                    lex::lex(&input)
+                        .into_iter()
+                        .filter(|t| t.kind != TokenKind::Comment)
+                        .collect(),
+                )
+                .peekable());
+
+    println!("{}", ast);
 }
