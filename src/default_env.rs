@@ -33,7 +33,7 @@ pub fn default_env() -> Env {
         Object::NativeFn(|_, args| Ok(Object::Atom(Atom::Lit(Lit::Num(mod_num_list(args)?))))),
     );
     env.define(
-        Symbol::from("lambda"),
+        Symbol::from("fn"),
         Object::NativeFn(|env, args| {
             if !(2..4).contains(&args.len()) {
                 return Err("not enough arguments for function declaration".to_string());

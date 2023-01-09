@@ -22,3 +22,10 @@ pub fn lex(src: &str) -> Vec<Token> {
     });
     tokens
 }
+
+mod tests {
+    #[test]
+    fn test_lex() {
+        let input = "(+ 3 4) ; test comment";
+    }
+}

@@ -5,11 +5,11 @@ use std::vec::IntoIter;
 
 #[derive(Logos, Debug, PartialEq, Eq, Hash, Copy, Clone)]
 pub enum TokenKind {
-    #[regex(r##"([A-Za-z]|_|\+)([A-Za-z]|_|\d)*"##)]
+    #[regex(r#"[^\[\]()\s]+"#)]
     Ident,
-    #[regex(r#"\d+"#, priority = 2)]
+    #[regex(r#"\d+"#, priority = 3)]
     Int,
-    #[regex(r#"((\d+(\.\d+)?)|(\.\d+))([Ee](\+|-)?\d+)?"#)]
+    #[regex(r#"((\d+(\.\d+)?)|(\.\d+))([Ee](\+|-)?\d+)?"#, priority = 2)]
     Float,
     #[regex(r#""((\\"|\\\\)|[^\\"])*""#)]
     String,
@@ -19,6 +19,10 @@ pub enum TokenKind {
     LParen,
     #[token(")")]
     RParen,
+    #[token("[")]
+    LBrack,
+    #[token("]")]
+    RBrack,
     #[regex(r"[ \t\r\n\f]+", logos::skip)]
     Whitespace,
     #[error]
@@ -45,6 +49,8 @@ impl fmt::Display for TokenKind {
                 TokenKind::Bool => "Bool",
                 TokenKind::LParen => "(",
                 TokenKind::RParen => ")",
+                TokenKind::LBrack => "[",
+                TokenKind::RBrack => "]",
             }
         )
     }
@@ -114,6 +120,7 @@ impl fmt::Display for Token {
     }
 }
 
+#[derive(Debug, Clone)]
 pub struct TokenStream {
     token_iter: IntoIter<Token>,
 }

@@ -1,4 +1,4 @@
-use std::iter::Peekable;
+use std::{iter::Peekable, borrow::BorrowMut};
 
 use crate::{
     ast::{
@@ -28,9 +28,10 @@ fn list(tokens: &mut Peekable<TokenStream>) -> Object {
     while tokens.peek().unwrap().kind != TokenKind::RParen {
         let car = parse(tokens);
         *tail = tail.cons(car);
-        slot = tail.cdr();
+        slot = tail.borrow_mut().cdr();
         tail = &mut slot;
     }
+
     tokens.next();
     Object::List(head)
 }

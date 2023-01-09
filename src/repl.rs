@@ -8,7 +8,7 @@ use crate::{
 use std::io::{self, Write};
 
 pub fn repl(env: &mut Env) {
-    print!("Lust > ");
+    print!("lust> ");
     io::stdout().flush().expect("failed to flush stdout");
     loop {
         let mut raw = String::new();

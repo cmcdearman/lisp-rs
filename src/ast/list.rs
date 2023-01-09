@@ -1,4 +1,8 @@
-use std::{cell::RefCell, fmt::{Display, Debug}, rc::Rc};
+use std::{
+    cell::RefCell,
+    fmt::{Debug, Display},
+    rc::Rc,
+};
 
 use super::{cons::Cons, object::Object};
 
@@ -26,6 +30,10 @@ impl List {
                 .and_then(|rc| rc.borrow().cdr.as_ref().cloned()),
         }
     }
+
+    // pub fn cdr_as_ref(&self) -> Option<&Rc<RefCell<Cons>>> {
+    //     self.head.as_ref().and_then(|rc| rc.borrow().cdr.as_ref())
+    // }
 
     #[must_use]
     pub fn cons(&self, val: Object) -> List {
