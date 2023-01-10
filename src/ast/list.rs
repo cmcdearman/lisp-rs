@@ -8,7 +8,7 @@ use super::{cons::Cons, object::Object};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct List {
-    head: Option<Rc<RefCell<Cons>>>,
+    pub head: Option<Rc<RefCell<Cons>>>,
 }
 
 impl List {
@@ -30,10 +30,6 @@ impl List {
                 .and_then(|rc| rc.borrow().cdr.as_ref().cloned()),
         }
     }
-
-    // pub fn cdr_as_ref(&self) -> Option<&Rc<RefCell<Cons>>> {
-    //     self.head.as_ref().and_then(|rc| rc.borrow().cdr.as_ref())
-    // }
 
     #[must_use]
     pub fn cons(&self, val: Object) -> List {
