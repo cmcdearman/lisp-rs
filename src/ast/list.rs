@@ -4,7 +4,7 @@ use std::{
     rc::Rc,
 };
 
-use super::{cons::Cons, object::Object};
+use super::{cons::{Cons, ConsIterator}, object::Object};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct List {
@@ -49,5 +49,15 @@ impl Display for List {
         } else {
             write!(formatter, "NIL")
         }
+    }
+}
+
+impl<'a> IntoIterator for &'a List {
+    type Item = Object;
+
+    type IntoIter = ConsIterator;
+
+    fn into_iter(self) -> Self::IntoIter {
+        ConsIterator(self.head.clone())
     }
 }

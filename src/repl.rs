@@ -16,7 +16,7 @@ pub fn repl(env: &mut Env) {
             .read_line(&mut raw)
             .expect("failed to read line");
         match eval(
-            &parse(
+            match &parse(
                 &mut TokenStream::new(
                     lex(&raw)
                         .into_iter()
@@ -24,7 +24,10 @@ pub fn repl(env: &mut Env) {
                         .collect(),
                 )
                 .peekable(),
-            ),
+            ) {
+                Ok(ast) => ast,
+                Err(err) => panic!("{}", err),
+            },
             env,
         ) {
             Ok(obj) => println!("{}", obj),

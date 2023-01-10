@@ -11,7 +11,7 @@ use crate::{
     token::{Token, TokenKind, TokenStream},
 };
 
-pub fn parse(tokens: &mut Peekable<TokenStream>) -> Object {
+pub fn parse(tokens: &mut Peekable<TokenStream>) -> Result<Object, String> {
     match tokens.peek().unwrap().kind {
         TokenKind::LParen => {
             tokens.next();
@@ -21,13 +21,13 @@ pub fn parse(tokens: &mut Peekable<TokenStream>) -> Object {
     }
 }
 
-fn list(tokens: &mut Peekable<TokenStream>) -> Object {
+fn list(tokens: &mut Peekable<TokenStream>) -> Result<Object, String> {
     let mut new_list = List { head: None };
     let mut tail: Option<Rc<RefCell<Cons>>> = None;
 
     while tokens.peek().unwrap().kind != TokenKind::RParen {
         let new_cons = Rc::new(RefCell::new(Cons {
-            car: parse(tokens),
+            car: parse(tokens)?,
             cdr: None,
         }));
         if new_list.head.is_none() {
@@ -39,10 +39,10 @@ fn list(tokens: &mut Peekable<TokenStream>) -> Object {
         tail = Some(new_cons);
     }
 
-    Object::List(new_list)
+    Ok(Object::List(new_list))
 }
 
-fn atom(tokens: &mut Peekable<TokenStream>) -> Object {
+fn atom(tokens: &mut Peekable<TokenStream>) -> Result<Object, String> {
     match tokens.peek().unwrap().kind {
         lit @ TokenKind::Int
         | lit @ TokenKind::Float
@@ -64,9 +64,11 @@ fn atom(tokens: &mut Peekable<TokenStream>) -> Object {
                 TokenKind::Bool => Lit::Bool(lit_text.parse().unwrap()),
                 _ => unreachable!(),
             };
-            Object::Atom(Atom::Lit(lit))
+            Ok(Object::Atom(Atom::Lit(lit)))
         }
-        TokenKind::Ident => Object::Atom(Atom::Sym(Symbol::from(&*tokens.next().unwrap().lit))),
+        TokenKind::Ident => Ok(Object::Atom(Atom::Sym(Symbol::from(
+            &*tokens.next().ok_or("end of tokens".to_string())?.lit
+        )))),
         kind => {
             panic!("Unknown start of atom: `{}`", kind);
         }

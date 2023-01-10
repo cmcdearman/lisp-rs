@@ -16,3 +16,30 @@ impl Display for Cons {
         }
     }
 }
+
+#[derive(Clone)]
+pub struct ConsIterator(pub Option<Rc<RefCell<Cons>>>);
+
+impl Iterator for ConsIterator {
+    type Item = Object;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.0.clone().map(|cons| {
+            let val = cons.borrow().car.clone();
+
+            self.0 = cons.borrow().cdr.clone();
+
+            val
+        })
+    }
+}
+
+impl ExactSizeIterator for ConsIterator {
+    fn len(&self) -> usize {
+        let mut length: usize = 0;
+
+        self.clone().for_each(|_| length += 1);
+
+        length
+    }
+}
