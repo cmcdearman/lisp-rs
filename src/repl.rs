@@ -5,9 +5,12 @@ use crate::{
     parse::parse,
     token::{TokenKind, TokenStream},
 };
-use std::io::{self, Write};
+use std::{
+    io::{self, Write}, rc::Rc, cell::RefCell,
+};
 
-pub fn repl(env: &mut Env) {
+pub fn repl(env: Env) {
+    let env_rc = Rc::new(RefCell::new(env));
     print!("lust> ");
     io::stdout().flush().expect("failed to flush stdout");
     loop {
@@ -28,12 +31,12 @@ pub fn repl(env: &mut Env) {
                 Ok(ast) => ast,
                 Err(err) => panic!("{}", err),
             },
-            env,
+            env_rc.clone(),
         ) {
             Ok(obj) => println!("{}", obj),
             Err(e) => eprintln!("{}", e),
         }
-        print!("> ");
+        print!("\nlust> ");
         io::stdout().flush().expect("failed to flush stdout");
     }
 }

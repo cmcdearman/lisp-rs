@@ -7,6 +7,7 @@ use std::{
 #[derive(Debug, Clone)]
 pub enum Number {
     FixNum(FixNum),
+    // Float(f64),
     // BigNum(BigNum),
 }
 
@@ -76,7 +77,7 @@ impl Sum for Number {
 
 impl Product for Number {
     fn product<I: Iterator<Item = Self>>(iter: I) -> Self {
-        iter.fold(Number::FixNum(FixNum::Integer(0)), |a, b| a * b)
+        iter.fold(Number::FixNum(FixNum::Integer(1)), |a, b| a * b)
     }
 }
 
@@ -168,7 +169,7 @@ impl Sum for FixNum {
 
 impl Product for FixNum {
     fn product<I: Iterator<Item = Self>>(iter: I) -> Self {
-        iter.fold(FixNum::Integer(0), |a, b| a * b)
+        iter.fold(FixNum::Integer(1), |a, b| a * b)
     }
 }
 

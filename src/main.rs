@@ -10,11 +10,10 @@ use default_env::default_env;
 
 use crate::{
     repl::repl,
-    token::{TokenKind, TokenStream},
 };
 
 fn main() {
-    repl(&mut default_env());
+    repl(default_env());
 }
 
 // fn main() {

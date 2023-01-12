@@ -1,6 +1,5 @@
 use crate::ast::{
     env::Env,
-    lambda::Lambda,
     number::Number,
     object::{Atom, Lit, Object},
     symbol::Symbol,
