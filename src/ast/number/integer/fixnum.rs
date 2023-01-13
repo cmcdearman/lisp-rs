@@ -1,12 +1,12 @@
 use std::{
     fmt::{Debug, Display},
-    iter::{Product, Sum},
     ops::{Add, Div, Mul, Rem, Sub},
 };
 
+use super::{Integer, bignum::BigNum};
 
 #[derive(Debug, Clone)]
-pub struct FixNum(i64);
+pub struct FixNum(pub i64);
 
 impl Display for FixNum {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -17,70 +17,107 @@ impl Display for FixNum {
 }
 
 impl Add for FixNum {
-    type Output = Self;
+    type Output = Integer;
 
     fn add(self, rhs: Self) -> Self::Output {
         match (self, rhs) {
-            (FixNum(i), FixNum(z)) => Self(i + z),
+            (FixNum(i), FixNum(z)) => match i.checked_add(z) {
+                Some(n) => Integer::FixNum(Self(n)),
+                None => Integer::BigNum(BigNum::from(i) + BigNum::from(z)),
+            },
         }
+    }
+}
 
+impl Add<i64> for FixNum {
+    type Output = Integer;
+
+    fn add(self, rhs: i64) -> Self::Output {
+        match (self, rhs) {
+            (FixNum(i), z) => match i.checked_add(z) {
+                Some(n) => Integer::FixNum(Self(n)),
+                None => Integer::BigNum(BigNum::from(i) + BigNum::from(z)),
+            },
+        }
+    }
+}
+
+impl Add<f64> for FixNum {
+    type Output = f64;
+
+    fn add(self, rhs: f64) -> Self::Output {
+        match (self, rhs) {
+            (FixNum(i), z) => i as f64 + z,
+        }
     }
 }
 
 impl Sub for FixNum {
-    type Output = Self;
+    type Output = Integer;
 
     fn sub(self, rhs: Self) -> Self::Output {
         match (self, rhs) {
-            (FixNum(i), FixNum(z)) => Self(i - z),
+            (FixNum(i), FixNum(z)) => match i.checked_sub(z) {
+                Some(n) => Integer::FixNum(Self(n)),
+                None => Integer::BigNum(BigNum::from(i) - BigNum::from(z)),
+            },
         }
     }
 }
 
 impl Mul for FixNum {
-    type Output = Self;
+    type Output = Integer;
 
     fn mul(self, rhs: Self) -> Self::Output {
         match (self, rhs) {
-            (FixNum(i), FixNum(z)) => Self(i * z),
+            (FixNum(i), FixNum(z)) => match i.checked_mul(z) {
+                Some(n) => Integer::FixNum(Self(n)),
+                None => Integer::BigNum(BigNum::from(i) * BigNum::from(z)),
+            },
         }
     }
 }
 
 impl Div for FixNum {
-    type Output = Self;
+    type Output = Integer;
 
     fn div(self, rhs: Self) -> Self::Output {
         match (self, rhs) {
-            (FixNum(i), FixNum(z)) => Self(i / z),
+            (FixNum(i), FixNum(z)) => match i.checked_div(z) {
+                Some(n) => Integer::FixNum(Self(n)),
+                None => Integer::BigNum(BigNum::from(i) / BigNum::from(z)),
+            },
         }
     }
 }
 
 impl Rem for FixNum {
-    type Output = Self;
+    type Output = Integer;
 
     fn rem(self, rhs: Self) -> Self::Output {
         match (self, rhs) {
-            (FixNum(i), FixNum(z)) => Self(i % z),
+            (FixNum(i), FixNum(z)) => match i.checked_rem(z) {
+                Some(n) => Integer::FixNum(Self(n)),
+                None => Integer::BigNum(BigNum::from(i) % BigNum::from(z)),
+            },
         }
     }
 }
 
-impl Sum for FixNum {
-    fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
-        iter.fold(FixNum(0), |a, b| a + b)
+impl From<i64> for FixNum {
+    fn from(value: i64) -> Self {
+        FixNum(value)
     }
 }
 
-impl Product for FixNum {
-    fn product<I: Iterator<Item = Self>>(iter: I) -> Self {
-        iter.fold(FixNum(1), |a, b| a * b)
+impl From<FixNum> for i64 {
+    fn from(value: FixNum) -> Self {
+        value.0
     }
 }
 
-#[derive(Debug, Clone)]
-pub enum BigNum {
-    Integer(Vec<u8>),
-    Float(Vec<u8>),
+impl From<FixNum> for f64 {
+    fn from(value: FixNum) -> Self {
+        value.0 as f64
+    }
 }

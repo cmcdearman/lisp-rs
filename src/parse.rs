@@ -1,14 +1,17 @@
-use std::{borrow::BorrowMut, cell::RefCell, iter::Peekable, rc::Rc};
+use std::{cell::RefCell, iter::Peekable, rc::Rc};
 
 use crate::{
     ast::{
         cons::Cons,
         list::List,
-        number::{FixNum, Number},
+        number::{
+            integer::{fixnum::FixNum, Integer},
+            Number,
+        },
         object::{Atom, Lit, Object},
         symbol::Symbol,
     },
-    token::{Token, TokenKind, TokenStream},
+    token::{TokenKind, TokenStream},
 };
 
 pub fn parse(tokens: &mut Peekable<TokenStream>) -> Result<Object, String> {
@@ -50,16 +53,16 @@ fn atom(tokens: &mut Peekable<TokenStream>) -> Result<Object, String> {
         | lit @ TokenKind::Bool => {
             let lit_text = tokens.next().unwrap().lit;
             let lit = match lit {
-                TokenKind::Int => {
-                    Lit::Num(Number::FixNum(FixNum::Integer(lit_text.parse().expect(
-                        &format!("invalid floating point literal: `{}`", lit_text),
-                    ))))
-                }
-                TokenKind::Float => {
-                    Lit::Num(Number::FixNum(FixNum::Float(lit_text.parse().expect(
-                        &format!("invalid floating point literal: `{}`", lit_text),
-                    ))))
-                }
+                TokenKind::Int => Lit::Num(Number::Integer(Integer::FixNum(FixNum(
+                    lit_text
+                        .parse()
+                        .expect(&format!("invalid floating point literal: `{}`", lit_text)),
+                )))),
+                TokenKind::Float => Lit::Num(Number::Float(
+                    lit_text
+                        .parse()
+                        .expect(&format!("invalid floating point literal: `{}`", lit_text)),
+                )),
                 TokenKind::String => Lit::Str(lit_text[1..(lit_text.len() - 1)].to_string()),
                 TokenKind::Bool => Lit::Bool(lit_text.parse().unwrap()),
                 _ => unreachable!(),
@@ -67,7 +70,7 @@ fn atom(tokens: &mut Peekable<TokenStream>) -> Result<Object, String> {
             Ok(Object::Atom(Atom::Lit(lit)))
         }
         TokenKind::Ident => Ok(Object::Atom(Atom::Sym(Symbol::from(
-            &*tokens.next().ok_or("end of tokens".to_string())?.lit
+            &*tokens.next().ok_or("end of tokens".to_string())?.lit,
         )))),
         kind => {
             panic!("Unknown start of atom: `{}`", kind);
