@@ -1,15 +1,22 @@
 pub mod integer;
+pub mod rational;
 
-use std::{fmt::Display, ops::{Add, Sub, Mul, Div, Rem}, iter::{Sum, Product}};
+use std::{
+    fmt::Display,
+    iter::{Product, Sum},
+    ops::{Add, Div, Mul, Rem, Sub},
+};
 
-use self::integer::{Integer, fixnum::FixNum};
-
-
+use self::{
+    integer::{fixnum::FixNum, Integer},
+    rational::Rational,
+};
 
 #[derive(Debug, Clone)]
 pub enum Number {
     Integer(Integer),
     Float(f64),
+    Rational(Rational),
 }
 
 impl Display for Number {
@@ -17,6 +24,7 @@ impl Display for Number {
         match self {
             Number::Integer(n) => write!(f, "{}", n),
             Number::Float(n) => write!(f, "{}", n),
+            Number::Rational(n) => write!(f, "{}", n),
         }
     }
 }

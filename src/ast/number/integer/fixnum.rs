@@ -3,6 +3,8 @@ use std::{
     ops::{Add, Div, Mul, Rem, Sub},
 };
 
+use crate::ast::number::Number;
+
 use super::{Integer, bignum::BigNum};
 
 #[derive(Debug, Clone)]
@@ -79,13 +81,13 @@ impl Mul for FixNum {
 }
 
 impl Div for FixNum {
-    type Output = Integer;
+    type Output = Number;
 
     fn div(self, rhs: Self) -> Self::Output {
         match (self, rhs) {
             (FixNum(i), FixNum(z)) => match i.checked_div(z) {
-                Some(n) => Integer::FixNum(Self(n)),
-                None => Integer::BigNum(BigNum::from(i) / BigNum::from(z)),
+                Some(n) => Number::Integer(Integer::FixNum(Self(n))),
+                None => Number::Integer(Integer::BigNum(BigNum::from(i) / BigNum::from(z))),
             },
         }
     }

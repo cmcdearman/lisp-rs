@@ -33,18 +33,16 @@ impl Add for Integer {
     }
 }
 
-impl Add<f64> for Integer {
-    type Output = f64;
+// impl Add<f64> for Integer {
+//     type Output = f64;
 
-    fn add(self, rhs: f64) -> Self::Output {
-        match (self, rhs) {
-            (Integer::FixNum(n1), n2) => n1 + n2,
-            (Integer::FixNum(n1), n2) => Self::BigNum(BigNum::from(n1) + n2),
-            (Integer::BigNum(n1), n2) => Self::BigNum(n1 + BigNum::from(n2)),
-            (Integer::BigNum(n1), n2) => Self::BigNum(n1 + n2),
-        }
-    }
-}
+//     fn add(self, rhs: f64) -> Self::Output {
+//         match (self, rhs) {
+//             (Integer::FixNum(n1), n2) => n1 + n2,
+//             (Integer::BigNum(n1), n2) => Self::BigNum(n1 + BigNum::from(n2)),
+//         }
+//     }
+// }
 
 impl Sub for Integer {
     type Output = Self;
