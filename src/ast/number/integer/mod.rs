@@ -2,6 +2,8 @@ use std::{fmt::Display, ops::{Add, Sub, Mul, Rem, Div}, iter::{Sum, Product}};
 
 use self::{fixnum::FixNum, bignum::BigNum};
 
+use super::rational::Rational;
+
 pub mod fixnum;
 pub mod bignum;
 
@@ -75,7 +77,9 @@ impl Div for Integer {
 
     fn div(self, rhs: Self) -> Self::Output {
         match (self, rhs) {
-            (Integer::FixNum(n1), Integer::FixNum(n2)) => n1 / n2,
+            (Integer::FixNum(n1), Integer::FixNum(n2)) => {
+                let r = Rational::from(n1) / Rational::from(n2);
+            },
             (Integer::FixNum(n1), Integer::BigNum(n2)) => Self::BigNum(BigNum::from(n1) / n2),
             (Integer::BigNum(n1), Integer::FixNum(n2)) => Self::BigNum(n1 / BigNum::from(n2)),
             (Integer::BigNum(n1), Integer::BigNum(n2)) => Self::BigNum(n1 / n2),
