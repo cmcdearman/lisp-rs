@@ -47,6 +47,10 @@ pub fn default_env() -> Env {
             todo!()
         }),
     );
+    env.define(
+        Symbol::from("type-of"),
+        Object::NativeFn(|env, args| todo!()),
+    );
     env
 }
 

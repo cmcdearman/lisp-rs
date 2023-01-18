@@ -10,6 +10,12 @@ use super::{Integer, bignum::BigNum};
 #[derive(Debug, Clone)]
 pub struct FixNum(pub i64);
 
+impl FixNum {
+    pub fn abs(&self) -> Self {
+        Self(self.0.abs())
+    }
+}
+
 impl Display for FixNum {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {

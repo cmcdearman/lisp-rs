@@ -13,6 +13,15 @@ pub enum Integer {
     BigNum(BigNum),
 }
 
+impl Integer {
+    pub fn abs(&self) -> Self {
+        match self {
+            Integer::FixNum(n) => Integer::FixNum(n.abs()),
+            Integer::BigNum(n) => Integer::BigNum(n.abs()),
+        }
+    }
+}
+
 impl Display for Integer {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
@@ -117,3 +126,15 @@ impl From<i64> for Integer {
         Integer::FixNum(FixNum(value))
     }
 }
+
+impl PartialEq for Integer {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            // (Self::FixNum(l0), Self::FixNum(r0)) => l0 == r0,
+            // (Self::BigNum(l0), Self::BigNum(r0)) => l0 == r0,
+            _ => false,
+        }
+    }
+}
+
+impl Eq for Integer{}
