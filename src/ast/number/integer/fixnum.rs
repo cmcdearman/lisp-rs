@@ -11,6 +11,9 @@ use super::{Integer, bignum::BigNum};
 pub struct FixNum(pub i64);
 
 impl FixNum {
+    pub const ZERO: Integer = Integer::FixNum(Self(0));
+    pub const ONE: Integer = Integer::FixNum(Self(1));
+
     pub fn abs(&self) -> Self {
         Self(self.0.abs())
     }

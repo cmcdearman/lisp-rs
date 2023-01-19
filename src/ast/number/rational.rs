@@ -26,6 +26,13 @@ impl Rational {
         }
         todo!()
     }
+
+    pub fn is_integer(&self) -> bool {
+        if self.denominator == FixNum::ONE {
+            return true;
+        }
+        false
+    }
 }
 
 impl Display for Rational {
@@ -60,9 +67,9 @@ impl Sub for Rational {
 
     fn sub(self, rhs: Self) -> Self::Output {
         Self {
-            numerator: self.numerator - rhs.numerator,
-            denominator: self.denominator - rhs.denominator,
-        }
+            numerator: self.numerator * rhs.denominator - rhs.numerator * self.denominator,
+            denominator: self.denominator * rhs.denominator,
+        }.normalize()
     }
 }
 
@@ -73,7 +80,7 @@ impl Mul for Rational {
         Self {
             numerator: self.numerator * rhs.numerator,
             denominator: self.denominator * rhs.denominator,
-        }
+        }.normalize()
     }
 }
 
@@ -82,19 +89,8 @@ impl Div for Rational {
 
     fn div(self, rhs: Self) -> Self::Output {
         Self {
-            numerator: self.numerator * rhs.numerator,
-            denominator: self.denominator * rhs.denominator,
-        }
-    }
-}
-
-impl Rem for Rational {
-    type Output = Self;
-
-    fn rem(self, rhs: Self) -> Self::Output {
-        Self {
-            numerator: self.numerator % rhs.numerator,
-            denominator: self.denominator % rhs.denominator,
+            numerator: self.numerator * rhs.denominator,
+            denominator: self.denominator * rhs.numerator,
         }
     }
 }
