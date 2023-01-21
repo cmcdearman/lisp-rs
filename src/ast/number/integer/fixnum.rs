@@ -3,11 +3,11 @@ use std::{
     ops::{Add, Div, Mul, Rem, Sub},
 };
 
-use crate::ast::number::Number;
+use crate::ast::number::{Number, rational::Rational};
 
 use super::{Integer, bignum::BigNum};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct FixNum(pub i64);
 
 impl FixNum {
@@ -60,6 +60,24 @@ impl Add<f64> for FixNum {
         match (self, rhs) {
             (FixNum(i), z) => i as f64 + z,
         }
+    }
+}
+
+impl Add<FixNum> for f64 {
+    type Output = f64;
+
+    fn add(self, rhs: FixNum) -> Self::Output {
+        match (self, rhs) {
+            (l, FixNum(r)) => l + r as f64,
+        }
+    }
+}
+
+impl Add<Rational> for FixNum {
+    type Output = Rational;
+
+    fn add(self, rhs: Rational) -> Self::Output {
+        Rational::from(self) + rhs
     }
 }
 

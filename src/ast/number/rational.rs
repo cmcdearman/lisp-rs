@@ -1,9 +1,9 @@
 use std::{
     fmt::Display,
-    ops::{Add, Div, Mul, Rem, Sub},
+    ops::{Add, Div, Mul, Sub}, iter::Sum,
 };
 
-use super::integer::{fixnum::FixNum, Integer};
+use super::integer::{bignum::BigNum, fixnum::FixNum, Integer};
 
 #[derive(Debug, Clone)]
 pub struct Rational {
@@ -22,7 +22,10 @@ impl Rational {
 
     fn normalize(&self) -> Self {
         if self.numerator == self.denominator {
-            return Self { numerator: Integer::FixNum(FixNum::from(1)), denominator: Integer::FixNum(FixNum::from(1)) };
+            return Self {
+                numerator: Integer::FixNum(FixNum::from(1)),
+                denominator: Integer::FixNum(FixNum::from(1)),
+            };
         }
         todo!()
     }
@@ -33,20 +36,19 @@ impl Rational {
         }
         false
     }
+
+    pub fn numerator(&self) -> Integer {
+        self.numerator
+    }
+
+    pub fn denominator(&self) -> Integer {
+        self.denominator
+    }
 }
 
 impl Display for Rational {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}/{}", self.numerator, self.denominator)
-    }
-}
-
-impl From<Integer> for Rational {
-    fn from(value: Integer) -> Self {
-        Self {
-            numerator: value,
-            denominator: Integer::FixNum(FixNum::from(1)),
-        }
     }
 }
 
@@ -62,6 +64,46 @@ impl Add for Rational {
     }
 }
 
+impl Add<Integer> for Rational {
+    type Output = Rational;
+
+    fn add(self, rhs: Integer) -> Self::Output {
+        self + Rational::from(rhs)
+    }
+}
+
+impl Add<i64> for Rational {
+    type Output = Rational;
+
+    fn add(self, rhs: i64) -> Self::Output {
+        self + Rational::from(rhs)
+    }
+}
+
+impl Add<Rational> for i64 {
+    type Output = Rational;
+
+    fn add(self, rhs: Rational) -> Self::Output {
+        Rational::from(self) + rhs
+    }
+}
+
+impl Add<f64> for Rational {
+    type Output = Self;
+
+    fn add(self, rhs: f64) -> Self::Output {
+        self + Rational::from(rhs)
+    }
+}
+
+impl Add<Rational> for f64 {
+    type Output = Rational;
+
+    fn add(self, rhs: Rational) -> Self::Output {
+        Rational::from(self) + rhs
+    }
+}
+
 impl Sub for Rational {
     type Output = Self;
 
@@ -69,7 +111,8 @@ impl Sub for Rational {
         Self {
             numerator: self.numerator * rhs.denominator - rhs.numerator * self.denominator,
             denominator: self.denominator * rhs.denominator,
-        }.normalize()
+        }
+        .normalize()
     }
 }
 
@@ -80,7 +123,8 @@ impl Mul for Rational {
         Self {
             numerator: self.numerator * rhs.numerator,
             denominator: self.denominator * rhs.denominator,
-        }.normalize()
+        }
+        .normalize()
     }
 }
 
@@ -92,5 +136,53 @@ impl Div for Rational {
             numerator: self.numerator * rhs.denominator,
             denominator: self.denominator * rhs.numerator,
         }
+    }
+}
+
+impl Sum for Rational {
+    fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
+        iter.fold(Rational::from(FixNum::ZERO), |r1, r2| r1 + r2)
+    }
+}
+
+impl From<i64> for Rational {
+    fn from(value: i64) -> Self {
+        Self {
+            numerator: Integer::FixNum(FixNum(value)),
+            denominator: FixNum::ONE,
+        }
+    }
+}
+
+impl From<Integer> for Rational {
+    fn from(value: Integer) -> Self {
+        Self {
+            numerator: value,
+            denominator: Integer::FixNum(FixNum::from(1)),
+        }
+    }
+}
+
+impl From<FixNum> for Rational {
+    fn from(value: FixNum) -> Self {
+        Self {
+            numerator: Integer::FixNum(value),
+            denominator: Integer::FixNum(FixNum::from(1)),
+        }
+    }
+}
+
+impl From<BigNum> for Rational {
+    fn from(value: BigNum) -> Self {
+        Self {
+            numerator: Integer::BigNum(value),
+            denominator: Integer::FixNum(FixNum::from(1)),
+        }
+    }
+}
+
+impl From<f64> for Rational {
+    fn from(value: f64) -> Self {
+        Self { numerator: , denominator: () }
     }
 }

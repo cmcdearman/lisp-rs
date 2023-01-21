@@ -1,11 +1,7 @@
 pub mod integer;
 pub mod rational;
 
-use std::{
-    fmt::Display,
-    iter::{Product, Sum},
-    ops::{Add, Div, Mul, Rem, Sub},
-};
+use std::fmt::Display;
 
 use self::{
     integer::{fixnum::FixNum, Integer},
@@ -29,70 +25,22 @@ impl Display for Number {
     }
 }
 
-impl Add for Number {
-    type Output = Self;
-
-    fn add(self, rhs: Self) -> Self::Output {
-        match (self, rhs) {
-            (Number::Integer(n1), Number::Integer(n2)) => Self::Integer(n1 + n2),
-            (Number::Integer(n1), Number::Float(n2)) => Self::Float(n1 + n2),
-            (Number::Float(n1), Number::Float(n2)) => Self::Float(n1 + n2),
-            (Number::Float(n1), Number::Integer(n2)) => Self::Float(n1 + n2),
-        }
-    }
-}
-
-impl Sub for Number {
-    type Output = Self;
-
-    fn sub(self, rhs: Self) -> Self::Output {
-        match (self, rhs) {
-            (Number::Integer(n1), Number::Integer(n2)) => Self::Integer(n1 - n2),
-            (Number::Integer(n1), Number::Float(n2)) => Self::Float(f64::from(n1) - n2),
-            (Number::Float(n1), Number::Float(n2)) => Self::Float(n1 - n2),
-            (Number::Float(n1), Number::Integer(n2)) => Self::Float(n1 - f64::from(n2)),
-        }
-    }
-}
-
-impl Mul for Number {
-    type Output = Self;
-
-    fn mul(self, rhs: Self) -> Self::Output {
-        match (self, rhs) {
-            (Number::Integer(n1), Number::Integer(n2)) => Self::Integer(n1 * n2),
-        }
-    }
-}
-
-impl Div for Number {
-    type Output = Self;
-
-    fn div(self, rhs: Self) -> Self::Output {
-        match (self, rhs) {
-            (Number::Integer(n1), Number::Integer(n2)) => Self::Integer(n1 / n2),
-        }
-    }
-}
-
-impl Rem for Number {
-    type Output = Self;
-
-    fn rem(self, rhs: Self) -> Self::Output {
-        match (self, rhs) {
-            (Number::Integer(n1), Number::Integer(n2)) => Self::Integer(n1 % n2),
-        }
-    }
-}
-
-impl Sum for Number {
-    fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
-        iter.fold(Number::Integer(Integer::FixNum(FixNum(0))), |a, b| a + b)
-    }
-}
-
-impl Product for Number {
-    fn product<I: Iterator<Item = Self>>(iter: I) -> Self {
-        iter.fold(Number::Integer(Integer::FixNum(FixNum(1))), |a, b| a * b)
+pub fn try_add_nums(n1: Number, n2: Number) -> Result<Number, String> {
+    match (n1, n2) {
+        (Number::Integer(l), Number::Integer(r)) => Ok(Number::Integer(l + r)),
+        (Number::Integer(l), Number::Float(r)) => match l {
+            Integer::FixNum(n) => Ok(Number::Float(n + r)),
+            _ => Err("cannot add float to bignum".to_string()),
+        },
+        (Number::Integer(l), Number::Rational(r)) => Ok(Number::Rational(l + r)),
+        (Number::Float(l), Number::Integer(r)) => match r {
+            Integer::FixNum(n) => Ok(Number::Float(l + n)),
+            _ => Err("cannot add float to bignum".to_string()),
+        },
+        (Number::Float(l), Number::Float(r)) => Ok(Number::Float(l + r)),
+        (Number::Float(l), Number::Rational(r)) => Ok(Number::Rational(l + r)),
+        (Number::Rational(l), Number::Integer(r)) => Ok(Number::Rational(l + r)),
+        (Number::Rational(l), Number::Float(r)) => Ok(Number::Rational(l + r)),
+        (Number::Rational(l), Number::Rational(r)) => Ok(Number::Rational(l + r)),
     }
 }

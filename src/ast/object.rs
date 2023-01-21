@@ -1,4 +1,8 @@
-use std::{cell::RefCell, fmt::{Debug, Display, write}, rc::Rc};
+use std::{
+    cell::RefCell,
+    fmt::{write, Debug, Display},
+    rc::Rc,
+};
 
 use super::{env::Env, lambda::Lambda, list::List, number::Number, symbol::Symbol};
 
@@ -9,6 +13,36 @@ pub enum Object {
     Lambda(Lambda),
     NativeFn(NativeFn),
 }
+
+impl std::fmt::Display for Object {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            Object::Atom(a) => write!(f, "{}", a),
+            Object::List(l) => write!(f, "{}", l),
+            Object::Lambda(l) => write!(f, "{}", l),
+            Object::NativeFn(_) => f.write_str("<native_function>"),
+        }
+    }
+}
+
+impl Debug for Object {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Object::Atom(a) => write!(f, "{}", a),
+            Object::List(l) => write!(f, "{}", l),
+            Object::Lambda(l) => write!(f, "{}", l),
+            Object::NativeFn(_) => f.write_str("<native_function>"),
+        }
+    }
+}
+
+impl PartialEq for Object {
+    fn eq(&self, other: &Self) -> bool {
+        todo!()
+    }
+}
+
+impl Eq for Object {}
 
 #[derive(Clone)]
 pub enum Atom {
@@ -44,32 +78,3 @@ impl Display for Lit {
 
 pub type NativeFn = fn(env: Rc<RefCell<Env>>, args: Vec<Object>) -> Result<Object, String>;
 
-impl std::fmt::Display for Object {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        match self {
-            Object::Atom(a) => write!(f, "{}", a),
-            Object::List(l) => write!(f, "{}", l),
-            Object::Lambda(l) => write!(f, "{}", l),
-            Object::NativeFn(_) => f.write_str("<native_function>"),
-        }
-    }
-}
-
-impl Debug for Object {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Object::Atom(a) => write!(f, "{}", a),
-            Object::List(l) => write!(f, "{}", l),
-            Object::Lambda(l) => write!(f, "{}", l),
-            Object::NativeFn(_) => f.write_str("<native_function>"),
-        }
-    }
-}
-
-impl PartialEq for Object {
-    fn eq(&self, other: &Self) -> bool {
-        todo!()
-    }
-}
-
-impl Eq for Object {}
