@@ -5,6 +5,7 @@ mod lex;
 mod parse;
 mod repl;
 mod token;
+mod vm;
 
 use default_env::default_env;
 

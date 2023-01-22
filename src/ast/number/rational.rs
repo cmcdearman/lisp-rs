@@ -6,6 +6,12 @@ use std::{
 use super::integer::{bignum::BigNum, fixnum::FixNum, Integer};
 
 #[derive(Debug, Clone)]
+pub enum Rational {
+    FixNum,
+    BigNum,
+}
+
+#[derive(Debug, Clone)]
 pub struct Rational {
     numerator: Integer,
     denominator: Integer,
@@ -89,18 +95,18 @@ impl Add<Rational> for i64 {
 }
 
 impl Add<f64> for Rational {
-    type Output = Self;
+    type Output = f64;
 
     fn add(self, rhs: f64) -> Self::Output {
-        self + Rational::from(rhs)
+        f64::from(self) + rhs
     }
 }
 
 impl Add<Rational> for f64 {
-    type Output = Rational;
+    type Output = f64;
 
     fn add(self, rhs: Rational) -> Self::Output {
-        Rational::from(self) + rhs
+        self + f64::from(rhs)
     }
 }
 
@@ -181,8 +187,14 @@ impl From<BigNum> for Rational {
     }
 }
 
-impl From<f64> for Rational {
-    fn from(value: f64) -> Self {
-        Self { numerator: , denominator: () }
+impl From<Rational> for f64 {
+    fn from(value: Rational) -> Self {
+        value.numerator / 
     }
 }
+
+// impl From<f64> for Rational {
+//     fn from(value: f64) -> Self {
+//         Self { numerator: , denominator: () }
+//     }
+// }

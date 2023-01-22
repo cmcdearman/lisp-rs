@@ -150,3 +150,11 @@ impl From<FixNum> for f64 {
         value.0 as f64
     }
 }
+
+impl TryFrom<f64> for FixNum {
+    type Error = String;
+
+    fn try_from(value: f64) -> Result<Self, Self::Error> {
+        todo!()
+    }
+}
