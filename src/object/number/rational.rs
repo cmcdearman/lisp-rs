@@ -3,7 +3,7 @@ use std::{
     ops::{Add, Div, Mul, Sub}, iter::Sum,
 };
 
-use super::integer::{bignum::BigNum, fixnum::FixNum, Integer};
+use super::integer::{bigint::BigNum, fixnum::FixNum, Integer};
 
 #[derive(Debug, Clone)]
 pub enum Rational {

@@ -1,15 +1,14 @@
 use std::{cell::RefCell, iter::Peekable, rc::Rc};
 
 use crate::{
-    ast::{
+    object::{
         cons::Cons,
         list::List,
         number::{
             integer::{fixnum::FixNum, Integer},
             Number,
         },
-        object::{Atom, Lit, Object},
-        symbol::Symbol,
+        symbol::Symbol, Object, Lit, Atom,
     },
     token::{TokenKind, TokenStream},
 };

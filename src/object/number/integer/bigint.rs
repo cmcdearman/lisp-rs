@@ -2,7 +2,7 @@ use std::ops::Add;
 
 use num_bigint::{BigInt, BigUint};
 
-use crate::ast::number::rational::Rational;
+use crate::object::number::rational::Rational;
 
 use super::fixnum::FixNum;
 

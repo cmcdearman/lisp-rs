@@ -1,4 +1,4 @@
-use super::{env::Env, object::Object, symbol::Symbol};
+use super::{env::Env, Object, symbol::Symbol};
 use std::{cell::RefCell, rc::Rc, fmt::Display};
 
 #[derive(Debug, Clone)]

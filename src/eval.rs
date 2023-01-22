@@ -1,8 +1,7 @@
 use std::{cell::RefCell, rc::Rc};
 
-use crate::ast::{
-    env::Env,
-    object::{Atom, Object},
+use crate::object::{
+    env::Env, Object, Atom,
 };
 
 pub fn eval(obj: &Object, env: Rc<RefCell<Env>>) -> Result<Object, String> {

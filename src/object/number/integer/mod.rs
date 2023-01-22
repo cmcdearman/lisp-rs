@@ -1,11 +1,11 @@
 use std::{fmt::Display, ops::{Add, Sub, Mul, Rem, Div}, iter::{Sum, Product}};
 
-use self::{fixnum::FixNum, bignum::{BigNum, AbsExt}};
+use self::{fixnum::FixNum, bigint::{BigNum, AbsExt}};
 
 use super::{rational::Rational, Number};
 
 pub mod fixnum;
-pub mod bignum;
+pub mod bigint;
 
 #[derive(Debug, Clone)]
 pub enum Integer {

@@ -1,6 +1,6 @@
 use std::{cell::RefCell, fmt::Display, rc::Rc};
 
-use super::object::Object;
+use super::Object;
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct Cons {

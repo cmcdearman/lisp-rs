@@ -1,10 +1,18 @@
+pub mod cons;
+pub mod env;
+pub mod lambda;
+pub mod list;
+pub mod number;
+pub mod symbol;
+
 use std::{
     cell::RefCell,
-    fmt::{write, Debug, Display},
+    fmt::{Debug, Display},
     rc::Rc,
 };
 
-use super::{env::Env, lambda::Lambda, list::List, number::Number, symbol::Symbol};
+use self::{list::List, lambda::Lambda, symbol::Symbol, number::Number, env::Env};
+
 
 #[derive(Clone)]
 pub enum Object {

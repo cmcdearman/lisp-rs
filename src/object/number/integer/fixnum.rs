@@ -3,9 +3,9 @@ use std::{
     ops::{Add, Div, Mul, Rem, Sub},
 };
 
-use crate::ast::number::{Number, rational::Rational};
+use crate::object::number::{Number, rational::Rational};
 
-use super::{Integer, bignum::BigNum};
+use super::{Integer, bigint::BigNum};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct FixNum(pub i64);

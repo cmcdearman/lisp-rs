@@ -4,7 +4,10 @@ use std::{
     rc::Rc,
 };
 
-use super::{cons::{Cons, ConsIterator}, object::Object};
+use super::{
+    cons::{Cons, ConsIterator},
+    Object,
+};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct List {

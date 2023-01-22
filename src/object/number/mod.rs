@@ -8,6 +8,7 @@ use self::{
     rational::Rational,
 };
 
+#[repr(C)]
 #[derive(Debug, Clone)]
 pub enum Number {
     Integer(Integer),

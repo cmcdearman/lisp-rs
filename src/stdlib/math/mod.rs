@@ -9,3 +9,4 @@ pub fn gcd(x: Integer, y: Integer) -> Integer {
 // 	return x; 
     x = x.abs()
 }
+// Euclid's algorithm

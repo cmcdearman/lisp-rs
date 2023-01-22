@@ -1,9 +1,4 @@
-use crate::ast::{
-    env::Env,
-    number::Number,
-    object::{Atom, Lit, Object},
-    symbol::Symbol,
-};
+use crate::object::{env::Env, number::Number, symbol::Symbol, Atom, Lit, Object};
 
 pub fn default_env() -> Env {
     let mut env = Env::new();
