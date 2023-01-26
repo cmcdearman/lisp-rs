@@ -1,7 +1,8 @@
 (+ 2 2)
 ;; lust> 4
 
-(defn square [x] (* x x))
+(: square [-> Number Number])
+(fn square [x] (* x x))
 (square 4)
 ;; lust> 16
 
@@ -10,6 +11,7 @@
 (if ((1 == 2 && 3 != 5) || 5 <= 5))
 
 ((fn [arg] (+ arg 1)) 5)
+;; lust> 6
 
 ;; Construct BigInt from integer literal
 (big 2)

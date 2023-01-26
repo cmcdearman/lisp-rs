@@ -3,13 +3,8 @@ use std::{
     ops::{Add, Div, Mul, Sub}, iter::Sum,
 };
 
-use super::integer::{bigint::BigNum, fixnum::FixNum, Integer};
+use super::integer::Integer;
 
-#[derive(Debug, Clone)]
-pub enum Rational {
-    FixNum,
-    BigNum,
-}
 
 #[derive(Debug, Clone)]
 pub struct Rational {
@@ -17,48 +12,23 @@ pub struct Rational {
     denominator: Integer,
 }
 
-impl Rational {
-    pub fn new(numerator: Integer, denominator: Integer) -> Self {
+impl<N, D> Rational<N, D> {
+    pub fn new(numerator: N, denominator: D) -> Self {
         Self {
             numerator,
             denominator,
         }
         .normalize()
     }
-
-    fn normalize(&self) -> Self {
-        if self.numerator == self.denominator {
-            return Self {
-                numerator: Integer::FixNum(FixNum::from(1)),
-                denominator: Integer::FixNum(FixNum::from(1)),
-            };
-        }
-        todo!()
-    }
-
-    pub fn is_integer(&self) -> bool {
-        if self.denominator == FixNum::ONE {
-            return true;
-        }
-        false
-    }
-
-    pub fn numerator(&self) -> Integer {
-        self.numerator
-    }
-
-    pub fn denominator(&self) -> Integer {
-        self.denominator
-    }
 }
 
-impl Display for Rational {
+impl<N, D> Display for Rational<N, D> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}/{}", self.numerator, self.denominator)
     }
 }
 
-impl Add for Rational {
+impl<N, D> Add for Rational<N, D> {
     type Output = Self;
 
     fn add(self, rhs: Self) -> Self::Output {
