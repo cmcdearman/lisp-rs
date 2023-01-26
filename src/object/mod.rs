@@ -2,7 +2,6 @@ pub mod cons;
 pub mod env;
 pub mod lambda;
 pub mod list;
-pub mod number;
 pub mod symbol;
 
 use std::{
@@ -11,7 +10,7 @@ use std::{
     rc::Rc,
 };
 
-use self::{list::List, lambda::Lambda, symbol::Symbol, number::Number, env::Env};
+use self::{list::List, lambda::Lambda, symbol::Symbol, env::Env};
 
 
 #[derive(Clone)]
@@ -69,7 +68,8 @@ impl Display for Atom {
 
 #[derive(Clone)]
 pub enum Lit {
-    Num(Number),
+    Int(i64),
+    Float(f64),
     Bool(bool),
     Str(String),
 }
@@ -77,7 +77,8 @@ pub enum Lit {
 impl Display for Lit {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Lit::Num(n) => write!(f, "{}", n),
+            Lit::Int(n) => write!(f, "{}", n),
+            Lit::Float(n) => write!(f, "{}", n),
             Lit::Bool(b) => write!(f, "{}", b),
             Lit::Str(s) => write!(f, "{}", s),
         }
