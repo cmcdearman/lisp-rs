@@ -1,8 +1,6 @@
 use std::{cell::RefCell, rc::Rc};
 
-use crate::object::{
-    env::Env, Object, Atom,
-};
+mod default_env; 
 
 pub fn eval(obj: &Object, env: Rc<RefCell<Env>>) -> Result<Object, String> {
     match obj {

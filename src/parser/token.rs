@@ -1,5 +1,5 @@
 use logos::Logos;
-use std::fmt;
+use std::fmt::{self, Display};
 use std::ops::{Index, Range};
 use std::vec::IntoIter;
 
@@ -56,7 +56,7 @@ impl fmt::Display for TokenKind {
     }
 }
 
-#[derive(Eq, PartialEq, Clone, Copy, Hash, Default, Debug)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Default, Hash)]
 pub struct Span {
     pub start: u32,
     pub end: u32,
@@ -65,6 +65,12 @@ pub struct Span {
 impl Span {
     pub fn new(start: u32, end: u32) -> Self {
         Self { start, end }
+    }
+}
+
+impl Display for Span {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "<{}, {}>", self.start, self.end)
     }
 }
 
@@ -91,26 +97,25 @@ impl Index<Span> for str {
     }
 }
 
-#[derive(Eq, PartialEq, Clone, Hash)]
+#[derive(Clone, Copy, Eq, PartialEq, Hash)]
 pub struct Token {
     pub kind: TokenKind,
     pub span: Span,
-    pub lit: String,
 }
 
 impl Token {
     pub fn len(&self) -> usize {
         (self.span.end - self.span.start) as usize
     }
+
+    pub fn lit<'a>(&self, src: &'a str) -> &'a str {
+        &src[self.span]
+    }
 }
 
 impl fmt::Debug for Token {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(
-            f,
-            "{:?} - <{}, {}>",
-            self.kind, self.span.start, self.span.end
-        )
+        write!(f, "{:?} - {}", self.kind, self.span)
     }
 }
 
@@ -120,23 +125,3 @@ impl fmt::Display for Token {
     }
 }
 
-#[derive(Debug, Clone)]
-pub struct TokenStream {
-    token_iter: IntoIter<Token>,
-}
-
-impl TokenStream {
-    pub fn new(tokens: Vec<Token>) -> Self {
-        Self {
-            token_iter: tokens.into_iter(),
-        }
-    }
-}
-
-impl Iterator for TokenStream {
-    type Item = Token;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        self.token_iter.next()
-    }
-}

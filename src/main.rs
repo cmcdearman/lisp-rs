@@ -1,13 +1,10 @@
 mod object;
-mod default_env;
-mod eval;
-mod lex;
-mod parse;
+mod parser;
+mod interpreter;
 mod repl;
-mod token;
 mod vm;
 
-use default_env::default_env;
+use interpreter::default_env;
 
 use crate::{
     repl::repl,
