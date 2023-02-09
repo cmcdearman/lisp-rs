@@ -1,4 +1,4 @@
-use crate::object::{Object, symbol::Symbol};
+use crate::object::{symbol::Symbol, Object};
 use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
 #[derive(Debug, Clone)]

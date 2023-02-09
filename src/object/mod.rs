@@ -2,32 +2,58 @@ pub mod cons;
 pub mod env;
 pub mod lambda;
 pub mod list;
+pub mod number;
 pub mod symbol;
 
-use std::{
-    cell::RefCell,
-    fmt::{Debug, Display},
-    rc::Rc,
-};
+use std::fmt::{Debug, Display};
 
-use self::{list::List, lambda::Lambda, symbol::Symbol, env::Env};
-
+use self::number::{float::Float, integer::Integer};
 
 #[derive(Clone)]
 pub enum Object {
-    Atom(Atom),
-    List(List),
-    Lambda(Lambda),
-    NativeFn(NativeFn),
+    Int(Integer),
+    Float(Float),
+    Imag(String, String),
+    String(String),
+    Char(char),
+
+    Neg(Box<Object>),
+    Add(Box<Object>, Box<Object>),
+    Sub(Box<Object>, Box<Object>),
+    Mul(Box<Object>, Box<Object>),
+    Div(Box<Object>, Box<Object>),
+
+    Fn {
+        name: String,
+        args: Vec<String>,
+        body: Box<Object>,
+    },
+    Call(String, Vec<Object>),
+    Let {
+        name: String,
+        rhs: Box<Object>,
+        lhs: Box<Object>,
+    },
+    Block(Vec<Object>),
 }
 
-impl std::fmt::Display for Object {
+impl Display for Object {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
-            Object::Atom(a) => write!(f, "{}", a),
-            Object::List(l) => write!(f, "{}", l),
-            Object::Lambda(l) => write!(f, "{}", l),
-            Object::NativeFn(_) => f.write_str("<native_function>"),
+            Object::Int(_) => todo!(),
+            Object::Float(_) => todo!(),
+            Object::Imag(_, _) => todo!(),
+            Object::String(_) => todo!(),
+            Object::Char(_) => todo!(),
+            Object::Neg(_) => todo!(),
+            Object::Add(_, _) => todo!(),
+            Object::Sub(_, _) => todo!(),
+            Object::Mul(_, _) => todo!(),
+            Object::Div(_, _) => todo!(),
+            Object::Fn { name, args, body } => todo!(),
+            Object::Call(_, _) => todo!(),
+            Object::Let { name, rhs, lhs } => todo!(),
+            Object::Block(_) => todo!(),
         }
     }
 }
@@ -35,10 +61,20 @@ impl std::fmt::Display for Object {
 impl Debug for Object {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Object::Atom(a) => write!(f, "{}", a),
-            Object::List(l) => write!(f, "{}", l),
-            Object::Lambda(l) => write!(f, "{}", l),
-            Object::NativeFn(_) => f.write_str("<native_function>"),
+            Object::Int(_) => todo!(),
+            Object::Float(_) => todo!(),
+            Object::Imag(_, _) => todo!(),
+            Object::String(_) => todo!(),
+            Object::Char(_) => todo!(),
+            Object::Neg(_) => todo!(),
+            Object::Add(_, _) => todo!(),
+            Object::Sub(_, _) => todo!(),
+            Object::Mul(_, _) => todo!(),
+            Object::Div(_, _) => todo!(),
+            Object::Fn { name, args, body } => todo!(),
+            Object::Call(_, _) => todo!(),
+            Object::Let { name, rhs, lhs } => todo!(),
+            Object::Block(_) => todo!(),
         }
     }
 }
@@ -50,40 +86,3 @@ impl PartialEq for Object {
 }
 
 impl Eq for Object {}
-
-#[derive(Clone)]
-pub enum Atom {
-    Sym(Symbol),
-    Lit(Lit),
-}
-
-impl Display for Atom {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Atom::Sym(s) => write!(f, "{}", s),
-            Atom::Lit(l) => write!(f, "{}", l),
-        }
-    }
-}
-
-#[derive(Clone)]
-pub enum Lit {
-    Int(i64),
-    Float(f64),
-    Bool(bool),
-    Str(String),
-}
-
-impl Display for Lit {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Lit::Int(n) => write!(f, "{}", n),
-            Lit::Float(n) => write!(f, "{}", n),
-            Lit::Bool(b) => write!(f, "{}", b),
-            Lit::Str(s) => write!(f, "{}", s),
-        }
-    }
-}
-
-pub type NativeFn = fn(env: Rc<RefCell<Env>>, args: Vec<Object>) -> Result<Object, String>;
-
