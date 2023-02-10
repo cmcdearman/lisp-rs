@@ -1,5 +1,5 @@
-use super::{env::Env, Object, symbol::Symbol};
-use std::{cell::RefCell, rc::Rc, fmt::Display};
+use super::{env::Env, symbol::Symbol, Object};
+use std::{cell::RefCell, fmt::Display, rc::Rc};
 
 #[derive(Debug, Clone)]
 pub struct Lambda {
@@ -11,5 +11,13 @@ pub struct Lambda {
 impl Display for Lambda {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         todo!()
+    }
+}
+
+impl PartialEq for Lambda {
+    fn eq(&self, other: &Self) -> bool {
+        self.env.borrow().clone() == other.env.borrow().clone()
+            && self.args == other.args
+            && self.body == other.body
     }
 }

@@ -1,6 +1,0 @@
-sexpr: cons | atom;
-cons: '(' + sexpr* + ')';
-atom: lit;
-lit: NUM | STRING | "true" | "false";
-NUM: [0-9]+(.[0-9]+)?|(.[0-9]+);
-STRING: \"[a-zA-Z]+\";

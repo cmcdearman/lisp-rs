@@ -1,10 +1,17 @@
 use logos::Logos;
 use std::fmt::{self, Display};
 use std::ops::{Index, Range};
-use std::vec::IntoIter;
 
-#[derive(Logos, Debug, PartialEq, Eq, Hash, Copy, Clone)]
+#[derive(Logos, Debug, Clone, Copy, Default, PartialEq, Eq, Hash)]
 pub enum TokenKind {
+    #[default]
+    Eof,
+    #[error]
+    Err,
+    #[regex(r"[ \t\r\n\f]+", logos::skip)]
+    Whitespace,
+    #[regex(r#";[^\n]*"#)]
+    Comment,
     #[regex(r#"[^\[\]()\s]+"#)]
     Ident,
     #[regex(r#"\d+"#, priority = 3)]
@@ -23,13 +30,49 @@ pub enum TokenKind {
     LBrack,
     #[token("]")]
     RBrack,
-    #[regex(r"[ \t\r\n\f]+", logos::skip)]
-    Whitespace,
-    #[error]
-    Err,
-    #[regex(r#";[^\n]*"#)]
-    Comment,
-    Eof,
+}
+
+#[macro_export]
+macro_rules! T {
+    [EOF] => {
+        $crate::parser::token::TokenKind::Eof
+    };
+    [err] => {
+        $crate::parser::token::TokenKind::Err
+    };
+    [ws] => {
+        $crate::parser::token::TokenKind::Whitespace
+    };
+    [;] => {
+        $crate::parser::token::TokenKind::Comment
+    };
+    [ident] => {
+        $crate::parser::token::TokenKind::Ident
+    };
+    [int] => {
+        $crate::parser::token::TokenKind::Int
+    };
+    [float] => {
+        $crate::parser::token::TokenKind::Float
+    };
+    [str] => {
+        $crate::parser::token::TokenKind::String
+    };
+    [bool] => {
+        $crate::parser::token::TokenKind::Bool
+    };
+    ['('] => {
+        $crate::parser::token::TokenKind::LParen
+    };
+    [')'] => {
+        $crate::parser::token::TokenKind::RParen
+    };
+    ['['] => {
+        $crate::parser::token::TokenKind::LBrack
+    };
+    [']'] => {
+        $crate::parser::token::TokenKind::RBrack
+    };
 }
 
 impl fmt::Display for TokenKind {
@@ -38,19 +81,19 @@ impl fmt::Display for TokenKind {
             f,
             "{}",
             match self {
-                TokenKind::Whitespace => "Whitespace",
-                TokenKind::Err => "Error",
-                TokenKind::Eof => "<EOF>",
-                TokenKind::Comment => "Comment",
-                TokenKind::Ident => "Ident",
-                TokenKind::Int => "Int",
-                TokenKind::Float => "Float",
-                TokenKind::String => "String",
-                TokenKind::Bool => "Bool",
-                TokenKind::LParen => "(",
-                TokenKind::RParen => ")",
-                TokenKind::LBrack => "[",
-                TokenKind::RBrack => "]",
+                T![EOF] => "<EOF>",
+                T![err] => "Error",
+                T![ws] => "Whitespace",
+                T![;] => "Comment",
+                T![ident] => "Ident",
+                T![int] => "Int",
+                T![float] => "Float",
+                T![str] => "String",
+                T![bool] => "Bool",
+                T!['('] => "(",
+                T![')'] => ")",
+                T!['['] => "[",
+                T![']'] => "]",
             }
         )
     }

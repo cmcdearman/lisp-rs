@@ -1,5 +1,6 @@
-use crate::token::{Span, Token, TokenKind};
 use logos::Logos;
+
+use super::token::{TokenKind, Token};
 
 pub struct Lexer<'src> {
     logos: logos::SpannedIter<'src, TokenKind>,

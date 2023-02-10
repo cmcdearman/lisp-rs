@@ -12,36 +12,36 @@ pub struct Rational {
     denominator: Integer,
 }
 
-impl Rational {
-    pub fn new(numerator: Integer, denominator: Integer) -> Self {
-        Self {
-            numerator,
-            denominator,
-        }.normalize()
-    }
+// impl Rational {
+//     pub fn new(numerator: Integer, denominator: Integer) -> Self {
+//         Self {
+//             numerator,
+//             denominator,
+//         }.normalize()
+//     }
 
-    pub fn normalize(&self) -> Self {
-        todo!()
-    }
-}
+//     pub fn normalize(&self) -> Self {
+//         todo!()
+//     }
+// }
 
-impl Display for Rational {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}/{}", self.numerator, self.denominator)
-    }
-}
+// impl Display for Rational {
+//     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+//         write!(f, "{}/{}", self.numerator, self.denominator)
+//     }
+// }
 
-impl Add for Rational {
-    type Output = Self;
+// impl Add for Rational {
+//     type Output = Self;
 
-    fn add(self, rhs: Self) -> Self::Output {
-        Self {
-            numerator: self.numerator * rhs.denominator + rhs.numerator * self.denominator,
-            denominator: self.denominator * rhs.denominator,
-        }
-        .normalize()
-    }
-}
+//     fn add(self, rhs: Self) -> Self::Output {
+//         Self {
+//             numerator: self.numerator * rhs.denominator + rhs.numerator * self.denominator,
+//             denominator: self.denominator * rhs.denominator,
+//         }
+//         .normalize()
+//     }
+// }
 
 // impl Add<Integer> for Rational {
 //     type Output = Rational;

@@ -1,17 +1,16 @@
-use std::{cell::RefCell, iter::Peekable, rc::Rc};
+use std::{cell::RefCell, iter::Peekable, rc::Rc, vec::IntoIter};
+
+use either::Either;
 
 use crate::{
-    object::{
-        cons::Cons,
-        list::List,
-        number::{
-            integer::{fixnum::FixNum, Integer},
-            Number,
-        },
-        symbol::Symbol,
-        Atom, Lit, Object,
-    },
-    token::{TokenKind, TokenStream},
+    object::{cons::Cons, list::List, symbol::Symbol, Atom, Lit, Object, number::Number},
+    T,
+};
+
+use self::{
+    error::{ParserError, Result},
+    lexer::Lexer,
+    token::{Token, TokenKind},
 };
 
 pub mod error;
@@ -66,23 +65,23 @@ impl<'src> Parser<'src> {
         );
     }
 
-    pub fn sexpr(tokens: &mut Peekable<TokenStream>) -> Result<Object, String> {
-        match tokens.peek().unwrap().kind {
-            TokenKind::LParen => {
-                tokens.next();
-                list(tokens)
+    pub fn sexpr(&mut self) -> Result<Object> {
+        match self.peek() {
+            T!['('] => {
+                self.consume(T!['(']);
+                self.list()
             }
-            _ => atom(tokens),
+            _ => self.atom(),
         }
     }
 
-    fn list(tokens: &mut Peekable<TokenStream>) -> Result<Object, String> {
+    fn list(&mut self) -> Result<Object> {
         let mut new_list = List { head: None };
         let mut tail: Option<Rc<RefCell<Cons>>> = None;
 
-        while tokens.peek().unwrap().kind != TokenKind::RParen {
+        while !self.at(T![')']) {
             let new_cons = Rc::new(RefCell::new(Cons {
-                car: parse(tokens)?,
+                car: self.sexpr()?,
                 cdr: None,
             }));
             if new_list.head.is_none() {
@@ -97,33 +96,29 @@ impl<'src> Parser<'src> {
         Ok(Object::List(new_list))
     }
 
-    fn atom(tokens: &mut Peekable<TokenStream>) -> Result<Object, String> {
-        match tokens.peek().unwrap().kind {
-            lit @ TokenKind::Int
-            | lit @ TokenKind::Float
-            | lit @ TokenKind::String
-            | lit @ TokenKind::Bool => {
-                let lit_text = tokens.next().unwrap().lit;
+    fn atom(&mut self) -> Result<Object> {
+        match self.peek() {
+            lit @ T![int] | lit @ T![float] | lit @ T![str] | lit @ T![bool] => {
+                let lit_text = {
+                    let lit_tok = self.next().expect("expected token but found None");
+                    self.text(lit_tok)
+                };
                 let lit = match lit {
-                    TokenKind::Int => Lit::Num(Number::Integer(Integer::FixNum(FixNum(
+                    T![int] | T![float] => Lit::Number(
                         lit_text
                             .parse()
-                            .expect(&format!("invalid floating point literal: `{}`", lit_text)),
-                    )))),
-                    TokenKind::Float => Lit::Num(Number::Float(
-                        lit_text
-                            .parse()
-                            .expect(&format!("invalid floating point literal: `{}`", lit_text)),
-                    )),
-                    TokenKind::String => Lit::Str(lit_text[1..(lit_text.len() - 1)].to_string()),
-                    TokenKind::Bool => Lit::Bool(lit_text.parse().unwrap()),
+                            .map_err(|_| ParserError::new("invalid numeric literal".to_string()))?,
+                    ),
+                    T![str] => Lit::Str(lit_text[1..(lit_text.len() - 1)].to_string()),
+                    T![bool] => Lit::Bool(lit_text.parse().expect("invalid bool literal")),
                     _ => unreachable!(),
                 };
                 Ok(Object::Atom(Atom::Lit(lit)))
             }
-            TokenKind::Ident => Ok(Object::Atom(Atom::Sym(Symbol::from(
-                &*tokens.next().ok_or("end of tokens".to_string())?.lit,
-            )))),
+            TokenKind::Ident => {
+                let ident = self.next().ok_or(ParserError::new("t".to_string()))?;
+                Ok(Object::Atom(Atom::Sym(Symbol::from(self.text(ident)))))
+            }
             kind => {
                 panic!("Unknown start of atom: `{}`", kind);
             }

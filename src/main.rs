@@ -1,17 +1,17 @@
 mod object;
 mod parser;
 mod interpreter;
-mod repl;
 mod vm;
 
 use interpreter::default_env;
+use parser::Parser;
 
 use crate::{
-    repl::repl,
+    interpreter::repl,
 };
 
 fn main() {
-    repl(default_env());
+    // repl(default_env());
 }
 
 // fn main() {

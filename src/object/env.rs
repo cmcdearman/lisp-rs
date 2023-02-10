@@ -33,3 +33,9 @@ impl Env {
         self.entries.remove(&name);
     }
 }
+
+impl PartialEq for Env {
+    fn eq(&self, other: &Self) -> bool {
+        self.parent == other.parent && self.entries == other.entries
+    }
+}
