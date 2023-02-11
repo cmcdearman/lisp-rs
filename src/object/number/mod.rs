@@ -13,6 +13,9 @@ use self::{
     float::Float,
 };
 
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct ParseNumberError(pub String);
+
 #[repr(C)]
 #[derive(Debug, Clone)]
 pub enum Number {
@@ -21,9 +24,6 @@ pub enum Number {
     Rational(Rational64),
     Complex(Complex64)
 }
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct NumberParseError(pub String);
 
 impl Display for Number {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

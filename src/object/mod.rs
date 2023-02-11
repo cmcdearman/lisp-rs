@@ -1,4 +1,4 @@
-use std::{fmt::{Display, Debug}, rc::Rc, cell::RefCell};
+use std::{fmt::{Display, Debug}, rc::Rc, cell::RefCell, collections::HashMap};
 
 use self::{symbol::Symbol, list::List, lambda::Lambda, env::Env, number::Number};
 
@@ -66,6 +66,8 @@ pub enum Lit {
     Number(Number),
     Bool(bool),
     Str(String),
+    Vec(Vec<Object>),
+    HashMap(HashMap<Object, Object>),
 }
 
 impl Display for Lit {
@@ -74,6 +76,7 @@ impl Display for Lit {
             Lit::Number(n) => write!(f, "{}", n),
             Lit::Bool(b) => write!(f, "{}", b),
             Lit::Str(s) => write!(f, "{}", s),
+            Lit::Vec(v) => write!(f, "{}", v)
         }
     }
 }

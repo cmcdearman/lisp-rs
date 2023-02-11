@@ -30,6 +30,8 @@ pub enum TokenKind {
     LBrack,
     #[token("]")]
     RBrack,
+    #[token(":")]
+    Colon,
 }
 
 #[macro_export]
@@ -73,6 +75,9 @@ macro_rules! T {
     [']'] => {
         $crate::parser::token::TokenKind::RBrack
     };
+    [:] => {
+        $crate::parser::token::TokenKind::Colon
+    };
 }
 
 impl fmt::Display for TokenKind {
@@ -94,6 +99,7 @@ impl fmt::Display for TokenKind {
                 T![')'] => ")",
                 T!['['] => "[",
                 T![']'] => "]",
+                T![:] => ":",
             }
         )
     }

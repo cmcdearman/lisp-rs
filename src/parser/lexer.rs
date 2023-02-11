@@ -45,9 +45,9 @@ impl<'src> Iterator for Lexer<'src> {
     }
 }
 
-mod tests {
-    #[test]
-    fn test_lex() {
-        let input = "(+ 3 4) ; test comment";
-    }
-}
+// mod tests {
+//     #[test]
+//     fn test_lex() {
+//         let input = "(+ 3 4) ; test comment";
+//     }
+// }

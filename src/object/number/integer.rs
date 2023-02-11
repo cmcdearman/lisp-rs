@@ -1,9 +1,12 @@
 use std::{
     fmt::{Debug, Display},
-    ops::{Add, Div, Mul, Rem, Sub},
+    ops::{Add, Div, Mul, Rem, Sub}, str::FromStr,
 };
 
 use num_bigint::{BigInt, BigUint};
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct ParseIntegerError(pub String);
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Integer {
@@ -23,6 +26,14 @@ pub enum Integer {
 impl Display for Integer {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{:?}", self)
+    }
+}
+
+impl FromStr for Integer {
+    type Err = ParseIntegerError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        todo!()
     }
 }
 
