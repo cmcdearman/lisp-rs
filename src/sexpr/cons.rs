@@ -1,10 +1,10 @@
 use std::{cell::RefCell, fmt::Display, rc::Rc};
 
-use super::Object;
+use super::Sexpr;
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct Cons {
-    pub car: Object,
+    pub car: Sexpr,
     pub cdr: Option<Rc<RefCell<Cons>>>,
 }
 
@@ -21,7 +21,7 @@ impl Display for Cons {
 pub struct ConsIterator(pub Option<Rc<RefCell<Cons>>>);
 
 impl Iterator for ConsIterator {
-    type Item = Object;
+    type Item = Sexpr;
 
     fn next(&mut self) -> Option<Self::Item> {
         self.0.clone().map(|cons| {

@@ -1,10 +1,10 @@
-use crate::object::{symbol::Symbol, Object};
+use crate::sexpr::{symbol::Symbol, Sexpr};
 use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
 #[derive(Debug, Clone)]
 pub struct Env {
     parent: Option<Rc<RefCell<Env>>>,
-    entries: HashMap<Symbol, Object>,
+    entries: HashMap<Symbol, Sexpr>,
 }
 
 impl Env {
@@ -15,11 +15,11 @@ impl Env {
         }
     }
 
-    pub fn define(&mut self, name: Symbol, value: Object) {
+    pub fn define(&mut self, name: Symbol, value: Sexpr) {
         self.entries.insert(name, value);
     }
 
-    pub fn find(&self, name: &Symbol) -> Option<Object> {
+    pub fn find(&self, name: &Symbol) -> Option<Sexpr> {
         if let Some(v) = self.entries.get(name) {
             Some(v.clone())
         } else if let Some(parent) = &self.parent {

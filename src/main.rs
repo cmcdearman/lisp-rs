@@ -1,4 +1,4 @@
-mod object;
+mod sexpr;
 mod parser;
 mod interpreter;
 mod vm;

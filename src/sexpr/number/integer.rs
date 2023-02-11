@@ -33,7 +33,7 @@ impl FromStr for Integer {
     type Err = ParseIntegerError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        todo!()
+       todo!() 
     }
 }
 
@@ -50,7 +50,7 @@ impl Add for Integer {
                 }
             }
             (Integer::Int8(l), Integer::UInt8(r)) => {
-                if let Some(sum)
+                todo!()
             }
             (Integer::Int8(_), Integer::Int16(_)) => todo!(),
             (Integer::Int8(_), Integer::UInt16(_)) => todo!(),

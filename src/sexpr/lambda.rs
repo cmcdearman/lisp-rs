@@ -1,11 +1,11 @@
-use super::{env::Env, symbol::Symbol, Object};
+use super::{env::Env, symbol::Symbol, Sexpr};
 use std::{cell::RefCell, fmt::Display, rc::Rc};
 
 #[derive(Debug, Clone)]
 pub struct Lambda {
     pub env: Rc<RefCell<Env>>,
     pub args: Vec<Symbol>,
-    pub body: Rc<Object>,
+    pub body: Rc<Sexpr>,
 }
 
 impl Display for Lambda {

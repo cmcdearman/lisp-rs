@@ -37,7 +37,7 @@ impl Display for Number {
 }
 
 impl FromStr for Number {
-    type Err = NumberParseError;
+    type Err = ParseNumberError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         todo!()

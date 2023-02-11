@@ -10,41 +10,41 @@ pub mod number;
 pub mod symbol;
 
 #[derive(Debug, Clone)]
-pub enum Object {
+pub enum Sexpr {
     Atom(Atom),
     List(List),
     Lambda(Lambda),
     NativeFn(NativeFn),
 }
 
-impl std::fmt::Display for Object {
+impl std::fmt::Display for Sexpr {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
-            Object::Atom(a) => write!(f, "{}", a),
-            Object::List(l) => write!(f, "{}", l),
-            Object::Lambda(l) => write!(f, "{}", l),
-            Object::NativeFn(_) => f.write_str("<native_function>"),
+            Sexpr::Atom(a) => write!(f, "{}", a),
+            Sexpr::List(l) => write!(f, "{}", l),
+            Sexpr::Lambda(l) => write!(f, "{}", l),
+            Sexpr::NativeFn(_) => f.write_str("<native_function>"),
         }
     }
 }
 
-impl PartialEq for Object {
+impl PartialEq for Sexpr {
     fn eq(&self, other: &Self) -> bool {
         match (self, other) {
-            (Object::Atom(_), Object::Atom(_)) => todo!(),
-            (Object::Atom(_), Object::List(_)) => todo!(),
-            (Object::Atom(_), Object::Lambda(_)) => todo!(),
-            (Object::Atom(_), Object::NativeFn(_)) => todo!(),
-            (Object::List(_), Object::Atom(_)) => todo!(),
-            (Object::List(l1), Object::List(l2)) => l1 == l2,
-            (Object::Lambda(l), Object::Lambda(m)) => l == m,
-            (Object::NativeFn(f), Object::NativeFn(g)) => f == g,
+            (Sexpr::Atom(_), Sexpr::Atom(_)) => todo!(),
+            (Sexpr::Atom(_), Sexpr::List(_)) => todo!(),
+            (Sexpr::Atom(_), Sexpr::Lambda(_)) => todo!(),
+            (Sexpr::Atom(_), Sexpr::NativeFn(_)) => todo!(),
+            (Sexpr::List(_), Sexpr::Atom(_)) => todo!(),
+            (Sexpr::List(l1), Sexpr::List(l2)) => l1 == l2,
+            (Sexpr::Lambda(l), Sexpr::Lambda(m)) => l == m,
+            (Sexpr::NativeFn(f), Sexpr::NativeFn(g)) => f == g,
             _ => false
         }
     }
 }
 
-impl Eq for Object {}
+impl Eq for Sexpr {}
 
 #[derive(Debug, Clone)]
 pub enum Atom {
@@ -66,8 +66,8 @@ pub enum Lit {
     Number(Number),
     Bool(bool),
     Str(String),
-    Vec(Vec<Object>),
-    HashMap(HashMap<Object, Object>),
+    // Vec(Vec<Object>),
+    // HashMap(HashMap<Object, Object>),
 }
 
 impl Display for Lit {
@@ -76,9 +76,10 @@ impl Display for Lit {
             Lit::Number(n) => write!(f, "{}", n),
             Lit::Bool(b) => write!(f, "{}", b),
             Lit::Str(s) => write!(f, "{}", s),
-            Lit::Vec(v) => write!(f, "{}", v)
+            // Lit::Vec(v) => write!(f, "{}", v),
+            // Lit::HashMap(_) => todo!(),
         }
     }
 }
 
-pub type NativeFn = fn(env: Rc<RefCell<Env>>, args: Vec<Object>) -> Result<Object, String>;
+pub type NativeFn = fn(env: Rc<RefCell<Env>>, args: Vec<Sexpr>) -> Result<Sexpr, String>;

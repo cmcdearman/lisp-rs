@@ -6,7 +6,7 @@ use std::{
 
 use super::{
     cons::{Cons, ConsIterator},
-    Object,
+    Sexpr,
 };
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -17,7 +17,7 @@ pub struct List {
 impl List {
     pub const NIL: List = List { head: None };
 
-    pub fn car(&self) -> Result<Object, String> {
+    pub fn car(&self) -> Result<Sexpr, String> {
         self.head
             .as_ref()
             .map(|rc| rc.borrow().car.clone())
@@ -35,7 +35,7 @@ impl List {
     }
 
     #[must_use]
-    pub fn cons(&self, val: Object) -> List {
+    pub fn cons(&self, val: Sexpr) -> List {
         List {
             head: Some(Rc::new(RefCell::new(Cons {
                 car: val,
@@ -56,7 +56,7 @@ impl Display for List {
 }
 
 impl<'a> IntoIterator for &'a List {
-    type Item = Object;
+    type Item = Sexpr;
 
     type IntoIter = ConsIterator;
 
