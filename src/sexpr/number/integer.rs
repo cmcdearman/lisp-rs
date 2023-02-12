@@ -1,12 +1,10 @@
 use std::{
     fmt::{Debug, Display},
-    ops::{Add, Div, Mul, Rem, Sub}, str::FromStr,
+    ops::{Add, Div, Mul, Rem, Sub},
+    str::FromStr,
 };
 
 use num_bigint::{BigInt, BigUint};
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct ParseIntegerError(pub String);
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Integer {
@@ -25,15 +23,93 @@ pub enum Integer {
 
 impl Display for Integer {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:?}", self)
+        match self {
+            Integer::Int8(n) => write!(f, "{}", n.0),
+            Integer::UInt8(n) => write!(f, "{}", n.0),
+            Integer::Int16(n) => write!(f, "{}", n.0),
+            Integer::UInt16(n) => write!(f, "{}", n.0),
+            Integer::Int32(n) => write!(f, "{}", n.0),
+            Integer::UInt32(n) => write!(f, "{}", n.0),
+            Integer::Int64(n) => write!(f, "{}", n.0),
+            Integer::UInt64(n) => write!(f, "{}", n.0),
+            Integer::BigInt(n) => write!(f, "{}", n),
+            Integer::BigUint(n) => write!(f, "{}", n),
+            Integer::Inf => f.write_str("Inf"),
+        }
     }
 }
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct ParseIntegerError(pub String);
 
 impl FromStr for Integer {
     type Err = ParseIntegerError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-       todo!() 
+        if s.ends_with("i8") {
+            return Ok(Integer::Int8(Int8(
+                s.strip_suffix("i8")
+                    .expect("expected int literal suffix")
+                    .parse()
+                    .map_err(|_| ParseIntegerError("invalid i8 literal".to_string()))?,
+            )));
+        } else if s.ends_with("u8") {
+            return Ok(Integer::UInt8(UInt8(
+                s.strip_suffix("u8")
+                    .expect("expected int literal suffix")
+                    .parse()
+                    .map_err(|_| ParseIntegerError("invalid u8 literal".to_string()))?,
+            )));
+        } else if s.ends_with("i16") {
+            return Ok(Integer::Int16(Int16(
+                s.strip_suffix("i16")
+                    .expect("expected int literal suffix")
+                    .parse()
+                    .map_err(|_| ParseIntegerError("invalid i16 literal".to_string()))?,
+            )));
+        } else if s.ends_with("u16") {
+            return Ok(Integer::UInt16(UInt16(
+                s.strip_suffix("u16")
+                    .expect("expected int literal suffix")
+                    .parse()
+                    .map_err(|_| ParseIntegerError("invalid u16 literal".to_string()))?,
+            )));
+        } else if s.ends_with("i32") {
+            return Ok(Integer::Int32(Int32(
+                s.strip_suffix("i32")
+                    .expect("expected int literal suffix")
+                    .parse()
+                    .map_err(|_| ParseIntegerError("invalid i32 literal".to_string()))?,
+            )));
+        } else if s.ends_with("u32") {
+            return Ok(Integer::UInt32(UInt32(
+                s.strip_suffix("u32")
+                    .expect("expected int literal suffix")
+                    .parse()
+                    .map_err(|_| ParseIntegerError("invalid u32 literal".to_string()))?,
+            )));
+        } else if s.ends_with("i64") {
+            return Ok(Integer::Int64(Int64(
+                s.strip_suffix("i64")
+                    .expect("expected int literal suffix")
+                    .parse()
+                    .map_err(|_| ParseIntegerError("invalid i64 literal".to_string()))?,
+            )));
+        } else if s.ends_with("u64") {
+            return Ok(Integer::UInt64(UInt64(
+                s.strip_suffix("u64")
+                    .expect("expected int literal suffix")
+                    .parse()
+                    .map_err(|_| ParseIntegerError("invalid u64 literal".to_string()))?,
+            )));
+        } else {
+            if let Ok(i) = s.parse::<i32>() {
+                return Ok(Integer::Int32(Int32(i)));
+            }
+            return Ok(Integer::BigInt(s.parse::<BigInt>().map_err(|_| {
+                ParseIntegerError("invalid integer literal".to_string())
+            })?));
+        }
     }
 }
 

@@ -1,6 +1,11 @@
-use std::{fmt::{Display, Debug}, rc::Rc, cell::RefCell, collections::HashMap};
+use std::{
+    cell::RefCell,
+    collections::HashMap,
+    fmt::{Debug, Display},
+    rc::Rc,
+};
 
-use self::{symbol::Symbol, list::List, lambda::Lambda, env::Env, number::Number};
+use self::{env::Env, lambda::Lambda, list::List, number::Number, symbol::Symbol};
 
 pub mod cons;
 pub mod env;
@@ -31,22 +36,19 @@ impl std::fmt::Display for Sexpr {
 impl PartialEq for Sexpr {
     fn eq(&self, other: &Self) -> bool {
         match (self, other) {
-            (Sexpr::Atom(_), Sexpr::Atom(_)) => todo!(),
-            (Sexpr::Atom(_), Sexpr::List(_)) => todo!(),
-            (Sexpr::Atom(_), Sexpr::Lambda(_)) => todo!(),
-            (Sexpr::Atom(_), Sexpr::NativeFn(_)) => todo!(),
-            (Sexpr::List(_), Sexpr::Atom(_)) => todo!(),
+            (Sexpr::Atom(a1), Sexpr::Atom(a2)) => *a1 == *a2,
+            (Sexpr::Atom(_), Sexpr::List(_)) | (Sexpr::List(_), Sexpr::Atom(_)) => todo!(),
             (Sexpr::List(l1), Sexpr::List(l2)) => l1 == l2,
             (Sexpr::Lambda(l), Sexpr::Lambda(m)) => l == m,
             (Sexpr::NativeFn(f), Sexpr::NativeFn(g)) => f == g,
-            _ => false
+            _ => false,
         }
     }
 }
 
 impl Eq for Sexpr {}
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Atom {
     Sym(Symbol),
     Lit(Lit),
@@ -61,7 +63,7 @@ impl Display for Atom {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Lit {
     Number(Number),
     Bool(bool),

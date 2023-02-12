@@ -7,11 +7,11 @@ use interpreter::default_env;
 use parser::Parser;
 
 use crate::{
-    interpreter::repl,
+    interpreter::repl::repl,
 };
 
 fn main() {
-    // repl(default_env());
+    repl();
 }
 
 // fn main() {

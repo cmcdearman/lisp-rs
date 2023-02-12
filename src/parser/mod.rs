@@ -3,7 +3,7 @@ use std::{cell::RefCell, iter::Peekable, rc::Rc, vec::IntoIter};
 use either::Either;
 
 use crate::{
-    sexpr::{cons::Cons, list::List, number::Number, symbol::Symbol, Atom, Lit, Sexpr},
+    sexpr::{cons::Cons, list::List, number::{Number, integer::Integer, float::Float}, symbol::Symbol, Atom, Lit, Sexpr},
     T,
 };
 
@@ -103,15 +103,17 @@ impl<'src> Parser<'src> {
                     let lit_tok = self.next().expect("expected token but found None");
                     self.text(lit_tok)
                 };
-                let lit =
-                    match lit {
-                        T![int] | T![float] => Lit::Number(lit_text.parse().map_err(|_| {
-                            ParserError::new("invalid numeric literal".to_string())
-                        })?),
-                        T![str] => Lit::Str(lit_text[1..(lit_text.len() - 1)].to_string()),
-                        T![bool] => Lit::Bool(lit_text.parse().expect("invalid bool literal")),
-                        _ => unreachable!(),
-                    };
+                let lit = match lit {
+                    T![int] => Lit::Number(Number::Integer(
+                        lit_text.parse::<Integer>().map_err(|e| ParserError(e.0))?,
+                    )),
+                    T![float] => Lit::Number(Number::Float(
+                        lit_text.parse::<Float>().map_err(|e| ParserError(e.0))?,
+                    )),
+                    T![str] => Lit::Str(lit_text[1..(lit_text.len() - 1)].to_string()),
+                    T![bool] => Lit::Bool(lit_text.parse().expect("invalid bool literal")),
+                    _ => unreachable!(),
+                };
                 Ok(Sexpr::Atom(Atom::Lit(lit)))
             }
             TokenKind::Ident => {

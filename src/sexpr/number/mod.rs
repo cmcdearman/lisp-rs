@@ -17,7 +17,7 @@ use self::{
 pub struct ParseNumberError(pub String);
 
 #[repr(C)]
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Number {
     Integer(Integer),
     Float(Float),
@@ -36,10 +36,10 @@ impl Display for Number {
     }
 }
 
-impl FromStr for Number {
-    type Err = ParseNumberError;
+// impl FromStr for Number {
+//     type Err = ParseNumberError;
 
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        todo!()
-    }
-}
+//     fn from_str(s: &str) -> Result<Self, Self::Err> {
+//         todo!()
+//     }
+// }

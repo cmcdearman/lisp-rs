@@ -14,9 +14,9 @@ pub enum TokenKind {
     Comment,
     #[regex(r#"[^\[\]()\s]+"#)]
     Ident,
-    #[regex(r#"\d+"#, priority = 3)]
+    #[regex(r#"(\+|-)?\d+(i8|u8|i16|u16|i32|u32|i64|u64)?"#, priority = 3)]
     Int,
-    #[regex(r#"((\d+(\.\d+)?)|(\.\d+))([Ee](\+|-)?\d+)?"#, priority = 2)]
+    #[regex(r#"(\+|-)?((\d+(\.\d+)?)|(\.\d+))([Ee](\+|-)?\d+)?(f32|f64)?"#, priority = 2)]
     Float,
     #[regex(r#""((\\"|\\\\)|[^\\"])*""#)]
     String,
