@@ -1,3 +1,5 @@
+pub mod tests;
+
 pub struct VM {
     registers: [i32; 32],
     pc: usize,
@@ -36,10 +38,12 @@ impl VM {
 
 #[derive(Debug, PartialEq)]
 pub enum Opcode {
-    // LoadConst(usize, i32),
-    // Add(usize, usize, usize),
-    // Jump(usize),
-    // Return,
+    Load,
+    Add,
+    Sub,
+    Mul,
+    Div,
+    Jump,
     Halt,
 }
 
@@ -62,5 +66,3 @@ impl Instruction {
         Instruction { opcode: opcode }
     }
 }
-
-
