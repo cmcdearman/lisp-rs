@@ -1,4 +1,3 @@
-mod sexpr;
 mod parser;
 mod interpreter;
 mod vm;

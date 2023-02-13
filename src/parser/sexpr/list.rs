@@ -1,8 +1,4 @@
-use std::{
-    cell::RefCell,
-    fmt::{Debug, Display},
-    rc::Rc,
-};
+use std::fmt::{Debug, Display};
 
 use super::{
     cons::{Cons, ConsIterator},
@@ -27,10 +23,7 @@ impl List {
     #[must_use]
     pub fn cdr(&self) -> List {
         List {
-            head: self
-                .head
-                .as_ref()
-                .and_then(|b| b.cdr.as_ref().cloned()),
+            head: self.head.as_ref().and_then(|b| b.cdr.as_ref().cloned()),
         }
     }
 

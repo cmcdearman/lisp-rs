@@ -1,10 +1,15 @@
-use std::{cell::RefCell, iter::Peekable, rc::Rc, vec::IntoIter, borrow::BorrowMut};
+use std::{iter::Peekable, vec::IntoIter};
 
 use either::Either;
 
-use crate::{
-    sexpr::{cons::Cons, list::List, number::{Number, integer::Integer, float::Float}, symbol::Symbol, Atom, Lit, Sexpr},
-    T,
+use crate::T;
+
+use sexpr::{
+    cons::Cons,
+    list::List,
+    number::{float::Float, integer::Integer, Number},
+    symbol::Symbol,
+    Atom, Lit, Sexpr,
 };
 
 use self::{
@@ -15,6 +20,7 @@ use self::{
 
 pub mod error;
 pub mod lexer;
+pub mod sexpr;
 pub mod token;
 
 pub struct Parser<'src> {
@@ -86,7 +92,7 @@ impl<'src> Parser<'src> {
             });
             if new_list.head.is_none() {
                 new_list.head = Some(new_cons.clone());
-                } else if let Some(mut tail_cons) = tail {
+            } else if let Some(mut tail_cons) = tail {
                 tail_cons.as_mut().cdr = Some(new_cons.clone());
             }
 

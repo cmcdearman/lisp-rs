@@ -1,5 +1,6 @@
-use crate::sexpr::{symbol::Symbol, Sexpr};
 use std::{cell::RefCell, collections::HashMap, rc::Rc};
+
+use super::{symbol::Symbol, Sexpr};
 
 #[derive(Debug, Clone)]
 pub struct Env {

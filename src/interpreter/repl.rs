@@ -1,12 +1,5 @@
-use crate::{
-    parser::{self, Parser},
-    sexpr::env::Env,
-};
-use std::{
-    cell::RefCell,
-    io::{self, Write},
-    rc::Rc,
-};
+use crate::parser::Parser;
+use std::io::{self, Write};
 
 pub fn repl() {
     // let env_rc = Rc::new(RefCell::new(env));
