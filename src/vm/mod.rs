@@ -44,7 +44,7 @@ impl VM {
                 Opcode::StoreVar => {
                     // let register = self.next_8_bits() as usize;
                     // let var_name = self.next_string();
-                    // let var_value = match self.env.as_ref().borrow().find(&Symbol::from(&*var_name)) {
+                    // let var_value = match self.env.as_ref().borrow().find(&Symbol(var_name)) {
                     //     Some(value) => value,
                     //     None => panic!("Undefined variable: {}", var_name),
                     // };
