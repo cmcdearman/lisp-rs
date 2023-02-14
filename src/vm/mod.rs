@@ -25,6 +25,12 @@ impl VM {
                     println!("Halt encountered");
                     return;
                 },
+                Opcode::Load => todo!(),
+                Opcode::Add => todo!(),
+                Opcode::Sub => todo!(),
+                Opcode::Mul => todo!(),
+                Opcode::Div => todo!(),
+                Opcode::Jump => todo!(),
             }
         }
     }

@@ -11,7 +11,7 @@ pub fn repl() {
             .read_line(&mut src)
             .expect("failed to read line");
         match Parser::new(&src, false).sexpr() {
-            Ok(ast) => println!("{:?}", ast),
+            Ok(ast) => println!("{}", ast),
             Err(err) => panic!("{}", err),
         }
         // env_rc.clone(),

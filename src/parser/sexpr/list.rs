@@ -1,4 +1,8 @@
-use std::fmt::{Debug, Display};
+use std::{
+    cell::RefCell,
+    fmt::{Debug, Display},
+    rc::Rc,
+};
 
 use super::{
     cons::{Cons, ConsIterator},
@@ -7,7 +11,7 @@ use super::{
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct List {
-    pub head: Option<Box<Cons>>,
+    pub head: Option<Rc<RefCell<Cons>>>,
 }
 
 impl List {
@@ -16,24 +20,27 @@ impl List {
     pub fn car(&self) -> Result<Sexpr, String> {
         self.head
             .as_ref()
-            .map(|b| b.car.clone())
+            .map(|rc| rc.borrow().car.clone())
             .ok_or_else(|| String::from("Attempted to apply car on nil"))
     }
 
     #[must_use]
     pub fn cdr(&self) -> List {
         List {
-            head: self.head.as_ref().and_then(|b| b.cdr.as_ref().cloned()),
+            head: self
+                .head
+                .as_ref()
+                .and_then(|rc| rc.borrow().cdr.as_ref().cloned()),
         }
     }
 
     #[must_use]
     pub fn cons(&self, val: Sexpr) -> List {
         List {
-            head: Some(Box::new(Cons {
+            head: Some(Rc::new(RefCell::new(Cons {
                 car: val,
                 cdr: self.head.clone(),
-            })),
+            }))),
         }
     }
 }
@@ -41,7 +48,7 @@ impl List {
 impl Display for List {
     fn fmt(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
         if let Some(head) = &self.head {
-            write!(formatter, "({})", head.as_ref())
+            write!(formatter, "({})", head.as_ref().borrow())
         } else {
             write!(formatter, "NIL")
         }

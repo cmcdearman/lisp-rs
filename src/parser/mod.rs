@@ -1,4 +1,4 @@
-use std::{iter::Peekable, vec::IntoIter};
+use std::{borrow::BorrowMut, cell::RefCell, iter::Peekable, rc::Rc, vec::IntoIter};
 
 use either::Either;
 
@@ -83,17 +83,17 @@ impl<'src> Parser<'src> {
 
     fn list(&mut self) -> Result<Sexpr> {
         let mut new_list = List { head: None };
-        let mut tail: Option<Box<Cons>> = None;
+        let mut tail: Option<Rc<RefCell<Cons>>> = None;
 
         while !self.at(T![')']) {
-            let new_cons = Box::new(Cons {
+            let new_cons = Rc::new(RefCell::new(Cons {
                 car: self.sexpr()?,
                 cdr: None,
-            });
+            }));
             if new_list.head.is_none() {
                 new_list.head = Some(new_cons.clone());
-            } else if let Some(mut tail_cons) = tail {
-                tail_cons.as_mut().cdr = Some(new_cons.clone());
+            } else if let Some(tail_cons) = tail {
+                tail_cons.as_ref().borrow_mut().cdr = Some(new_cons.clone());
             }
 
             tail = Some(new_cons);

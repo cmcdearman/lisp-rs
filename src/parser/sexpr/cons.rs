@@ -5,29 +5,29 @@ use super::Sexpr;
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Cons {
     pub car: Sexpr,
-    pub cdr: Option<Box<Cons>>,
+    pub cdr: Option<Rc<RefCell<Cons>>>,
 }
 
 impl Display for Cons {
     fn fmt(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self.cdr.as_ref() {
-            Some(cdr) => write!(formatter, "{} {}", self.car, cdr),
+            Some(cdr) => write!(formatter, "{} {}", self.car, cdr.borrow()),
             None => write!(formatter, "{}", self.car),
         }
     }
 }
 
 #[derive(Clone)]
-pub struct ConsIterator(pub Option<Box<Cons>>);
+pub struct ConsIterator(pub Option<Rc<RefCell<Cons>>>);
 
 impl Iterator for ConsIterator {
     type Item = Sexpr;
 
     fn next(&mut self) -> Option<Self::Item> {
         self.0.clone().map(|cons| {
-            let val = cons.car.clone();
+            let val = cons.borrow().car.clone();
 
-            self.0 = cons.cdr.clone();
+            self.0 = cons.borrow().cdr.clone();
 
             val
         })
