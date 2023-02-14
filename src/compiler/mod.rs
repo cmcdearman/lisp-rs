@@ -1,9 +1,16 @@
-#[derive(Debug, Clone)]
-pub struct Compiler {}
+use crate::parser::Parser;
 
-impl Compiler {
-    pub fn new() -> Self {
-        Self {}
+pub struct Compiler<'src> {
+    parser: Parser<'src>,
+    bytecode: Vec<u8>,
+}
+
+impl<'src> Compiler<'src> {
+    pub fn new(src: &'src str, lazy: bool) -> Self {
+        Self {
+            parser: Parser::new(src, lazy),
+            bytecode: Vec::new(),
+        }
     }
 
     fn macro_expand(&self) {}
