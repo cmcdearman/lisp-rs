@@ -3,7 +3,7 @@ pub mod rational;
 pub mod float;
 pub mod complex;
 
-use std::{fmt::Display, str::FromStr};
+use std::{fmt::Display};
 
 use num_complex::Complex64;
 use num_rational::Rational64;
@@ -35,11 +35,3 @@ impl Display for Number {
         }
     }
 }
-
-// impl FromStr for Number {
-//     type Err = ParseNumberError;
-
-//     fn from_str(s: &str) -> Result<Self, Self::Err> {
-//         todo!()
-//     }
-// }
