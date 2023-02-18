@@ -1,21 +1,9 @@
-use std::{
-    cell::RefCell,
-    collections::HashMap,
-    fmt::{Debug, Display},
-    rc::Rc,
-};
+use std::fmt::Display;
 
 use num_bigint::BigInt;
 use num_rational::Rational64;
 
-use self::{env::Env, lambda::Lambda, list::List, number::Number, symbol::Symbol};
-
-pub mod cons;
 pub mod env;
-pub mod lambda;
-pub mod list;
-pub mod number;
-pub mod symbol;
 
 #[derive(Debug, Clone)]
 pub enum Sexpr {
@@ -36,7 +24,7 @@ impl PartialEq for Sexpr {
     fn eq(&self, other: &Self) -> bool {
         match (self, other) {
             (Sexpr::Atom(a1), Sexpr::Atom(a2)) => *a1 == *a2,
-            (Sexpr::Atom(_), Sexpr::List(_)) | (Sexpr::List(_), Sexpr::Atom(_)) => todo!(),
+            (Sexpr::Atom(_), Sexpr::Cons(_, _)) | (Sexpr::Cons(_, _), Sexpr::Atom(_)) => todo!(),
             _ => false,
         }
     }
