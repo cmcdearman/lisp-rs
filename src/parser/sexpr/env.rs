@@ -1,11 +1,11 @@
 use std::collections::HashMap;
 
-use super::{symbol::Symbol, Sexpr};
+use super::Sexpr;
 
 #[derive(Debug, Clone)]
 pub struct Env {
     parent: Option<Box<Env>>,
-    entries: HashMap<Symbol, Sexpr>,
+    entries: HashMap<String, Sexpr>,
 }
 
 impl Env {
@@ -16,12 +16,12 @@ impl Env {
         }
     }
 
-    pub fn define(&mut self, name: Symbol, value: Sexpr) {
+    pub fn define(&mut self, name: String, value: Sexpr) {
         self.entries.insert(name, value);
     }
 
-    pub fn find(&self, name: &Symbol) -> Option<Sexpr> {
-        if let Some(v) = self.entries.get(name) {
+    pub fn find(&self, name: String) -> Option<Sexpr> {
+        if let Some(v) = self.entries.get(&name) {
             Some(v.clone())
         } else if let Some(parent) = &self.parent {
             parent.as_ref().find(name)
@@ -30,7 +30,7 @@ impl Env {
         }
     }
 
-    pub fn remove(&mut self, name: Symbol) {
+    pub fn remove(&mut self, name: String) {
         self.entries.remove(&name);
     }
 }

@@ -1,16 +1,10 @@
-use std::{borrow::BorrowMut, cell::RefCell, iter::Peekable, rc::Rc, vec::IntoIter};
+use std::{cell::RefCell, iter::Peekable, rc::Rc, vec::IntoIter};
 
 use either::Either;
 
 use crate::T;
 
-use sexpr::{
-    cons::Cons,
-    list::List,
-    number::{float::Float, integer::Integer, Number},
-    symbol::Symbol,
-    Atom, Lit, Sexpr,
-};
+use sexpr::{Atom, Lit, Sexpr};
 
 use self::{
     error::{ParserError, Result},
