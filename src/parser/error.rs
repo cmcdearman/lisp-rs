@@ -4,8 +4,8 @@ use std::fmt::Display;
 pub struct ParserError(pub String);
 
 impl ParserError {
-    pub fn new(msg: String) -> Self {
-        Self(msg)
+    pub fn new(msg: &str) -> Self {
+        Self(msg.to_string())
     }
 }
 

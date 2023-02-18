@@ -10,8 +10,8 @@ pub fn repl() {
         io::stdin()
             .read_line(&mut src)
             .expect("failed to read line");
-        match Parser::new(&src, false).sexpr() {
-            Ok(ast) => println!("{}", ast),
+        match Parser::new(&src, false).parse() {
+            Ok(ast) => println!("{:?}", ast),
             Err(err) => panic!("{}", err),
         }
         // env_rc.clone(),

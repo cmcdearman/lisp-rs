@@ -9,6 +9,7 @@ use sexpr::{Atom, Lit, Sexpr};
 use self::{
     error::{ParserError, Result},
     lexer::Lexer,
+    sexpr::Number,
     token::{Token, TokenKind},
 };
 
@@ -65,35 +66,34 @@ impl<'src> Parser<'src> {
         );
     }
 
-    pub fn sexpr(&mut self) -> Result<Sexpr> {
+    pub fn parse(&mut self) -> Result<Sexpr> {
         match self.peek() {
             T!['('] => {
                 self.consume(T!['(']);
-                self.list()
+                self.cons()
             }
             _ => self.atom(),
         }
     }
 
-    fn list(&mut self) -> Result<Sexpr> {
-        let mut new_list = List { head: None };
-        let mut tail: Option<Rc<RefCell<Cons>>> = None;
-
-        while !self.at(T![')']) {
-            let new_cons = Rc::new(RefCell::new(Cons {
-                car: self.sexpr()?,
-                cdr: None,
-            }));
-            if new_list.head.is_none() {
-                new_list.head = Some(new_cons.clone());
-            } else if let Some(tail_cons) = tail {
-                tail_cons.as_ref().borrow_mut().cdr = Some(new_cons.clone());
-            }
-
-            tail = Some(new_cons);
+    fn cons(&mut self) -> Result<Sexpr> {
+        if self.at(T![')']) {
+            return Ok(Sexpr::Nil);
         }
 
-        Ok(Sexpr::List(new_list))
+        let car = self.parse()?;
+        let mut cdr = Sexpr::Nil;
+        let mut rest = vec![];
+
+        while !self.at(T![')']) {
+            rest.push(self.parse()?)
+        }
+
+        for sexpr in rest.into_iter().rev() {
+            cdr = Sexpr::Cons(Box::new(sexpr), Box::new(cdr));
+        }
+
+        Ok(Sexpr::Cons(Box::new(car), Box::new(cdr)))
     }
 
     fn atom(&mut self) -> Result<Sexpr> {
@@ -104,11 +104,15 @@ impl<'src> Parser<'src> {
                     self.text(lit_tok)
                 };
                 let lit = match lit {
-                    T![int] => Lit::Number(Number::Integer(
-                        lit_text.parse::<Integer>().map_err(|e| ParserError(e.0))?,
+                    T![int] => Lit::Number(Number::Fixnum(
+                        lit_text
+                            .parse()
+                            .map_err(|_| ParserError::new("invalid integer literal"))?,
                     )),
                     T![float] => Lit::Number(Number::Float(
-                        lit_text.parse::<Float>().map_err(|e| ParserError(e.0))?,
+                        lit_text
+                            .parse()
+                            .map_err(|_| ParserError::new("invalid floating point literal"))?,
                     )),
                     T![str] => Lit::Str(lit_text[1..(lit_text.len() - 1)].to_string()),
                     T![bool] => Lit::Bool(lit_text.parse().expect("invalid bool literal")),
@@ -117,8 +121,8 @@ impl<'src> Parser<'src> {
                 Ok(Sexpr::Atom(Atom::Lit(lit)))
             }
             TokenKind::Ident => {
-                let ident = self.next().ok_or(ParserError::new("t".to_string()))?;
-                Ok(Sexpr::Atom(Atom::Sym(Symbol::from(self.text(ident)))))
+                let ident = self.next().ok_or(ParserError::new(""))?;
+                Ok(Sexpr::Atom(Atom::Sym(self.text(ident).to_string())))
             }
             kind => {
                 panic!("Unknown start of atom: `{}`", kind);

@@ -20,8 +20,8 @@ impl Env {
         self.entries.insert(name, value);
     }
 
-    pub fn find(&self, name: String) -> Option<Sexpr> {
-        if let Some(v) = self.entries.get(&name) {
+    pub fn find(&self, name: &String) -> Option<Sexpr> {
+        if let Some(v) = self.entries.get(name) {
             Some(v.clone())
         } else if let Some(parent) = &self.parent {
             parent.as_ref().find(name)

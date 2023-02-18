@@ -1,1 +1,32 @@
 (println "Hello, World!")
+
+Cons(
+    Atom(
+        Sym(
+            "+",
+        ),
+    ),
+    Cons(
+        Atom(
+            Lit(
+                Number(
+                    Fixnum(
+                        2,
+                    ),
+                ),
+            ),
+        ),
+        Cons(
+            Atom(
+                Lit(
+                    Number(
+                        Fixnum(
+                            1,
+                        ),
+                    ),
+                ),
+            ),
+            Nil,
+        ),
+    ),
+)

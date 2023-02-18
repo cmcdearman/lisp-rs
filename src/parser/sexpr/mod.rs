@@ -9,13 +9,15 @@ pub mod env;
 pub enum Sexpr {
     Atom(Atom),
     Cons(Box<Self>, Box<Self>),
+    Nil,
 }
 
 impl std::fmt::Display for Sexpr {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
             Sexpr::Atom(a) => write!(f, "{}", a),
-            Sexpr::Cons(car, cdr) => write!(f, "({} {})", car, cdr),
+            Sexpr::Cons(car, cdr) => write!(f, "{} {}", car, cdr),
+            Sexpr::Nil => f.write_str("Nil"),
         }
     }
 }
@@ -67,6 +69,7 @@ impl Display for Lit {
 #[derive(Debug, Clone, PartialEq)]
 pub enum Number {
     Fixnum(i64),
+    Float(f64),
     Rational(Rational64),
     Bignum(BigInt),
 }
@@ -75,6 +78,7 @@ impl Display for Number {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Number::Fixnum(n) => write!(f, "{}", n),
+            Number::Float(d) => write!(f, "{}", d),
             Number::Rational(r) => write!(f, "{}", r),
             Number::Bignum(b) => write!(f, "{}", b),
         }
