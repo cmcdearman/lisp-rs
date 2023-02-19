@@ -5,6 +5,7 @@ use crate::parser::{
 
 pub mod default_env;
 pub mod repl;
+pub mod runtime_error;
 
 pub struct Interpreter<'src> {
     src: &'src str,

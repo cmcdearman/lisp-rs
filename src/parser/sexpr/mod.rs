@@ -1,16 +1,15 @@
-use std::{fmt::Display, ops::Add};
+use std::{fmt::Display, iter::Sum, ops::Add};
 
-use num_bigfloat::BigFloat;
 use num_bigint::BigInt;
-use num_rational::{BigRational, Rational64};
+use num_rational::Rational64;
+
+use crate::interpreter::runtime_error::RuntimeError;
 
 use self::env::Env;
 
 pub mod env;
 
-/*
- * A Lisp S-expression
- */
+// A Lisp S-expression
 #[repr(C)]
 #[derive(Debug, Clone)]
 pub enum Sexpr {
@@ -24,7 +23,7 @@ pub enum Sexpr {
     Lambda { args: Vec<String>, body: Box<Sexpr> },
 
     // A native Rust function only constructed in env
-    NativeFn(fn(env: Box<Env>, args: Vec<Sexpr>) -> Result<Sexpr, String>),
+    NativeFn(fn(env: Box<Env>, args: Vec<Sexpr>) -> Result<Sexpr, RuntimeError>),
 }
 
 pub const NIL: Sexpr = Sexpr::List(None);
@@ -107,7 +106,6 @@ pub enum Number {
     Float(f64),
     Rational(Rational64),
     Bignum(BigInt),
-    Bigfloat(BigFloat),
 }
 
 impl Display for Number {
@@ -117,50 +115,45 @@ impl Display for Number {
             Number::Float(d) => write!(f, "{}", d),
             Number::Rational(r) => write!(f, "{}", r),
             Number::Bignum(b) => write!(f, "{}", b),
-            Number::Bigfloat(b) => write!(f, "{}", b),
         }
     }
 }
 
 impl Add for Number {
-    type Output = Self;
+    type Output = Result<Number, RuntimeError>;
 
     fn add(self, rhs: Self) -> Self::Output {
         match (self, rhs) {
-            (Number::Fixnum(l), Number::Fixnum(r)) => Number::Fixnum(l + r),
-            (Number::Fixnum(l), Number::Float(r)) => Number::Float(l as f64 + r),
-            (Number::Fixnum(l), Number::Rational(r)) => Number::Rational(Rational64::from(l) + r),
-            (Number::Fixnum(l), Number::Bignum(r)) => Number::Bignum(l + r),
-            (Number::Float(l), Number::Fixnum(r)) => Number::Float(l + r as f64),
-            (Number::Float(l), Number::Float(r)) => Number::Float(l + r),
+            (Number::Fixnum(l), Number::Fixnum(r)) => {
+                if let Some(sum) = l.checked_add(r) {
+                    Ok(Number::Fixnum(sum))
+                } else {
+                    Ok(Number::Bignum(BigInt::from(l) + r))
+                }
+            }
+            (Number::Fixnum(l), Number::Float(r)) => Ok(Number::Float(l as f64 + r)),
+            (Number::Fixnum(l), Number::Rational(r)) => {
+                Ok(Number::Rational(Rational64::from(l) + r))
+            }
+            (Number::Fixnum(l), Number::Bignum(r)) => Ok(Number::Bignum(l + r)),
+            (Number::Float(l), Number::Fixnum(r)) => Ok(Number::Float(l + r as f64)),
+            (Number::Float(l), Number::Float(r)) => Ok(Number::Float(l + r)),
             (Number::Float(l), Number::Rational(r)) => {
-                Number::Float(l + *r.numer() as f64 / *r.denom() as f64)
+                Ok(Number::Float(l + *r.numer() as f64 / *r.denom() as f64))
             }
-            (Number::Float(l), Number::Bignum(r)) => {
-                let bigr = BigRational::from(r);
-                Number::Bigfloat(BigFloat::from_f64(l) + BigFloat::from(r))
+            (Number::Rational(l), Number::Fixnum(r)) => {
+                Ok(Number::Rational(l + Rational64::from(r)))
             }
-            (Number::Rational(l), Number::Fixnum(r)) => Number::Rational(l + Rational64::from(r)),
             (Number::Rational(l), Number::Float(r)) => {
-                Number::Float(*l.numer() as f64 / *l.denom() as f64 + r)
+                Ok(Number::Float(*l.numer() as f64 / *l.denom() as f64 + r))
             }
-            (Number::Rational(l), Number::Rational(r)) => todo!(),
-            (Number::Rational(l), Number::Bignum(r)) => todo!(),
-            (Number::Bignum(l), Number::Fixnum(r)) => todo!(),
-            (Number::Bignum(l), Number::Float(r)) => todo!(),
-            (Number::Bignum(l), Number::Rational(r)) => todo!(),
-            (Number::Bignum(l), Number::Bignum(r)) => todo!(),
-            (Number::Fixnum(_), Number::Bigfloat(_)) => todo!(),
-            (Number::Float(_), Number::Bigfloat(_)) => todo!(),
-            (Number::Rational(_), Number::Bigfloat(_)) => todo!(),
-            (Number::Bignum(_), Number::Bigfloat(_)) => todo!(),
-            (Number::Bigfloat(_), Number::Fixnum(_)) => todo!(),
-            (Number::Bigfloat(_), Number::Float(_)) => todo!(),
-            (Number::Bigfloat(_), Number::Rational(_)) => todo!(),
-            (Number::Bigfloat(_), Number::Bignum(_)) => todo!(),
-            (Number::Bigfloat(_), Number::Bigfloat(_)) => todo!(),
+            (Number::Rational(l), Number::Rational(r)) => Ok(Number::Rational(l + r)),
+            (Number::Bignum(l), Number::Fixnum(r)) => Ok(Number::Bignum(l + r)),
+            (Number::Bignum(l), Number::Bignum(r)) => Ok(Number::Bignum(l + r)),
+            (Number::Bignum(_), Number::Float(_))
+            | (Number::Float(_), Number::Bignum(_))
+            | (Number::Bignum(_), Number::Rational(_))
+            | (Number::Rational(_), Number::Bignum(_)) => Err(RuntimeError::NumberOverflowError),
         }
     }
 }
-
-

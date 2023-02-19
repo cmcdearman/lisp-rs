@@ -7,7 +7,7 @@ use crate::T;
 use sexpr::{Atom, Lit, Sexpr};
 
 use self::{
-    error::{ParserError, Result},
+    parser_error::{ParserError, Result},
     lexer::{
         token::{Token, TokenKind},
         Lexer,
@@ -15,7 +15,7 @@ use self::{
     sexpr::{Cons, Number, NIL},
 };
 
-pub mod error;
+pub mod parser_error;
 pub mod lexer;
 pub mod sexpr;
 
