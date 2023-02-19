@@ -1,6 +1,6 @@
 use logos::Logos;
 
-use self::token::{TokenKind, Token};
+use self::token::{Token, TokenKind};
 
 pub mod token;
 

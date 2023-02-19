@@ -1,4 +1,8 @@
-use std::{fmt::Display, iter::Sum, ops::Add};
+use std::{
+    borrow::Borrow,
+    fmt::{Debug, Display},
+    ops::Add,
+};
 
 use num_bigint::BigInt;
 use num_rational::Rational64;
@@ -11,13 +15,13 @@ pub mod env;
 
 // A Lisp S-expression
 #[repr(C)]
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub enum Sexpr {
     // A Lisp atom
     Atom(Atom),
 
     // A Lisp list represented as a singly-linked list of conses
-    List(Option<Box<Cons>>),
+    List(List),
 
     // A Lisp lambda only constructed in eval
     Lambda { args: Vec<String>, body: Box<Sexpr> },
@@ -26,33 +30,24 @@ pub enum Sexpr {
     NativeFn(fn(env: Box<Env>, args: Vec<Sexpr>) -> Result<Sexpr, RuntimeError>),
 }
 
-pub const NIL: Sexpr = Sexpr::List(None);
-
-#[derive(Debug, Clone)]
-pub struct Cons(pub Box<Sexpr>, pub Option<Box<Cons>>);
-
-impl Display for Cons {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match &self.1 {
-            Some(cdr) => write!(f, "{} {}", self.0.as_ref(), cdr.as_ref()),
-            None => write!(f, "{}", self.0.as_ref()),
+impl Display for Sexpr {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            Self::Atom(a) => write!(f, "{}", a),
+            Self::List(head) => write!(f, "{}", head),
+            Self::Lambda { args, body } => todo!(),
+            Self::NativeFn(_) => write!(f, "NativeFn"),
         }
     }
 }
 
-impl std::fmt::Display for Sexpr {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+impl Debug for Sexpr {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Sexpr::Atom(a) => write!(f, "{}", a),
-            Sexpr::List(head) => {
-                if let Some(h) = head {
-                    write!(f, "({})", h.as_ref())
-                } else {
-                    write!(f, "Nil")
-                }
-            }
-            Sexpr::Lambda { args, body } => todo!(),
-            Sexpr::NativeFn(_) => write!(f, "NativeFn"),
+            Self::Atom(a) => write!(f, "{}", a),
+            Self::List(l) => write!(f, "{:?}", l),
+            Self::Lambda { args, body } => todo!(),
+            Self::NativeFn(nf) => write!(f, "{:?}", nf),
         }
     }
 }
@@ -60,13 +55,95 @@ impl std::fmt::Display for Sexpr {
 impl PartialEq for Sexpr {
     fn eq(&self, other: &Self) -> bool {
         match (self, other) {
-            (Sexpr::Atom(a1), Sexpr::Atom(a2)) => *a1 == *a2,
+            (Self::Atom(a1), Self::Atom(a2)) => *a1 == *a2,
             _ => false,
         }
     }
 }
 
 impl Eq for Sexpr {}
+
+pub const NIL: Sexpr = Sexpr::List(List { head: None });
+
+#[derive(Clone, Default, PartialEq)]
+pub struct List {
+    head: Option<Box<Cons>>,
+}
+
+impl List {
+    pub fn new(head: Option<Box<Cons>>) -> Self {
+        Self { head }
+    }
+}
+
+impl Display for List {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match &self.head {
+            Some(h) => write!(f, "({})", h),
+            None => write!(f, "Nil"),
+        }
+    }
+}
+
+impl Debug for List {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match &self.head {
+            Some(h) => write!(f, "{:?}", h),
+            None => write!(f, "Nil"),
+        }
+    }
+}
+
+impl IntoIterator for List {
+    type Item = Sexpr;
+
+    type IntoIter = ConsIter;
+
+    fn into_iter(self) -> Self::IntoIter {
+        ConsIter(self.head.clone())
+    }
+}
+
+#[derive(Clone, PartialEq)]
+pub struct Cons {
+    pub car: Sexpr,
+    pub cdr: Option<Box<Cons>>,
+}
+
+impl Display for Cons {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match &self.cdr {
+            Some(cdr) => write!(f, "{} {}", self.car, cdr.as_ref()),
+            None => write!(f, "{}", self.car),
+        }
+    }
+}
+
+impl Debug for Cons {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match &self.cdr {
+            Some(cdr) => write!(f, "({} . {:?})", self.car, cdr.as_ref()),
+            None => write!(f, "({:?} . Nil)", self.car),
+        }
+    }
+}
+
+#[derive(Clone)]
+pub struct ConsIter(Option<Box<Cons>>);
+
+impl Iterator for ConsIter {
+    type Item = Sexpr;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.0.clone().map(|cons| {
+            let sexpr = cons.car.clone();
+
+            self.0 = cons.cdr.clone();
+
+            sexpr
+        })
+    }
+}
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Atom {
