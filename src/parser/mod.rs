@@ -1,4 +1,4 @@
-use std::{cell::RefCell, iter::Peekable, rc::Rc, vec::IntoIter};
+use std::{iter::Peekable, vec::IntoIter};
 
 use either::Either;
 
@@ -8,15 +8,16 @@ use sexpr::{Atom, Lit, Sexpr};
 
 use self::{
     error::{ParserError, Result},
-    lexer::Lexer,
-    sexpr::Number,
-    token::{Token, TokenKind},
+    lexer::{
+        token::{Token, TokenKind},
+        Lexer,
+    },
+    sexpr::{Cons, Number, NIL},
 };
 
 pub mod error;
 pub mod lexer;
 pub mod sexpr;
-pub mod token;
 
 pub struct Parser<'src> {
     src: &'src str,
@@ -70,19 +71,19 @@ impl<'src> Parser<'src> {
         match self.peek() {
             T!['('] => {
                 self.consume(T!['(']);
-                self.cons()
+                self.list()
             }
             _ => self.atom(),
         }
     }
 
-    fn cons(&mut self) -> Result<Sexpr> {
+    fn list(&mut self) -> Result<Sexpr> {
         if self.at(T![')']) {
-            return Ok(Sexpr::Nil);
+            return Ok(NIL);
         }
 
-        let car = self.parse()?;
-        let mut cdr = Sexpr::Nil;
+        let car = Box::new(self.parse()?);
+        let mut cdr = None;
         let mut rest = vec![];
 
         while !self.at(T![')']) {
@@ -90,10 +91,10 @@ impl<'src> Parser<'src> {
         }
 
         for sexpr in rest.into_iter().rev() {
-            cdr = Sexpr::Cons(Box::new(sexpr), Box::new(cdr));
+            cdr = Some(Box::new(Cons(Box::new(sexpr), cdr)));
         }
 
-        Ok(Sexpr::Cons(Box::new(car), Box::new(cdr)))
+        Ok(Sexpr::List(Some(Box::new(Cons(car, cdr)))))
     }
 
     fn atom(&mut self) -> Result<Sexpr> {

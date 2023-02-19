@@ -1,6 +1,8 @@
 use logos::Logos;
 
-use super::token::{TokenKind, Token};
+use self::token::{TokenKind, Token};
+
+pub mod token;
 
 pub struct Lexer<'src> {
     logos: logos::SpannedIter<'src, TokenKind>,

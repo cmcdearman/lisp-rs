@@ -37,46 +37,46 @@ pub enum TokenKind {
 #[macro_export]
 macro_rules! T {
     [EOF] => {
-        $crate::parser::token::TokenKind::Eof
+        $crate::parser::lexer::token::TokenKind::Eof
     };
     [err] => {
-        $crate::parser::token::TokenKind::Err
+        $crate::parser::lexer::token::TokenKind::Err
     };
     [ws] => {
-        $crate::parser::token::TokenKind::Whitespace
+        $crate::parser::lexer::token::TokenKind::Whitespace
     };
     [;] => {
-        $crate::parser::token::TokenKind::Comment
+        $crate::parser::lexer::token::TokenKind::Comment
     };
     [ident] => {
-        $crate::parser::token::TokenKind::Ident
+        $crate::parser::lexer::token::TokenKind::Ident
     };
     [int] => {
-        $crate::parser::token::TokenKind::Int
+        $crate::parser::lexer::token::TokenKind::Int
     };
     [float] => {
-        $crate::parser::token::TokenKind::Float
+        $crate::parser::lexer::token::TokenKind::Float
     };
     [str] => {
-        $crate::parser::token::TokenKind::String
+        $crate::parser::lexer::token::TokenKind::String
     };
     [bool] => {
-        $crate::parser::token::TokenKind::Bool
+        $crate::parser::lexer::token::TokenKind::Bool
     };
     ['('] => {
-        $crate::parser::token::TokenKind::LParen
+        $crate::parser::lexer::token::TokenKind::LParen
     };
     [')'] => {
-        $crate::parser::token::TokenKind::RParen
+        $crate::parser::lexer::token::TokenKind::RParen
     };
     ['['] => {
-        $crate::parser::token::TokenKind::LBrack
+        $crate::parser::lexer::token::TokenKind::LBrack
     };
     [']'] => {
-        $crate::parser::token::TokenKind::RBrack
+        $crate::parser::lexer::token::TokenKind::RBrack
     };
     [:] => {
-        $crate::parser::token::TokenKind::Colon
+        $crate::parser::lexer::token::TokenKind::Colon
     };
 }
 

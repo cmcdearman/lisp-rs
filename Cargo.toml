@@ -8,6 +8,7 @@ edition = "2021"
 [dependencies]
 either = "1.8.1"
 logos = "0.12.1"
+num-bigfloat = "1.6.2"
 num-bigint = "0.4"
 num-complex = "0.4.3"
 num-rational = "0.4.1"

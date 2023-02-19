@@ -1,10 +1,10 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, rc::Rc, cell::RefCell};
 
 use super::Sexpr;
 
 #[derive(Debug, Clone)]
 pub struct Env {
-    parent: Option<Box<Env>>,
+    parent: Option<Rc<RefCell<Env>>>,
     entries: HashMap<String, Sexpr>,
 }
 
@@ -24,7 +24,7 @@ impl Env {
         if let Some(v) = self.entries.get(name) {
             Some(v.clone())
         } else if let Some(parent) = &self.parent {
-            parent.as_ref().find(name)
+            parent.as_ref().borrow().find(name)
         } else {
             None
         }
