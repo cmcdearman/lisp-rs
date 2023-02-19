@@ -2,7 +2,7 @@ use crate::parser::sexpr::{env::Env, Atom, Lit, Number, Sexpr};
 
 use super::runtime_error::{Result, RuntimeError};
 
-pub fn default_env() -> Env {
+pub fn default_env() -> Box<Env> {
     let mut env = Env::new();
     env.define(
         String::from("+"),
@@ -48,7 +48,7 @@ pub fn default_env() -> Env {
     //     String::from("type-of"),
     //     Sexpr::NativeFn(|env, args| todo!()),
     // );
-    env
+    Box::new(env)
 }
 
 fn sum_number_list(args: Vec<Sexpr>) -> Result<Sexpr> {
