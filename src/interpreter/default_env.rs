@@ -1,19 +1,19 @@
-use num_bigfloat::E;
+use std::{cell::RefCell, rc::Rc};
 
 use crate::parser::sexpr::{env::Env, Atom, Lit, Number, Sexpr};
 
 use super::runtime_error::{Result, RuntimeError};
 
-pub fn default_env() -> Box<Env> {
+pub fn default_env() -> Rc<RefCell<Env>> {
     let mut env = Env::new();
     env.define(
         String::from("+"),
         Sexpr::NativeFn(|_, args| Ok(sum_number_list(args)?)),
     );
-    // env.define(
-    //     String::from("-"),
-    //     Sexpr::NativeFn(|_, args| Ok((sub_number_list(args)?))),
-    // );
+    env.define(
+        String::from("-"),
+        Sexpr::NativeFn(|_, args| Ok(sub_number_list(args)?)),
+    );
     // env.define(
     //     String::from("*"),
     //     Sexpr::NativeFn(|_, args| Ok((mul_number_list(args)?))),
@@ -22,10 +22,18 @@ pub fn default_env() -> Box<Env> {
     //     String::from("/"),
     //     Sexpr::NativeFn(|_, args| Ok((quo_number_list(args)?))),
     // );
-    // env.define(
-    //     String::from("let"),
-    //     Sexpr::NativeFn(|_, args| Ok((sum_number_list(args)?))),
-    // );
+    env.define(
+        String::from("def"),
+        Sexpr::NativeFn(|env, args| {
+            if let Sexpr::Atom(Atom::Sym(s)) = &args[0] {
+                env.borrow_mut().define(s.to_string(), args[1].clone());
+                return Ok(args[1].clone());
+            }
+            Err(RuntimeError::IvalidFunctionArgumentsError)
+        }),
+    );
+
+    env.define(String::from("let"), Sexpr::NativeFn(|_, args| todo!()));
     // env.define(
     //     String::from("mod"),
     //     Sexpr::NativeFn(|_, args| Ok((mod_number_list(args)?))),
@@ -48,15 +56,15 @@ pub fn default_env() -> Box<Env> {
     // );
     env.define(String::from("type-of"), Sexpr::NativeFn(type_of));
 
-    Box::new(env)
+    Rc::new(RefCell::new(env))
 }
 
-fn type_of(env: Box<Env>, args: Vec<Sexpr>) -> Result<Sexpr> {
+fn type_of(env: Rc<RefCell<Env>>, args: Vec<Sexpr>) -> Result<Sexpr> {
     match &args[0] {
         Sexpr::Atom(a) => match a {
             Atom::Sym(s) => {
-                if let Some(var) = env.find(s) {
-                    return type_of(env, vec![var]);
+                if let Some(var) = env.borrow().find(s) {
+                    return type_of(env.clone(), vec![var]);
                 }
                 Ok(Sexpr::Atom(Atom::Sym("Symbol".to_string())))
             }
@@ -89,21 +97,17 @@ fn sum_number_list(args: Vec<Sexpr>) -> Result<Sexpr> {
     )?))))
 }
 
-// fn gcd(a: i64, b: i64) -> i64 {
-//     match b {
-//        0 => a,
-//        _ => gcd(b, a % b)
-//     }
-// }
+fn sub_number_list(args: Vec<Sexpr>) -> Result<Sexpr> {
+    let first = match args.get(0) {
+        Some(Sexpr::Atom(Atom::Lit(Lit::Number(n)))) => n,
+        _ => Err(RuntimeError::FirstElemError)?,
+    };
 
-// fn sub_number_list(args: Vec<Sexpr>) -> Result<Sexpr> {
-//     let first = match args.get(0) {
-//         Sexpr::Atom(n) => n,
-//         _ => Err(String::from("error converting sub arguments to Sexprs"))?,
-//     };
-
-//     Ok(first.clone() - sum_number_list(args[1..].to_vec())?)
-// }
+    if let Sexpr::Atom(Atom::Lit(Lit::Number(n))) = sum_number_list(args[1..].to_vec())? {
+        return (first.clone() - n).map(|num| Sexpr::Atom(Atom::Lit(Lit::Number(num))));
+    }
+    Err(RuntimeError::IvalidFunctionArgumentsError)
+}
 
 // fn mul_number_list(args: Vec<Sexpr>) -> Result<Sexpr, String> {
 //     args.iter()
@@ -139,4 +143,11 @@ fn sum_number_list(args: Vec<Sexpr>) -> Result<Sexpr> {
 //     };
 
 //     Ok(Number.clone() % div.clone())
+// }
+
+// fn gcd(a: i64, b: i64) -> i64 {
+//     match b {
+//        0 => a,
+//        _ => gcd(b, a % b)
+//     }
 // }

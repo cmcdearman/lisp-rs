@@ -8,6 +8,7 @@ pub fn repl() {
     // let env_rc = Rc::new(RefCell::new(env));
     print!("lust> ");
     io::stdout().flush().expect("failed to flush stdout");
+    let env = default_env();
     loop {
         let mut src = String::new();
         io::stdin()
@@ -17,7 +18,7 @@ pub fn repl() {
         //     Ok(ast) => println!("{:?}", ast),
         //     Err(err) => panic!("{}", err),
         // }
-        match eval(&Parser::new(&src, false).parse().unwrap(), default_env()) {
+        match eval(&Parser::new(&src, false).parse().unwrap(), env.clone()) {
             Ok(v) => println!("{}", v),
             Err(e) => panic!("{}", e),
         }

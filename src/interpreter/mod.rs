@@ -1,5 +1,7 @@
+use std::{cell::RefCell, rc::Rc};
+
 use crate::parser::{
-    sexpr::{env::Env, Atom, Sexpr},
+    sexpr::{env::Env, Atom, Sexpr, NIL},
     Parser,
 };
 
@@ -50,15 +52,17 @@ pub mod runtime_error;
 //     }
 // }
 
-pub fn eval(sexpr: &Sexpr, env: Box<Env>) -> Result<Sexpr> {
+pub fn eval(sexpr: &Sexpr, env: Rc<RefCell<Env>>) -> Result<Sexpr> {
     match sexpr {
         lit @ Sexpr::Atom(Atom::Lit(_)) => Ok(lit.clone()),
-        Sexpr::Atom(Atom::Sym(name)) => Ok(env
-            .find(&name)
-            .ok_or(RuntimeError::UnknownIdentError)?
-            .clone()),
-        Sexpr::List(head) => {
-            let mut list_iter = head.clone().into_iter();
+        sym @ Sexpr::Atom(Atom::Sym(name)) => {
+            if let Some(v) = env.borrow().find(&name) {
+                return Ok(v.clone());
+            }
+            Ok(sym.clone())
+        }
+        Sexpr::List(l) => {
+            let mut list_iter = l.clone().into_iter();
             match eval(
                 &list_iter.next().ok_or(RuntimeError::EarlyListEndError)?,
                 env.clone(),

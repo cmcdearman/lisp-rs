@@ -1,12 +1,14 @@
 use std::{
+    cell::RefCell,
     fmt::{Debug, Display},
-    ops::Add,
+    ops::{Add, Sub},
+    rc::Rc,
 };
 
 use num_bigint::BigInt;
 use num_rational::Rational64;
 
-use crate::interpreter::runtime_error::RuntimeError;
+use crate::interpreter::runtime_error::{Result, RuntimeError};
 
 use self::env::Env;
 
@@ -26,7 +28,7 @@ pub enum Sexpr {
     Lambda { args: Vec<String>, body: Box<Sexpr> },
 
     // A native Rust function only constructed in env
-    NativeFn(fn(env: Box<Env>, args: Vec<Sexpr>) -> Result<Sexpr, RuntimeError>),
+    NativeFn(fn(env: Rc<RefCell<Env>>, args: Vec<Sexpr>) -> Result<Sexpr>),
 }
 
 impl Display for Sexpr {
@@ -196,7 +198,7 @@ impl Display for Number {
 }
 
 impl Add for Number {
-    type Output = Result<Number, RuntimeError>;
+    type Output = Result<Number>;
 
     fn add(self, rhs: Self) -> Self::Output {
         match (self, rhs) {
@@ -226,6 +228,45 @@ impl Add for Number {
             (Number::Rational(l), Number::Rational(r)) => Ok(Number::Rational(l + r)),
             (Number::Bignum(l), Number::Fixnum(r)) => Ok(Number::Bignum(l + r)),
             (Number::Bignum(l), Number::Bignum(r)) => Ok(Number::Bignum(l + r)),
+            (Number::Bignum(_), Number::Float(_))
+            | (Number::Float(_), Number::Bignum(_))
+            | (Number::Bignum(_), Number::Rational(_))
+            | (Number::Rational(_), Number::Bignum(_)) => Err(RuntimeError::NumberOverflowError),
+        }
+    }
+}
+
+impl Sub for Number {
+    type Output = Result<Number>;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        match (self, rhs) {
+            (Number::Fixnum(l), Number::Fixnum(r)) => {
+                if let Some(diff) = l.checked_sub(r) {
+                    Ok(Number::Fixnum(diff))
+                } else {
+                    Ok(Number::Bignum(BigInt::from(l) - r))
+                }
+            }
+            (Number::Fixnum(l), Number::Float(r)) => Ok(Number::Float(l as f64 - r)),
+            (Number::Fixnum(l), Number::Rational(r)) => {
+                Ok(Number::Rational(Rational64::from(l) - r))
+            }
+            (Number::Fixnum(l), Number::Bignum(r)) => Ok(Number::Bignum(l - r)),
+            (Number::Float(l), Number::Fixnum(r)) => Ok(Number::Float(l - r as f64)),
+            (Number::Float(l), Number::Float(r)) => Ok(Number::Float(l - r)),
+            (Number::Float(l), Number::Rational(r)) => {
+                Ok(Number::Float(l - *r.numer() as f64 / *r.denom() as f64))
+            }
+            (Number::Rational(l), Number::Fixnum(r)) => {
+                Ok(Number::Rational(l - Rational64::from(r)))
+            }
+            (Number::Rational(l), Number::Float(r)) => {
+                Ok(Number::Float(*l.numer() as f64 / *l.denom() as f64 - r))
+            }
+            (Number::Rational(l), Number::Rational(r)) => Ok(Number::Rational(l - r)),
+            (Number::Bignum(l), Number::Fixnum(r)) => Ok(Number::Bignum(l - r)),
+            (Number::Bignum(l), Number::Bignum(r)) => Ok(Number::Bignum(l - r)),
             (Number::Bignum(_), Number::Float(_))
             | (Number::Float(_), Number::Bignum(_))
             | (Number::Bignum(_), Number::Rational(_))
