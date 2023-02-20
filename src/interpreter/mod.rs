@@ -99,13 +99,12 @@ fn eval_special_form(
     match special_form.as_str() {
         "def" => {
             if let Some(Sexpr::Atom(Atom::Sym(s))) = list_iter.next() {
-                let mut val = list_iter
-                    .next()
-                    .ok_or(RuntimeError::IvalidFunctionArgumentsError)?;
-
-                if let Sexpr::Atom(Atom::Sym(_)) = val {
-                    val = eval(env.clone(), &val)?;
-                }
+                let val = eval(
+                    env.clone(),
+                    &list_iter
+                        .next()
+                        .ok_or(RuntimeError::IvalidFunctionArgumentsError)?,
+                )?;
 
                 env.borrow_mut().define(s.to_string(), val.clone());
                 return Ok(val.clone());
