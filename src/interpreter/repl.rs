@@ -18,8 +18,12 @@ pub fn repl() {
         //     Ok(ast) => println!("{:?}", ast),
         //     Err(err) => panic!("{}", err),
         // }
-        match eval(env.clone(), &Parser::new(&src, false).parse().unwrap()) {
-            Ok(v) => println!("{}", v),
+        let ast = &Parser::new(&src, false).parse().unwrap();
+        println!("Ast: {:?}", ast);
+        match eval(env.clone(), ast) {
+            Ok(v) => {
+                println!("{}", v)
+            }
             Err(e) => panic!("{}", e),
         }
         // env_rc.clone(),

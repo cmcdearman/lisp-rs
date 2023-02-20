@@ -63,6 +63,7 @@ pub fn eval(env: Rc<RefCell<Env>>, sexpr: &Sexpr) -> Result<Sexpr> {
         }
         Sexpr::List(l) => {
             let mut list_iter = l.clone().into_iter();
+            println!("{:?}", &list_iter.clone().collect::<Vec<Sexpr>>());
             let first = list_iter.next().ok_or(RuntimeError::EarlyListEndError)?;
 
             if first.is_special_form() {
@@ -112,7 +113,28 @@ fn eval_special_form(
             Err(RuntimeError::IvalidFunctionArgumentsError)
         }
         "let" => todo!(),
-        "fn" => todo!(),
+        "fn" => {
+            if !(2..4).contains(&list_iter.len()) {
+                println!("{} too short", &list_iter.len());
+                println!("{:?}", list_iter.collect::<Vec<Sexpr>>());
+                return Err(RuntimeError::IvalidFunctionArgumentsError);
+            }
+
+            let mut fn_args = vec![];
+            if let Sexpr::List(l) = &list_iter.next().ok_or(RuntimeError::EarlyListEndError)? {
+                fn_args = l.clone().into_iter().map(|x| x.clone()).collect();
+            }
+
+            let body = &list_iter
+                .next()
+                .ok_or(RuntimeError::IvalidFunctionArgumentsError)?;
+
+            Ok(Sexpr::Lambda {
+                env: Rc::new(RefCell::new(env.borrow().create_child())),
+                args: fn_args,
+                body: Box::new(body.clone()),
+            })
+        }
         "quote" => list_iter.next().ok_or(RuntimeError::EarlyListEndError),
         _ => panic!("expected special form got `{}`", special_form),
     }

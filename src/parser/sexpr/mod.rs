@@ -172,6 +172,16 @@ impl Iterator for ConsIter {
     }
 }
 
+impl ExactSizeIterator for ConsIter {
+    fn len(&self) -> usize {
+        let mut length: usize = 0;
+
+        self.clone().for_each(|_| length += 1);
+
+        length
+    }
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum Atom {
     Sym(String),

@@ -32,36 +32,10 @@ pub fn default_env() -> Rc<RefCell<Env>> {
     //         Err(RuntimeError::IvalidFunctionArgumentsError)
     //     }),
     // );
-
-    env.define(String::from("let"), Sexpr::NativeFn(|_, args| todo!()));
-
-    env.define(String::from("quote"), Sexpr::NativeFn(|env, args| todo!()));
     // env.define(
     //     String::from("mod"),
     //     Sexpr::NativeFn(|_, args| Ok((mod_number_list(args)?))),
     // );
-
-    env.define(
-        String::from("fn"),
-        Sexpr::NativeFn(|env, args| {
-            if !(2..4).contains(&args.len()) {
-                return Err(RuntimeError::IvalidFunctionArgumentsError);
-            }
-
-            let mut fn_args = vec![];
-            if let Sexpr::List(l) = &args[0] {
-                fn_args = l.clone().into_iter().map(|x| x.clone()).collect();
-            }
-
-            let body = &args[1];
-
-            Ok(Sexpr::Lambda {
-                env: Rc::new(RefCell::new(env.borrow().create_child())),
-                args: fn_args,
-                body: Box::new(body.clone()),
-            })
-        }),
-    );
 
     env.define(String::from("type-of"), Sexpr::NativeFn(type_of));
 
