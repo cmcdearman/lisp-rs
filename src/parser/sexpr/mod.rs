@@ -45,6 +45,16 @@ impl Sexpr {
         }
         false
     }
+
+    pub fn get_special_form(&self) -> Option<String> {
+        if let Sexpr::Atom(Atom::Sym(s)) = &self {
+            return match s.as_str() {
+                "def" | "let" | "fn" | "quote" => Some(s.clone()),
+                _ => None,
+            };
+        }
+        None
+    }
 }
 
 impl Display for Sexpr {

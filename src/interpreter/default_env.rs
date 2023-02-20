@@ -22,16 +22,16 @@ pub fn default_env() -> Rc<RefCell<Env>> {
     //     String::from("/"),
     //     Sexpr::NativeFn(|_, args| Ok((quo_number_list(args)?))),
     // );
-    env.define(
-        String::from("def"),
-        Sexpr::NativeFn(|env, args| {
-            if let Sexpr::Atom(Atom::Sym(s)) = &args[0] {
-                env.borrow_mut().define(s.to_string(), args[1].clone());
-                return Ok(args[1].clone());
-            }
-            Err(RuntimeError::IvalidFunctionArgumentsError)
-        }),
-    );
+    // env.define(
+    //     String::from("def"),
+    //     Sexpr::NativeFn(|env, args| {
+    //         if let Sexpr::Atom(Atom::Sym(s)) = &args[0] {
+    //             env.borrow_mut().define(s.to_string(), args[1].clone());
+    //             return Ok(args[1].clone());
+    //         }
+    //         Err(RuntimeError::IvalidFunctionArgumentsError)
+    //     }),
+    // );
 
     env.define(String::from("let"), Sexpr::NativeFn(|_, args| todo!()));
 

@@ -1,7 +1,7 @@
 use std::{cell::RefCell, rc::Rc};
 
 use crate::parser::{
-    sexpr::{env::Env, Atom, ConsIter, Sexpr, NIL},
+    sexpr::{env::Env, Atom, Cons, ConsIter, Sexpr, NIL},
     Parser,
 };
 
@@ -65,7 +65,13 @@ pub fn eval(env: Rc<RefCell<Env>>, sexpr: &Sexpr) -> Result<Sexpr> {
             let mut list_iter = l.clone().into_iter();
             let first = list_iter.next().ok_or(RuntimeError::EarlyListEndError)?;
 
-            if first.is_special_form() {}
+            if first.is_special_form() {
+                return eval_special_form(
+                    env,
+                    first.get_special_form().expect("expected special form"),
+                    &mut list_iter,
+                );
+            }
 
             match eval(env.clone(), &first)? {
                 Sexpr::NativeFn(f) => {
@@ -85,6 +91,30 @@ pub fn eval(env: Rc<RefCell<Env>>, sexpr: &Sexpr) -> Result<Sexpr> {
     }
 }
 
-fn eval_special_forms(env: Rc<RefCell<Env>>, list_iter: ConsIter) -> Result<Sexpr> {
-    todo!()
+fn eval_special_form(
+    env: Rc<RefCell<Env>>,
+    special_form: String,
+    list_iter: &mut ConsIter,
+) -> Result<Sexpr> {
+    match special_form.as_str() {
+        "def" => {
+            if let Some(Sexpr::Atom(Atom::Sym(s))) = list_iter.next() {
+                let mut val = list_iter
+                    .next()
+                    .ok_or(RuntimeError::IvalidFunctionArgumentsError)?;
+
+                if let Sexpr::Atom(Atom::Sym(_)) = val {
+                    val = eval(env.clone(), &val)?;
+                }
+
+                env.borrow_mut().define(s.to_string(), val.clone());
+                return Ok(val.clone());
+            }
+            Err(RuntimeError::IvalidFunctionArgumentsError)
+        }
+        "let" => todo!(),
+        "fn" => todo!(),
+        "quote" => list_iter.next().ok_or(RuntimeError::EarlyListEndError),
+        _ => panic!("expected special form got `{}`", special_form),
+    }
 }
