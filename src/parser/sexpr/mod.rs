@@ -1,7 +1,7 @@
 use std::{
     cell::RefCell,
     fmt::{Debug, Display},
-    ops::{Add, Sub},
+    ops::{Add, Div, Mul, Rem, Sub},
     rc::Rc,
 };
 
@@ -303,6 +303,123 @@ impl Sub for Number {
             (Number::Rational(l), Number::Rational(r)) => Ok(Number::Rational(l - r)),
             (Number::Bignum(l), Number::Fixnum(r)) => Ok(Number::Bignum(l - r)),
             (Number::Bignum(l), Number::Bignum(r)) => Ok(Number::Bignum(l - r)),
+            (Number::Bignum(_), Number::Float(_))
+            | (Number::Float(_), Number::Bignum(_))
+            | (Number::Bignum(_), Number::Rational(_))
+            | (Number::Rational(_), Number::Bignum(_)) => Err(RuntimeError::NumberOverflowError),
+        }
+    }
+}
+
+impl Mul for Number {
+    type Output = Result<Number>;
+
+    fn mul(self, rhs: Self) -> Self::Output {
+        match (self, rhs) {
+            (Number::Fixnum(l), Number::Fixnum(r)) => {
+                if let Some(prod) = l.checked_mul(r) {
+                    Ok(Number::Fixnum(prod))
+                } else {
+                    Ok(Number::Bignum(BigInt::from(l) * r))
+                }
+            }
+            (Number::Fixnum(l), Number::Float(r)) => Ok(Number::Float(l as f64 * r)),
+            (Number::Fixnum(l), Number::Rational(r)) => {
+                Ok(Number::Rational(Rational64::from(l) * r))
+            }
+            (Number::Fixnum(l), Number::Bignum(r)) => Ok(Number::Bignum(l * r)),
+            (Number::Float(l), Number::Fixnum(r)) => Ok(Number::Float(l * r as f64)),
+            (Number::Float(l), Number::Float(r)) => Ok(Number::Float(l * r)),
+            (Number::Float(l), Number::Rational(r)) => {
+                Ok(Number::Float(l * *r.numer() as f64 / *r.denom() as f64))
+            }
+            (Number::Rational(l), Number::Fixnum(r)) => {
+                Ok(Number::Rational(l * Rational64::from(r)))
+            }
+            (Number::Rational(l), Number::Float(r)) => {
+                Ok(Number::Float(*l.numer() as f64 / *l.denom() as f64 * r))
+            }
+            (Number::Rational(l), Number::Rational(r)) => Ok(Number::Rational(l * r)),
+            (Number::Bignum(l), Number::Fixnum(r)) => Ok(Number::Bignum(l * r)),
+            (Number::Bignum(l), Number::Bignum(r)) => Ok(Number::Bignum(l * r)),
+            (Number::Bignum(_), Number::Float(_))
+            | (Number::Float(_), Number::Bignum(_))
+            | (Number::Bignum(_), Number::Rational(_))
+            | (Number::Rational(_), Number::Bignum(_)) => Err(RuntimeError::NumberOverflowError),
+        }
+    }
+}
+
+impl Div for Number {
+    type Output = Result<Number>;
+
+    fn div(self, rhs: Self) -> Self::Output {
+        match (self, rhs) {
+            (Number::Fixnum(l), Number::Fixnum(r)) => {
+                if let Some(quo) = l.checked_div(r) {
+                    Ok(Number::Fixnum(quo))
+                } else {
+                    Ok(Number::Bignum(BigInt::from(l) / r))
+                }
+            }
+            (Number::Fixnum(l), Number::Float(r)) => Ok(Number::Float(l as f64 / r)),
+            (Number::Fixnum(l), Number::Rational(r)) => {
+                Ok(Number::Rational(Rational64::from(l) / r))
+            }
+            (Number::Fixnum(l), Number::Bignum(r)) => Ok(Number::Bignum(l / r)),
+            (Number::Float(l), Number::Fixnum(r)) => Ok(Number::Float(l / r as f64)),
+            (Number::Float(l), Number::Float(r)) => Ok(Number::Float(l / r)),
+            (Number::Float(l), Number::Rational(r)) => {
+                Ok(Number::Float(l / (*r.numer() as f64 / *r.denom() as f64)))
+            }
+            (Number::Rational(l), Number::Fixnum(r)) => {
+                Ok(Number::Rational(l / Rational64::from(r)))
+            }
+            (Number::Rational(l), Number::Float(r)) => {
+                Ok(Number::Float((*l.numer() as f64 / *l.denom() as f64) / r))
+            }
+            (Number::Rational(l), Number::Rational(r)) => Ok(Number::Rational(l / r)),
+            (Number::Bignum(l), Number::Fixnum(r)) => Ok(Number::Bignum(l / r)),
+            (Number::Bignum(l), Number::Bignum(r)) => Ok(Number::Bignum(l / r)),
+            (Number::Bignum(_), Number::Float(_))
+            | (Number::Float(_), Number::Bignum(_))
+            | (Number::Bignum(_), Number::Rational(_))
+            | (Number::Rational(_), Number::Bignum(_)) => Err(RuntimeError::NumberOverflowError),
+        }
+    }
+}
+
+impl Rem for Number {
+    type Output = Result<Number>;
+
+    fn rem(self, rhs: Self) -> Self::Output {
+        match (self, rhs) {
+            (Number::Fixnum(l), Number::Fixnum(r)) => {
+                if let Some(rem) = l.checked_rem(r) {
+                    Ok(Number::Fixnum(rem))
+                } else {
+                    Ok(Number::Bignum(BigInt::from(l) / r))
+                }
+            }
+            (Number::Fixnum(l), Number::Float(r)) => Ok(Number::Float(l as f64 % r)),
+            (Number::Fixnum(l), Number::Rational(r)) => {
+                Ok(Number::Rational(Rational64::from(l) % r))
+            }
+            (Number::Fixnum(l), Number::Bignum(r)) => Ok(Number::Bignum(l % r)),
+            (Number::Float(l), Number::Fixnum(r)) => Ok(Number::Float(l % r as f64)),
+            (Number::Float(l), Number::Float(r)) => Ok(Number::Float(l % r)),
+            (Number::Float(l), Number::Rational(r)) => {
+                Ok(Number::Float(l % (*r.numer() as f64 / *r.denom() as f64)))
+            }
+            (Number::Rational(l), Number::Fixnum(r)) => {
+                Ok(Number::Rational(l % Rational64::from(r)))
+            }
+            (Number::Rational(l), Number::Float(r)) => {
+                Ok(Number::Float((*l.numer() as f64 / *l.denom() as f64) % r))
+            }
+            (Number::Rational(l), Number::Rational(r)) => Ok(Number::Rational(l % r)),
+            (Number::Bignum(l), Number::Fixnum(r)) => Ok(Number::Bignum(l % r)),
+            (Number::Bignum(l), Number::Bignum(r)) => Ok(Number::Bignum(l % r)),
             (Number::Bignum(_), Number::Float(_))
             | (Number::Float(_), Number::Bignum(_))
             | (Number::Bignum(_), Number::Rational(_))

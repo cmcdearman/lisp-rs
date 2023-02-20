@@ -3,6 +3,15 @@ use std::fmt::Display;
 use super::lexer::token::Span;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum ParserErrorKind {
+    ParseIntegerError,
+    ParseFloatError,
+    ParseRationalError,
+    ParseStringError,
+    UnexpectedEofError,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ParserError {
     kind: ParserErrorKind,
     span: Span,
@@ -21,12 +30,3 @@ impl Display for ParserError {
 }
 
 pub type Result<T> = std::result::Result<T, ParserError>;
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum ParserErrorKind {
-    ParseIntegerError,
-    ParseFloatError,
-    ParseRationalError,
-    ParseStringError,
-    UnexpectedEofError,
-}

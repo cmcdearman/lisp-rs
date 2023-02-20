@@ -90,6 +90,8 @@ impl<'src> Parser<'src> {
             rest.push(self.parse()?)
         }
 
+        self.consume(T![')']);
+
         for sexpr in rest.into_iter().rev() {
             cdr = Some(Box::new(Cons { car: sexpr, cdr }));
         }

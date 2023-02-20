@@ -80,6 +80,22 @@ pub fn eval(env: Rc<RefCell<Env>>, sexpr: &Sexpr) -> Result<Sexpr> {
                         list_iter.map(|x| eval(env.clone(), &x)).collect();
                     f(env, args?)
                 }
+                Sexpr::Lambda {
+                    env: fn_env,
+                    args,
+                    body,
+                } => {
+                    let params = list_iter.collect::<Vec<Sexpr>>();
+                    let mut arg_env = fn_env.borrow().create_child();
+                    for (i, a) in args.iter().enumerate() {
+                        if let Sexpr::Atom(Atom::Sym(s)) = a {
+                            arg_env.define(s.to_string(), params[i].clone());
+                        } else {
+                            return Err(RuntimeError::EarlyListEndError);
+                        }
+                    }
+                    eval(Rc::new(RefCell::new(arg_env)), &body)
+                }
                 _ => Err(RuntimeError::FirstElemError),
             }
         }
@@ -115,8 +131,6 @@ fn eval_special_form(
         "let" => todo!(),
         "fn" => {
             if !(2..4).contains(&list_iter.len()) {
-                println!("{} too short", &list_iter.len());
-                println!("{:?}", list_iter.collect::<Vec<Sexpr>>());
                 return Err(RuntimeError::IvalidFunctionArgumentsError);
             }
 
@@ -125,6 +139,7 @@ fn eval_special_form(
                 fn_args = l.clone().into_iter().map(|x| x.clone()).collect();
             }
 
+            println!("{:?}", list_iter.clone().collect::<Vec<Sexpr>>());
             let body = &list_iter
                 .next()
                 .ok_or(RuntimeError::IvalidFunctionArgumentsError)?;
