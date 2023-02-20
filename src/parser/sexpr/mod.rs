@@ -25,10 +25,26 @@ pub enum Sexpr {
     List(List),
 
     // A Lisp lambda only constructed in eval
-    Lambda { args: Vec<String>, body: Box<Sexpr> },
+    Lambda {
+        env: Rc<RefCell<Env>>,
+        args: Vec<Self>,
+        body: Box<Self>,
+    },
 
     // A native Rust function only constructed in env
     NativeFn(fn(env: Rc<RefCell<Env>>, args: Vec<Sexpr>) -> Result<Sexpr>),
+}
+
+impl Sexpr {
+    pub fn is_special_form(&self) -> bool {
+        if let Sexpr::Atom(Atom::Sym(s)) = &self {
+            return match s.as_str() {
+                "def" | "let" | "fn" | "quote" => true,
+                _ => false,
+            };
+        }
+        false
+    }
 }
 
 impl Display for Sexpr {
@@ -36,7 +52,7 @@ impl Display for Sexpr {
         match self {
             Self::Atom(a) => write!(f, "{}", a),
             Self::List(head) => write!(f, "{}", head),
-            Self::Lambda { args, body } => todo!(),
+            Self::Lambda { env, args, body } => write!(f, "<#fn>"),
             Self::NativeFn(_) => write!(f, "NativeFn"),
         }
     }
@@ -47,7 +63,7 @@ impl Debug for Sexpr {
         match self {
             Self::Atom(a) => write!(f, "{}", a),
             Self::List(l) => write!(f, "{:?}", l),
-            Self::Lambda { args, body } => todo!(),
+            Self::Lambda { env, args, body } => todo!(),
             Self::NativeFn(nf) => write!(f, "{:?}", nf),
         }
     }

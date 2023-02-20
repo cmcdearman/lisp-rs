@@ -33,6 +33,13 @@ impl Env {
     pub fn remove(&mut self, name: String) {
         self.entries.remove(&name);
     }
+
+    pub fn create_child(&self) -> Self {
+        Self {
+            parent: Some(Rc::new(RefCell::new(self.clone()))),
+            entries: HashMap::new(),
+        }
+    }
 }
 
 impl PartialEq for Env {

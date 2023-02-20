@@ -34,26 +34,35 @@ pub fn default_env() -> Rc<RefCell<Env>> {
     );
 
     env.define(String::from("let"), Sexpr::NativeFn(|_, args| todo!()));
+
+    env.define(String::from("quote"), Sexpr::NativeFn(|env, args| todo!()));
     // env.define(
     //     String::from("mod"),
     //     Sexpr::NativeFn(|_, args| Ok((mod_number_list(args)?))),
     // );
-    // env.define(
-    //     String::from("fn"),
-    //     Sexpr::NativeFn(|env, args| {
-    //         if !(2..4).contains(&args.len()) {
-    //             return Err("not enough arguments for function declaration".to_string());
-    //         }
-    //         let lambda_args = &args[0];
-    //         let body = &args[1];
-    //         let mut fn_args;
-    //         if args.len() == 3 {
-    //             fn_args = &args[2];
-    //         }
-    //         // Ok(Sexpr::Lambda(Lambda { env, args: lambda_args, body }))
-    //         todo!()
-    //     }),
-    // );
+
+    env.define(
+        String::from("fn"),
+        Sexpr::NativeFn(|env, args| {
+            if !(2..4).contains(&args.len()) {
+                return Err(RuntimeError::IvalidFunctionArgumentsError);
+            }
+
+            let mut fn_args = vec![];
+            if let Sexpr::List(l) = &args[0] {
+                fn_args = l.clone().into_iter().map(|x| x.clone()).collect();
+            }
+
+            let body = &args[1];
+
+            Ok(Sexpr::Lambda {
+                env: Rc::new(RefCell::new(env.borrow().create_child())),
+                args: fn_args,
+                body: Box::new(body.clone()),
+            })
+        }),
+    );
+
     env.define(String::from("type-of"), Sexpr::NativeFn(type_of));
 
     Rc::new(RefCell::new(env))
@@ -80,7 +89,7 @@ fn type_of(env: Rc<RefCell<Env>>, args: Vec<Sexpr>) -> Result<Sexpr> {
             },
         },
         Sexpr::List(_) => Ok(Sexpr::Atom(Atom::Sym("List".to_string()))),
-        Sexpr::Lambda { args, body } => todo!(),
+        Sexpr::Lambda { env, args, body } => todo!(),
         Sexpr::NativeFn(f) => Ok(Sexpr::Atom(Atom::Sym(format!("NativeFn: {:?}", f)))),
     }
 }
