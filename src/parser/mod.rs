@@ -102,7 +102,7 @@ impl<'src> Parser<'src> {
 
     fn atom(&mut self) -> Result<Sexpr> {
         match self.peek() {
-            lit @ T![int] | lit @ T![float] | lit @ T![str] | lit @ T![bool] => {
+            lit @ T![int] | lit @ T![float] | lit @ T![ratio] | lit @ T![str] | lit @ T![bool] => {
                 let lit_tok = self
                     .next()
                     .expect("expected `Token` but found `Option` None");
@@ -113,6 +113,9 @@ impl<'src> Parser<'src> {
                     })?)),
                     T![float] => Lit::Number(Number::Float(lit_text.parse().map_err(|_| {
                         ParserError::new(ParserErrorKind::ParseFloatError, lit_tok.span)
+                    })?)),
+                    T![ratio] => Lit::Number(Number::Rational(lit_text.parse().map_err(|_| {
+                        ParserError::new(ParserErrorKind::ParseRationalError, lit_tok.span)
                     })?)),
                     T![str] => Lit::Str(lit_text[1..(lit_text.len() - 1)].to_string()),
                     T![bool] => Lit::Bool(lit_text.parse().expect("invalid bool literal")),

@@ -16,8 +16,13 @@ pub enum TokenKind {
     Ident,
     #[regex(r#"(\+|-)?\d+(i8|u8|i16|u16|i32|u32|i64|u64)?"#, priority = 3)]
     Int,
-    #[regex(r#"(\+|-)?((\d+(\.\d+)?)|(\.\d+))([Ee](\+|-)?\d+)?(f32|f64)?"#, priority = 2)]
+    #[regex(
+        r#"(\+|-)?((\d+(\.\d+)?)|(\.\d+))([Ee](\+|-)?\d+)?(f32|f64)?"#,
+        priority = 2
+    )]
     Float,
+    #[regex(r#"(\+|-)?\d+/\d+"#)]
+    Rational,
     #[regex(r#""((\\"|\\\\)|[^\\"])*""#)]
     String,
     #[regex(r#"(true|false)"#)]
@@ -57,6 +62,9 @@ macro_rules! T {
     [float] => {
         $crate::parser::lexer::token::TokenKind::Float
     };
+    [ratio] => {
+        $crate::parser::lexer::token::TokenKind::Rational
+    };
     [str] => {
         $crate::parser::lexer::token::TokenKind::String
     };
@@ -93,6 +101,7 @@ impl fmt::Display for TokenKind {
                 T![ident] => "Ident",
                 T![int] => "Int",
                 T![float] => "Float",
+                T![ratio] => "Rational",
                 T![str] => "String",
                 T![bool] => "Bool",
                 T!['('] => "(",
@@ -173,4 +182,3 @@ impl fmt::Display for Token {
         write!(f, "{}", self.kind)
     }
 }
-

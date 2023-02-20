@@ -1,3 +1,5 @@
+use num_bigfloat::E;
+
 use crate::parser::sexpr::{env::Env, Atom, Lit, Number, Sexpr};
 
 use super::runtime_error::{Result, RuntimeError};
@@ -44,11 +46,35 @@ pub fn default_env() -> Box<Env> {
     //         todo!()
     //     }),
     // );
-    // env.define(
-    //     String::from("type-of"),
-    //     Sexpr::NativeFn(|env, args| todo!()),
-    // );
+    env.define(String::from("type-of"), Sexpr::NativeFn(type_of));
+
     Box::new(env)
+}
+
+fn type_of(env: Box<Env>, args: Vec<Sexpr>) -> Result<Sexpr> {
+    match &args[0] {
+        Sexpr::Atom(a) => match a {
+            Atom::Sym(s) => {
+                if let Some(var) = env.find(s) {
+                    return type_of(env, vec![var]);
+                }
+                Ok(Sexpr::Atom(Atom::Sym("Symbol".to_string())))
+            }
+            Atom::Lit(l) => match l {
+                Lit::Number(n) => match n {
+                    Number::Fixnum(_) => Ok(Sexpr::Atom(Atom::Sym("Fixnum".to_string()))),
+                    Number::Float(_) => Ok(Sexpr::Atom(Atom::Sym("Float".to_string()))),
+                    Number::Rational(_) => Ok(Sexpr::Atom(Atom::Sym("Rational".to_string()))),
+                    Number::Bignum(_) => Ok(Sexpr::Atom(Atom::Sym("Bignum".to_string()))),
+                },
+                Lit::Bool(_) => Ok(Sexpr::Atom(Atom::Sym("Boolean".to_string()))),
+                Lit::Str(_) => Ok(Sexpr::Atom(Atom::Sym("String".to_string()))),
+            },
+        },
+        Sexpr::List(_) => Ok(Sexpr::Atom(Atom::Sym("List".to_string()))),
+        Sexpr::Lambda { args, body } => todo!(),
+        Sexpr::NativeFn(f) => Ok(Sexpr::Atom(Atom::Sym(format!("NativeFn: {:?}", f)))),
+    }
 }
 
 fn sum_number_list(args: Vec<Sexpr>) -> Result<Sexpr> {
@@ -70,7 +96,7 @@ fn sum_number_list(args: Vec<Sexpr>) -> Result<Sexpr> {
 //     }
 // }
 
-// fn sub_number_list(args: Vec<Sexpr>) -> Result<Sexpr, String> {
+// fn sub_number_list(args: Vec<Sexpr>) -> Result<Sexpr> {
 //     let first = match args.get(0) {
 //         Sexpr::Atom(n) => n,
 //         _ => Err(String::from("error converting sub arguments to Sexprs"))?,

@@ -26,6 +26,7 @@ pub type Result<T> = std::result::Result<T, ParserError>;
 pub enum ParserErrorKind {
     ParseIntegerError,
     ParseFloatError,
+    ParseRationalError,
     ParseStringError,
     UnexpectedEofError,
 }
