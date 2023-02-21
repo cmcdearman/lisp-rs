@@ -11,47 +11,6 @@ pub mod default_env;
 pub mod repl;
 pub mod runtime_error;
 
-// pub struct Interpreter<'src> {
-//     src: &'src str,
-//     parser: Parser<'src>,
-// }
-
-// impl<'src> Interpreter<'src> {
-//     pub fn new(src: &'src str, lazy: bool) -> Self {
-//         Self {
-//             src,
-//             parser: Parser::new(src, lazy),
-//         }
-//     }
-
-//     pub fn eval(&mut self, env: Box<Env>) -> Result<Sexpr> {
-//         match &self
-//             .parser
-//             .parse()
-//             .map_err(|e| RuntimeError::ParserError(e))?
-//         {
-//             lit @ Sexpr::Atom(Atom::Lit(_)) => Ok(lit.clone()),
-//             Sexpr::Atom(Atom::Sym(name)) => Ok(env
-//                 .find(&name)
-//                 .ok_or(RuntimeError::UnknownIdentError)?
-//                 .clone()),
-//             Sexpr::List(head) => {
-//                 let mut list_iter = head.clone().into_iter();
-//                 match self.eval(env)? {
-//                     Sexpr::NativeFn(_) => {
-//                         let args: Result<Vec<Sexpr>> =
-//                             list_iter.map(|x| eval(&x, env.clone())).collect();
-//                         f(env, args?)
-//                     }
-//                     _ => todo!(),
-//                 }
-//                 todo!()
-//             }
-//             _ => Err(RuntimeError::IvalidFunctionArgumentsError),
-//         }
-//     }
-// }
-
 pub fn eval(env: Rc<RefCell<Env>>, sexpr: &Sexpr) -> Result<Sexpr> {
     match sexpr {
         lit @ Sexpr::Atom(Atom::Lit(_)) => Ok(lit.clone()),
@@ -59,12 +18,18 @@ pub fn eval(env: Rc<RefCell<Env>>, sexpr: &Sexpr) -> Result<Sexpr> {
             if let Some(v) = env.borrow().find(&name) {
                 return Ok(v.clone());
             }
-            Ok(sym.clone())
+            println!("env: {:?}", env);
+            Err(RuntimeError::new(&format!(
+                "use of unbound Symbol `{}`",
+                sym.clone()
+            )))
         }
         Sexpr::List(l) => {
             let mut list_iter = l.clone().into_iter();
             println!("{:?}", &list_iter.clone().collect::<Vec<Sexpr>>());
-            let first = list_iter.next().ok_or(RuntimeError::EarlyListEndError)?;
+            let first = list_iter
+                .next()
+                .ok_or(RuntimeError::new("unexpected end to list"))?;
 
             if first.is_special_form() {
                 return eval_special_form(
@@ -91,12 +56,17 @@ pub fn eval(env: Rc<RefCell<Env>>, sexpr: &Sexpr) -> Result<Sexpr> {
                         if let Sexpr::Atom(Atom::Sym(s)) = a {
                             arg_env.define(s.to_string(), params[i].clone());
                         } else {
-                            return Err(RuntimeError::EarlyListEndError);
+                            return Err(RuntimeError::new(
+                                "lambda arguments must be of type String",
+                            ));
                         }
                     }
                     eval(Rc::new(RefCell::new(arg_env)), &body)
                 }
-                _ => Err(RuntimeError::FirstElemError),
+                _ => Err(RuntimeError::new(&format!(
+                    "first list element must be function call, got `{}`",
+                    eval(env.clone(), &first)?
+                ))),
             }
         }
         lambda @ Sexpr::Lambda {
@@ -104,7 +74,7 @@ pub fn eval(env: Rc<RefCell<Env>>, sexpr: &Sexpr) -> Result<Sexpr> {
             args: _,
             body: _,
         } => Ok(lambda.clone()),
-        _ => Err(RuntimeError::IvalidFunctionArgumentsError),
+        _ => Err(RuntimeError::new("unknown sexpr")),
     }
 }
 
@@ -120,29 +90,28 @@ fn eval_special_form(
                     env.clone(),
                     &list_iter
                         .next()
-                        .ok_or(RuntimeError::IvalidFunctionArgumentsError)?,
+                        .ok_or(RuntimeError::new("def takes 2 arguments. got 0"))?,
                 )?;
 
                 env.borrow_mut().define(s.to_string(), val.clone());
                 return Ok(val.clone());
             }
-            Err(RuntimeError::IvalidFunctionArgumentsError)
+            Err(RuntimeError::new("first def argument must be a Symbol"))
         }
         "let" => todo!(),
         "fn" => {
-            if !(2..4).contains(&list_iter.len()) {
-                return Err(RuntimeError::IvalidFunctionArgumentsError);
-            }
-
             let mut fn_args = vec![];
-            if let Sexpr::List(l) = &list_iter.next().ok_or(RuntimeError::EarlyListEndError)? {
+            if let Sexpr::List(l) = &list_iter
+                .next()
+                .ok_or(RuntimeError::new("fn takes 2 arguments, got 0"))?
+            {
                 fn_args = l.clone().into_iter().map(|x| x.clone()).collect();
             }
 
             println!("{:?}", list_iter.clone().collect::<Vec<Sexpr>>());
             let body = &list_iter
                 .next()
-                .ok_or(RuntimeError::IvalidFunctionArgumentsError)?;
+                .ok_or(RuntimeError::new("fn takes 2 arguments, got 1"))?;
 
             Ok(Sexpr::Lambda {
                 env: Rc::new(RefCell::new(env.borrow().create_child())),
@@ -150,29 +119,34 @@ fn eval_special_form(
                 body: Box::new(body.clone()),
             })
         }
-        "quote" => list_iter.next().ok_or(RuntimeError::EarlyListEndError),
+        "quote" => list_iter
+            .next()
+            .ok_or(RuntimeError::new("`quote` takes 1 argument, got 0")),
         "if" => {
             if let Sexpr::Atom(Atom::Lit(Lit::Bool(b))) = eval(
                 env.clone(),
-                &list_iter.next().ok_or(RuntimeError::EarlyListEndError)?,
+                &list_iter
+                    .next()
+                    .ok_or(RuntimeError::new("`if` takes 3 arguments, got 0"))?,
             )? {
                 if b {
                     return eval(
                         env.clone(),
                         &list_iter
                             .next()
-                            .ok_or(RuntimeError::IvalidFunctionArgumentsError)?,
+                            .ok_or(RuntimeError::new("`if` takes 3 arguments, got 1"))?,
                     );
                 } else {
-                    // println!("else: {:?}", &list_iter.clone().collect::<Vec<Sexpr>>());
                     list_iter.next().expect("list ended early");
                     return eval(
                         env.clone(),
-                        &list_iter.next().ok_or(RuntimeError::EarlyListEndError)?,
+                        &list_iter
+                            .next()
+                            .ok_or(RuntimeError::new("`if` takes 3 arguments, got 2"))?,
                     );
                 }
             }
-            Err(RuntimeError::FirstElemError)
+            Err(RuntimeError::new("`if` first argument must be Boolean"))
         }
         _ => panic!("expected special form got `{}`", special_form),
     }

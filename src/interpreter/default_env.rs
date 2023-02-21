@@ -130,12 +130,12 @@ fn mul_number_list(args: Vec<Sexpr>) -> Result<Sexpr> {
 fn quo_number_list(args: Vec<Sexpr>) -> Result<Sexpr> {
     let first = match &args.get(0) {
         Some(Sexpr::Atom(Atom::Lit(Lit::Number(n)))) => n,
-        _ => Err(RuntimeError::FirstElemError)?,
+        _ => Err(RuntimeError::new("can't divide non-number"))?,
     };
 
     let denom = match mul_number_list(args[1..].to_vec())? {
         Sexpr::Atom(Atom::Lit(Lit::Number(n))) => n,
-        _ => Err(RuntimeError::FirstElemError)?,
+        _ => Err(RuntimeError::new("can't divide by non-number"))?,
     };
 
     Ok(Sexpr::Atom(Atom::Lit(Lit::Number(
@@ -145,15 +145,18 @@ fn quo_number_list(args: Vec<Sexpr>) -> Result<Sexpr> {
 
 fn mod_number_list(args: Vec<Sexpr>) -> Result<Sexpr> {
     if args.len() != 2 {
-        return Err(RuntimeError::IvalidFunctionArgumentsError);
+        return Err(RuntimeError::new(&format!(
+            "mod takes two arguments, got `{}`",
+            args.len()
+        )));
     }
     let num = match args.get(0) {
         Some(Sexpr::Atom(Atom::Lit(Lit::Number(n)))) => n,
-        _ => Err(RuntimeError::FirstElemError)?,
+        _ => Err(RuntimeError::new("mod takes numbers"))?,
     };
     let div = match args.get(1) {
         Some(Sexpr::Atom(Atom::Lit(Lit::Number(n)))) => n,
-        _ => Err(RuntimeError::FirstElemError)?,
+        _ => Err(RuntimeError::new("mod takes numbers"))?,
     };
 
     Ok(Sexpr::Atom(Atom::Lit(Lit::Number(
@@ -166,19 +169,21 @@ fn gtr(env: Rc<RefCell<Env>>, args: Vec<Sexpr>) -> Result<Sexpr> {
     let second;
     if let Sexpr::Atom(Atom::Lit(Lit::Number(n))) = eval(
         env.clone(),
-        args.get(0).ok_or(RuntimeError::EarlyListEndError)?,
+        args.get(0)
+            .ok_or(RuntimeError::new("gtr takes two arguments. got 0"))?,
     )? {
         first = n;
     } else {
-        return Err(RuntimeError::IvalidFunctionArgumentsError);
+        return Err(RuntimeError::new("gtr first argument must be a number"));
     }
     if let Sexpr::Atom(Atom::Lit(Lit::Number(n))) = eval(
         env.clone(),
-        args.get(1).ok_or(RuntimeError::EarlyListEndError)?,
+        args.get(1)
+            .ok_or(RuntimeError::new("gtr takes two arguments, got 1"))?,
     )? {
         second = n;
     } else {
-        return Err(RuntimeError::IvalidFunctionArgumentsError);
+        return Err(RuntimeError::new("gtr second argument must be number"));
     }
     Ok(Sexpr::Atom(Atom::Lit(Lit::Bool(first > second))))
 }
@@ -188,19 +193,21 @@ fn lss(env: Rc<RefCell<Env>>, args: Vec<Sexpr>) -> Result<Sexpr> {
     let second;
     if let Sexpr::Atom(Atom::Lit(Lit::Number(n))) = eval(
         env.clone(),
-        args.get(0).ok_or(RuntimeError::EarlyListEndError)?,
+        args.get(0)
+            .ok_or(RuntimeError::new("lss takes 2 arguments, got 0"))?,
     )? {
         first = n;
     } else {
-        return Err(RuntimeError::IvalidFunctionArgumentsError);
+        return Err(RuntimeError::new("lss first argument must be a number"));
     }
     if let Sexpr::Atom(Atom::Lit(Lit::Number(n))) = eval(
         env.clone(),
-        args.get(1).ok_or(RuntimeError::EarlyListEndError)?,
+        args.get(1)
+            .ok_or(RuntimeError::new("lss takes 2 arguments, got 1"))?,
     )? {
         second = n;
     } else {
-        return Err(RuntimeError::IvalidFunctionArgumentsError);
+        return Err(RuntimeError::new("lss second argument must be a number"));
     }
     Ok(Sexpr::Atom(Atom::Lit(Lit::Bool(first < second))))
 }
@@ -210,19 +217,21 @@ fn geq(env: Rc<RefCell<Env>>, args: Vec<Sexpr>) -> Result<Sexpr> {
     let second;
     if let Sexpr::Atom(Atom::Lit(Lit::Number(n))) = eval(
         env.clone(),
-        args.get(0).ok_or(RuntimeError::EarlyListEndError)?,
+        args.get(0)
+            .ok_or(RuntimeError::new(">= takes 2 arguments, got 0"))?,
     )? {
         first = n;
     } else {
-        return Err(RuntimeError::IvalidFunctionArgumentsError);
+        return Err(RuntimeError::new(">= first argument must be a Number"));
     }
     if let Sexpr::Atom(Atom::Lit(Lit::Number(n))) = eval(
         env.clone(),
-        args.get(1).ok_or(RuntimeError::EarlyListEndError)?,
+        args.get(1)
+            .ok_or(RuntimeError::new(">= takes 2 arguments, got 1"))?,
     )? {
         second = n;
     } else {
-        return Err(RuntimeError::IvalidFunctionArgumentsError);
+        return Err(RuntimeError::new(">= second argument must be a Number"));
     }
     Ok(Sexpr::Atom(Atom::Lit(Lit::Bool(first >= second))))
 }
@@ -232,31 +241,35 @@ fn leq(env: Rc<RefCell<Env>>, args: Vec<Sexpr>) -> Result<Sexpr> {
     let second;
     if let Sexpr::Atom(Atom::Lit(Lit::Number(n))) = eval(
         env.clone(),
-        args.get(0).ok_or(RuntimeError::EarlyListEndError)?,
+        args.get(0)
+            .ok_or(RuntimeError::new("<= takes 2 arguments, got 0"))?,
     )? {
         first = n;
     } else {
-        return Err(RuntimeError::IvalidFunctionArgumentsError);
+        return Err(RuntimeError::new("<= first argument must be a Number"));
     }
     if let Sexpr::Atom(Atom::Lit(Lit::Number(n))) = eval(
         env.clone(),
-        args.get(1).ok_or(RuntimeError::EarlyListEndError)?,
+        args.get(1)
+            .ok_or(RuntimeError::new("<= takes 2 arguments, got 1"))?,
     )? {
         second = n;
     } else {
-        return Err(RuntimeError::IvalidFunctionArgumentsError);
+        return Err(RuntimeError::new("<= second argument must be a Number"));
     }
     Ok(Sexpr::Atom(Atom::Lit(Lit::Bool(first <= second))))
 }
 
 fn not(env: Rc<RefCell<Env>>, args: Vec<Sexpr>) -> Result<Sexpr> {
     let first;
-    if let Sexpr::Atom(Atom::Lit(Lit::Bool(b))) =
-        eval(env, args.get(0).ok_or(RuntimeError::EarlyListEndError)?)?
-    {
+    if let Sexpr::Atom(Atom::Lit(Lit::Bool(b))) = eval(
+        env,
+        args.get(0)
+            .ok_or(RuntimeError::new("`not` takes 1 argument, got 0"))?,
+    )? {
         first = b;
     } else {
-        return Err(RuntimeError::IvalidFunctionArgumentsError);
+        return Err(RuntimeError::new("`not` first argument must be a Boolean"));
     }
     Ok(Sexpr::Atom(Atom::Lit(Lit::Bool(!first))))
 }
@@ -264,11 +277,13 @@ fn not(env: Rc<RefCell<Env>>, args: Vec<Sexpr>) -> Result<Sexpr> {
 fn eql(env: Rc<RefCell<Env>>, args: Vec<Sexpr>) -> Result<Sexpr> {
     let first = eval(
         env.clone(),
-        args.get(0).ok_or(RuntimeError::EarlyListEndError)?,
+        args.get(0)
+            .ok_or(RuntimeError::new("`eq` takes 2 arguments, got 0"))?,
     )?;
     let second = eval(
         env.clone(),
-        args.get(1).ok_or(RuntimeError::EarlyListEndError)?,
+        args.get(1)
+            .ok_or(RuntimeError::new("`eq` takes 2 arguments, got 1"))?,
     )?;
     Ok(Sexpr::Atom(Atom::Lit(Lit::Bool(first == second))))
 }
@@ -276,11 +291,13 @@ fn eql(env: Rc<RefCell<Env>>, args: Vec<Sexpr>) -> Result<Sexpr> {
 fn neq(env: Rc<RefCell<Env>>, args: Vec<Sexpr>) -> Result<Sexpr> {
     let first = eval(
         env.clone(),
-        args.get(0).ok_or(RuntimeError::EarlyListEndError)?,
+        args.get(0)
+            .ok_or(RuntimeError::new("`neq` takes 2 arguments, got 0"))?,
     )?;
     let second = eval(
         env.clone(),
-        args.get(1).ok_or(RuntimeError::EarlyListEndError)?,
+        args.get(1)
+            .ok_or(RuntimeError::new("`eq` takes 2 arguments, got 1"))?,
     )?;
     Ok(Sexpr::Atom(Atom::Lit(Lit::Bool(first != second))))
 }
