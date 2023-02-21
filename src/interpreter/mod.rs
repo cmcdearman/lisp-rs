@@ -1,7 +1,7 @@
 use std::{cell::RefCell, rc::Rc};
 
 use crate::parser::{
-    sexpr::{env::Env, Atom, Cons, ConsIter, Sexpr, NIL},
+    sexpr::{env::Env, Atom, Cons, ConsIter, Lit, Sexpr, NIL},
     Parser,
 };
 
@@ -68,7 +68,7 @@ pub fn eval(env: Rc<RefCell<Env>>, sexpr: &Sexpr) -> Result<Sexpr> {
 
             if first.is_special_form() {
                 return eval_special_form(
-                    env,
+                    env.clone(),
                     first.get_special_form().expect("expected special form"),
                     &mut list_iter,
                 );
@@ -151,6 +151,30 @@ fn eval_special_form(
             })
         }
         "quote" => list_iter.next().ok_or(RuntimeError::EarlyListEndError),
+        "if" => {
+            if let Sexpr::Atom(Atom::Lit(Lit::Bool(b))) = eval(
+                env.clone(),
+                &list_iter.next().ok_or(RuntimeError::EarlyListEndError)?,
+            )? {
+                if b {
+                    return eval(
+                        env.clone(),
+                        &list_iter
+                            .next()
+                            .ok_or(RuntimeError::IvalidFunctionArgumentsError)?,
+                    );
+                } else {
+                    list_iter.next();
+                    return eval(
+                        env.clone(),
+                        &list_iter
+                            .next()
+                            .ok_or(RuntimeError::IvalidFunctionArgumentsError)?,
+                    );
+                }
+            }
+            Err(RuntimeError::FirstElemError)
+        }
         _ => panic!("expected special form got `{}`", special_form),
     }
 }

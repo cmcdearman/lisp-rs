@@ -2,7 +2,10 @@ use std::{cell::RefCell, rc::Rc};
 
 use crate::parser::sexpr::{env::Env, Atom, Lit, Number, Sexpr};
 
-use super::runtime_error::{Result, RuntimeError};
+use super::{
+    eval,
+    runtime_error::{Result, RuntimeError},
+};
 
 pub fn default_env() -> Rc<RefCell<Env>> {
     let mut env = Env::new();
@@ -25,6 +28,26 @@ pub fn default_env() -> Rc<RefCell<Env>> {
     env.define(
         String::from("mod"),
         Sexpr::NativeFn(|_, args| Ok(mod_number_list(args)?)),
+    );
+    env.define(
+        String::from(">"),
+        Sexpr::NativeFn(|env, args| Ok(gtr(env, args)?)),
+    );
+    env.define(
+        String::from("<"),
+        Sexpr::NativeFn(|env, args| Ok(lss(env, args)?)),
+    );
+    env.define(
+        String::from("!"),
+        Sexpr::NativeFn(|env, args| Ok(not(env, args)?)),
+    );
+    env.define(
+        String::from("=="),
+        Sexpr::NativeFn(|env, args| Ok(eql(env, args)?)),
+    );
+    env.define(
+        String::from("!="),
+        Sexpr::NativeFn(|env, args| Ok(neq(env, args)?)),
     );
     env.define(String::from("type-of"), Sexpr::NativeFn(type_of));
 
@@ -125,6 +148,86 @@ fn mod_number_list(args: Vec<Sexpr>) -> Result<Sexpr> {
     Ok(Sexpr::Atom(Atom::Lit(Lit::Number(
         (num.clone() % div.clone())?,
     ))))
+}
+
+fn gtr(env: Rc<RefCell<Env>>, args: Vec<Sexpr>) -> Result<Sexpr> {
+    let first;
+    let second;
+    if let Sexpr::Atom(Atom::Lit(Lit::Number(n))) = eval(
+        env.clone(),
+        args.get(0).ok_or(RuntimeError::EarlyListEndError)?,
+    )? {
+        first = n;
+    } else {
+        return Err(RuntimeError::IvalidFunctionArgumentsError);
+    }
+    if let Sexpr::Atom(Atom::Lit(Lit::Number(n))) = eval(
+        env.clone(),
+        args.get(1).ok_or(RuntimeError::EarlyListEndError)?,
+    )? {
+        second = n;
+    } else {
+        return Err(RuntimeError::IvalidFunctionArgumentsError);
+    }
+    Ok(Sexpr::Atom(Atom::Lit(Lit::Bool(first > second))))
+}
+
+fn lss(env: Rc<RefCell<Env>>, args: Vec<Sexpr>) -> Result<Sexpr> {
+    let first;
+    let second;
+    if let Sexpr::Atom(Atom::Lit(Lit::Number(n))) = eval(
+        env.clone(),
+        args.get(0).ok_or(RuntimeError::EarlyListEndError)?,
+    )? {
+        first = n;
+    } else {
+        return Err(RuntimeError::IvalidFunctionArgumentsError);
+    }
+    if let Sexpr::Atom(Atom::Lit(Lit::Number(n))) = eval(
+        env.clone(),
+        args.get(1).ok_or(RuntimeError::EarlyListEndError)?,
+    )? {
+        second = n;
+    } else {
+        return Err(RuntimeError::IvalidFunctionArgumentsError);
+    }
+    Ok(Sexpr::Atom(Atom::Lit(Lit::Bool(first < second))))
+}
+
+fn not(env: Rc<RefCell<Env>>, args: Vec<Sexpr>) -> Result<Sexpr> {
+    let first;
+    if let Sexpr::Atom(Atom::Lit(Lit::Bool(b))) =
+        eval(env, args.get(0).ok_or(RuntimeError::EarlyListEndError)?)?
+    {
+        first = b;
+    } else {
+        return Err(RuntimeError::IvalidFunctionArgumentsError);
+    }
+    Ok(Sexpr::Atom(Atom::Lit(Lit::Bool(!first))))
+}
+
+fn eql(env: Rc<RefCell<Env>>, args: Vec<Sexpr>) -> Result<Sexpr> {
+    let first = eval(
+        env.clone(),
+        args.get(0).ok_or(RuntimeError::EarlyListEndError)?,
+    )?;
+    let second = eval(
+        env.clone(),
+        args.get(1).ok_or(RuntimeError::EarlyListEndError)?,
+    )?;
+    Ok(Sexpr::Atom(Atom::Lit(Lit::Bool(first == second))))
+}
+
+fn neq(env: Rc<RefCell<Env>>, args: Vec<Sexpr>) -> Result<Sexpr> {
+    let first = eval(
+        env.clone(),
+        args.get(0).ok_or(RuntimeError::EarlyListEndError)?,
+    )?;
+    let second = eval(
+        env.clone(),
+        args.get(1).ok_or(RuntimeError::EarlyListEndError)?,
+    )?;
+    Ok(Sexpr::Atom(Atom::Lit(Lit::Bool(first != second))))
 }
 
 // fn gcd(a: i64, b: i64) -> i64 {

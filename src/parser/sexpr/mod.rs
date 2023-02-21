@@ -39,7 +39,7 @@ impl Sexpr {
     pub fn is_special_form(&self) -> bool {
         if let Sexpr::Atom(Atom::Sym(s)) = &self {
             return match s.as_str() {
-                "def" | "let" | "fn" | "quote" => true,
+                "def" | "let" | "fn" | "quote" | "if" => true,
                 _ => false,
             };
         }
@@ -49,7 +49,7 @@ impl Sexpr {
     pub fn get_special_form(&self) -> Option<String> {
         if let Sexpr::Atom(Atom::Sym(s)) = &self {
             return match s.as_str() {
-                "def" | "let" | "fn" | "quote" => Some(s.clone()),
+                "def" | "let" | "fn" | "quote" | "if" => Some(s.clone()),
                 _ => None,
             };
         }
@@ -214,7 +214,7 @@ impl Display for Lit {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub enum Number {
     Fixnum(i64),
     Float(f64),
