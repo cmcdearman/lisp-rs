@@ -38,15 +38,23 @@ pub fn default_env() -> Rc<RefCell<Env>> {
         Sexpr::NativeFn(|env, args| Ok(lss(env, args)?)),
     );
     env.define(
-        String::from("!"),
+        String::from(">="),
+        Sexpr::NativeFn(|env, args| Ok(geq(env, args)?)),
+    );
+    env.define(
+        String::from("<="),
+        Sexpr::NativeFn(|env, args| Ok(leq(env, args)?)),
+    );
+    env.define(
+        String::from("not"),
         Sexpr::NativeFn(|env, args| Ok(not(env, args)?)),
     );
     env.define(
-        String::from("=="),
+        String::from("eq"),
         Sexpr::NativeFn(|env, args| Ok(eql(env, args)?)),
     );
     env.define(
-        String::from("!="),
+        String::from("neq"),
         Sexpr::NativeFn(|env, args| Ok(neq(env, args)?)),
     );
     env.define(String::from("type-of"), Sexpr::NativeFn(type_of));
@@ -86,7 +94,7 @@ fn sum_number_list(args: Vec<Sexpr>) -> Result<Sexpr> {
         |acc, s| -> Result<Number> {
             match s {
                 Sexpr::Atom(Atom::Lit(Lit::Number(n))) => acc + n.clone(),
-                _ => Err(RuntimeError::IvalidFunctionArgumentsError),
+                _ => Err(RuntimeError::new(&format!("can't add non-number `{}`", s))),
             }
         },
     )?))))
@@ -95,13 +103,13 @@ fn sum_number_list(args: Vec<Sexpr>) -> Result<Sexpr> {
 fn sub_number_list(args: Vec<Sexpr>) -> Result<Sexpr> {
     let first = match args.get(0) {
         Some(Sexpr::Atom(Atom::Lit(Lit::Number(n)))) => n,
-        _ => Err(RuntimeError::FirstElemError)?,
+        _ => Err(RuntimeError::new("can't subtract from non-number"))?,
     };
 
     if let Sexpr::Atom(Atom::Lit(Lit::Number(n))) = sum_number_list(args[1..].to_vec())? {
         return (first.clone() - n).map(|num| Sexpr::Atom(Atom::Lit(Lit::Number(num))));
     }
-    Err(RuntimeError::IvalidFunctionArgumentsError)
+    Err(RuntimeError::new("can't subtract non-number"))
 }
 
 fn mul_number_list(args: Vec<Sexpr>) -> Result<Sexpr> {
@@ -110,7 +118,10 @@ fn mul_number_list(args: Vec<Sexpr>) -> Result<Sexpr> {
         |acc, s| -> Result<Number> {
             match s {
                 Sexpr::Atom(Atom::Lit(Lit::Number(n))) => acc * n.clone(),
-                _ => Err(RuntimeError::IvalidFunctionArgumentsError),
+                _ => Err(RuntimeError::new(&format!(
+                    "can't multiply non-number `{}`",
+                    s
+                ))),
             }
         },
     )?))))
@@ -192,6 +203,50 @@ fn lss(env: Rc<RefCell<Env>>, args: Vec<Sexpr>) -> Result<Sexpr> {
         return Err(RuntimeError::IvalidFunctionArgumentsError);
     }
     Ok(Sexpr::Atom(Atom::Lit(Lit::Bool(first < second))))
+}
+
+fn geq(env: Rc<RefCell<Env>>, args: Vec<Sexpr>) -> Result<Sexpr> {
+    let first;
+    let second;
+    if let Sexpr::Atom(Atom::Lit(Lit::Number(n))) = eval(
+        env.clone(),
+        args.get(0).ok_or(RuntimeError::EarlyListEndError)?,
+    )? {
+        first = n;
+    } else {
+        return Err(RuntimeError::IvalidFunctionArgumentsError);
+    }
+    if let Sexpr::Atom(Atom::Lit(Lit::Number(n))) = eval(
+        env.clone(),
+        args.get(1).ok_or(RuntimeError::EarlyListEndError)?,
+    )? {
+        second = n;
+    } else {
+        return Err(RuntimeError::IvalidFunctionArgumentsError);
+    }
+    Ok(Sexpr::Atom(Atom::Lit(Lit::Bool(first >= second))))
+}
+
+fn leq(env: Rc<RefCell<Env>>, args: Vec<Sexpr>) -> Result<Sexpr> {
+    let first;
+    let second;
+    if let Sexpr::Atom(Atom::Lit(Lit::Number(n))) = eval(
+        env.clone(),
+        args.get(0).ok_or(RuntimeError::EarlyListEndError)?,
+    )? {
+        first = n;
+    } else {
+        return Err(RuntimeError::IvalidFunctionArgumentsError);
+    }
+    if let Sexpr::Atom(Atom::Lit(Lit::Number(n))) = eval(
+        env.clone(),
+        args.get(1).ok_or(RuntimeError::EarlyListEndError)?,
+    )? {
+        second = n;
+    } else {
+        return Err(RuntimeError::IvalidFunctionArgumentsError);
+    }
+    Ok(Sexpr::Atom(Atom::Lit(Lit::Bool(first <= second))))
 }
 
 fn not(env: Rc<RefCell<Env>>, args: Vec<Sexpr>) -> Result<Sexpr> {

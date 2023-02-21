@@ -1,15 +1,12 @@
 use std::fmt::Display;
 
-use crate::parser::parser_error::ParserError;
-
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum RuntimeError {
-    NumberOverflowError,
-    IvalidFunctionArgumentsError,
-    UnknownIdentError,
-    EarlyListEndError,
-    FirstElemError,
-    ParserError(ParserError),
+pub struct RuntimeError(pub String);
+
+impl RuntimeError {
+    pub fn new(msg: &str) -> Self {
+        Self(msg.to_string())
+    }
 }
 
 impl Display for RuntimeError {

@@ -267,7 +267,9 @@ impl Add for Number {
             (Number::Bignum(_), Number::Float(_))
             | (Number::Float(_), Number::Bignum(_))
             | (Number::Bignum(_), Number::Rational(_))
-            | (Number::Rational(_), Number::Bignum(_)) => Err(RuntimeError::NumberOverflowError),
+            | (Number::Rational(_), Number::Bignum(_)) => {
+                Err(RuntimeError::new("cannot add arguments"))
+            }
         }
     }
 }
@@ -306,7 +308,9 @@ impl Sub for Number {
             (Number::Bignum(_), Number::Float(_))
             | (Number::Float(_), Number::Bignum(_))
             | (Number::Bignum(_), Number::Rational(_))
-            | (Number::Rational(_), Number::Bignum(_)) => Err(RuntimeError::NumberOverflowError),
+            | (Number::Rational(_), Number::Bignum(_)) => {
+                Err(RuntimeError::new("cannot subtract arguments"))
+            }
         }
     }
 }
@@ -345,7 +349,9 @@ impl Mul for Number {
             (Number::Bignum(_), Number::Float(_))
             | (Number::Float(_), Number::Bignum(_))
             | (Number::Bignum(_), Number::Rational(_))
-            | (Number::Rational(_), Number::Bignum(_)) => Err(RuntimeError::NumberOverflowError),
+            | (Number::Rational(_), Number::Bignum(_)) => {
+                Err(RuntimeError::new("cannot multiply arguments"))
+            }
         }
     }
 }
@@ -384,7 +390,9 @@ impl Div for Number {
             (Number::Bignum(_), Number::Float(_))
             | (Number::Float(_), Number::Bignum(_))
             | (Number::Bignum(_), Number::Rational(_))
-            | (Number::Rational(_), Number::Bignum(_)) => Err(RuntimeError::NumberOverflowError),
+            | (Number::Rational(_), Number::Bignum(_)) => {
+                Err(RuntimeError::new("cannot divide arguments"))
+            }
         }
     }
 }
@@ -423,7 +431,9 @@ impl Rem for Number {
             (Number::Bignum(_), Number::Float(_))
             | (Number::Float(_), Number::Bignum(_))
             | (Number::Bignum(_), Number::Rational(_))
-            | (Number::Rational(_), Number::Bignum(_)) => Err(RuntimeError::NumberOverflowError),
+            | (Number::Rational(_), Number::Bignum(_)) => {
+                Err(RuntimeError::new("cannot modulo arguments"))
+            }
         }
     }
 }
