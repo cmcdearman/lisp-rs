@@ -164,12 +164,11 @@ fn eval_special_form(
                             .ok_or(RuntimeError::IvalidFunctionArgumentsError)?,
                     );
                 } else {
-                    list_iter.next();
+                    // println!("else: {:?}", &list_iter.clone().collect::<Vec<Sexpr>>());
+                    list_iter.next().expect("list ended early");
                     return eval(
                         env.clone(),
-                        &list_iter
-                            .next()
-                            .ok_or(RuntimeError::IvalidFunctionArgumentsError)?,
+                        &list_iter.next().ok_or(RuntimeError::EarlyListEndError)?,
                     );
                 }
             }
