@@ -144,7 +144,7 @@ fn quo_number_list(args: Vec<Sexpr>) -> Result<Sexpr> {
 }
 
 fn mod_number_list(env: Rc<RefCell<Env>>, args: Vec<Sexpr>) -> Result<Sexpr> {
-    println!("mod args: {:?}", args);
+    // println!("mod args: {:?}", args);
     let num = match eval(
         env.clone(),
         args.get(0)

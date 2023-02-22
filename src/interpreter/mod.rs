@@ -17,7 +17,7 @@ pub fn eval(env: Rc<RefCell<Env>>, sexpr: &Sexpr) -> Result<Sexpr> {
         lit @ Sexpr::Atom(Atom::Lit(_)) => Ok(lit.clone()),
         sym @ Sexpr::Atom(Atom::Sym(name)) => {
             if let Some(v) = env.borrow().find(&name) {
-                println!("sym: {}", v);
+                // println!("sym: {}", v);
                 return Ok(v.clone());
             }
 
@@ -93,7 +93,7 @@ fn eval_special_form(
 ) -> Result<Sexpr> {
     match special_form.as_str() {
         "def" => {
-            println!("def list: {:?}", &list_iter.clone().collect::<Vec<Sexpr>>());
+            // println!("def list: {:?}", &list_iter.clone().collect::<Vec<Sexpr>>());
             if let Some(Sexpr::Atom(Atom::Sym(s))) = list_iter.next() {
                 let val = eval(
                     env.clone(),
@@ -102,11 +102,11 @@ fn eval_special_form(
                         .ok_or(RuntimeError::new("def takes 2 arguments. got 0"))?,
                 )?;
 
-                println!("val: {}", val);
+                // println!("val: {}", val);
 
                 env.borrow_mut().define(s.to_string(), val.clone());
 
-                println!("Env after def: {:p}", env.as_ref());
+                // println!("Env after def: {:p}", env.as_ref());
 
                 return Ok(val.clone());
             }
@@ -142,7 +142,7 @@ fn eval_special_form(
                     .next()
                     .ok_or(RuntimeError::new("`if` takes 3 arguments, got 0"))?,
             )? {
-                println!("{:?}", &list_iter.clone().collect::<Vec<Sexpr>>());
+                // println!("{:?}", &list_iter.clone().collect::<Vec<Sexpr>>());
                 if b {
                     return eval(
                         env.clone(),
@@ -152,7 +152,7 @@ fn eval_special_form(
                     );
                 } else {
                     list_iter.next().expect("list ended early");
-                    println!("else: {:?}", &list_iter.clone().collect::<Vec<Sexpr>>());
+                    // println!("else: {:?}", &list_iter.clone().collect::<Vec<Sexpr>>());
                     return eval(
                         env.clone(),
                         &list_iter
@@ -184,13 +184,13 @@ mod tests {
     fn eval_rec_gcd_call() {
         let env = default_env();
         let ast = &Parser::new(
-            "(def gcd (fn (a b) (if (eq b 0) (a) (gcd b (mod a b)))))",
+            "(def gcd (fn (a b) (if (eq b 0) a (gcd b (mod a b)))))",
             false,
         )
         .parse()
         .expect("expected recursive test to parse");
 
-        println!("ast: {}", ast);
+        // println!("ast: {}", ast);
 
         eval(env.clone(), ast).expect("expected recursive definition to eval");
         assert_eq!(
