@@ -18,7 +18,12 @@ pub fn eval(env: Rc<RefCell<Env>>, sexpr: &Sexpr) -> Result<Sexpr> {
             if let Some(v) = env.borrow().find(&name) {
                 return Ok(v.clone());
             }
-            println!("env: {:?}", env);
+
+            // println!("Env: {:p}", env.as_ref());
+            // for e in env.borrow().dump_all_entries() {
+            //     println!("\t{:?}", e);
+            // }
+
             Err(RuntimeError::new(&format!(
                 "use of unbound Symbol `{}`",
                 sym.clone()
@@ -26,7 +31,6 @@ pub fn eval(env: Rc<RefCell<Env>>, sexpr: &Sexpr) -> Result<Sexpr> {
         }
         Sexpr::List(l) => {
             let mut list_iter = l.clone().into_iter();
-            println!("{:?}", &list_iter.clone().collect::<Vec<Sexpr>>());
             let first = list_iter
                 .next()
                 .ok_or(RuntimeError::new("unexpected end to list"))?;
@@ -50,18 +54,24 @@ pub fn eval(env: Rc<RefCell<Env>>, sexpr: &Sexpr) -> Result<Sexpr> {
                     args,
                     body,
                 } => {
+                    println!("Env in call: {:p}", fn_env);
+                    for e in fn_env.borrow().dump_all_entries() {
+                        println!("\t{:?}", e);
+                    }
                     let params = list_iter.collect::<Vec<Sexpr>>();
-                    let mut arg_env = fn_env.borrow().create_child();
+                    let arg_env = Rc::new(RefCell::new(fn_env.borrow().create_child()));
                     for (i, a) in args.iter().enumerate() {
                         if let Sexpr::Atom(Atom::Sym(s)) = a {
-                            arg_env.define(s.to_string(), params[i].clone());
+                            arg_env
+                                .borrow_mut()
+                                .define(s.to_string(), params[i].clone());
                         } else {
                             return Err(RuntimeError::new(
                                 "lambda arguments must be of type String",
                             ));
                         }
                     }
-                    eval(Rc::new(RefCell::new(arg_env)), &body)
+                    eval(arg_env.clone(), &body)
                 }
                 _ => Err(RuntimeError::new(&format!(
                     "first list element must be function call, got `{}`",
@@ -94,6 +104,12 @@ fn eval_special_form(
                 )?;
 
                 env.borrow_mut().define(s.to_string(), val.clone());
+
+                println!("Env after def: {:p}", env.as_ref());
+                for e in env.borrow().dump_all_entries() {
+                    println!("\t{:?}", e);
+                }
+
                 return Ok(val.clone());
             }
             Err(RuntimeError::new("first def argument must be a Symbol"))
@@ -108,13 +124,18 @@ fn eval_special_form(
                 fn_args = l.clone().into_iter().map(|x| x.clone()).collect();
             }
 
-            println!("{:?}", list_iter.clone().collect::<Vec<Sexpr>>());
             let body = &list_iter
                 .next()
                 .ok_or(RuntimeError::new("fn takes 2 arguments, got 1"))?;
 
+            let child = env.borrow().create_child();
+            // println!("Env after fn: {:p}", env.as_ref());
+            // for e in env.borrow().dump_all_entries() {
+            //     println!("\t{:?}", e);
+            // }
+
             Ok(Sexpr::Lambda {
-                env: Rc::new(RefCell::new(env.borrow().create_child())),
+                env: Rc::new(RefCell::new(child)),
                 args: fn_args,
                 body: Box::new(body.clone()),
             })
@@ -149,5 +170,44 @@ fn eval_special_form(
             Err(RuntimeError::new("`if` first argument must be Boolean"))
         }
         _ => panic!("expected special form got `{}`", special_form),
+    }
+}
+
+mod tests {
+    use std::{cell::RefCell, rc::Rc};
+
+    use crate::{
+        interpreter::default_env::default_env,
+        parser::{
+            sexpr::{env::Env, Atom, Lit, Number, Sexpr},
+            Parser,
+        },
+    };
+
+    use super::eval;
+
+    #[test]
+    fn eval_rec_gcd_call() {
+        let env = default_env();
+        eval(
+            env.clone(),
+            &Parser::new(
+                "(def gcd (fn (a b) (if (eq b 0) (a) (gcd b (mod a b)))))",
+                false,
+            )
+            .parse()
+            .expect("expected recursive test to parse"),
+        )
+        .expect("expected recursive definition to eval");
+        assert_eq!(
+            eval(
+                env.clone(),
+                &Parser::new("(gcd 18 24)", false)
+                    .parse()
+                    .expect("expected recursive test to parse")
+            )
+            .expect("expected recursive test to pass"),
+            Sexpr::Atom(Atom::Lit(Lit::Number(Number::Fixnum(6))))
+        );
     }
 }

@@ -11,7 +11,7 @@ impl RuntimeError {
 
 impl Display for RuntimeError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:?}", self)
+        write!(f, "RuntimeError: {}", self.0)
     }
 }
 

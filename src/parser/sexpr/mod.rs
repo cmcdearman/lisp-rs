@@ -7,6 +7,7 @@ use std::{
 
 use num_bigint::BigInt;
 use num_rational::Rational64;
+use serde::Serialize;
 
 use crate::interpreter::runtime_error::{Result, RuntimeError};
 
@@ -73,7 +74,7 @@ impl Debug for Sexpr {
         match self {
             Self::Atom(a) => write!(f, "{}", a),
             Self::List(l) => write!(f, "{:?}", l),
-            Self::Lambda { env, args, body } => todo!(),
+            Self::Lambda { env, args, body } => write!(f, "<#fn({:?})>", args),
             Self::NativeFn(nf) => write!(f, "{:?}", nf),
         }
     }

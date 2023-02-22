@@ -19,7 +19,7 @@ pub fn repl() {
         //     Err(err) => panic!("{}", err),
         // }
         let ast = &Parser::new(&src, false).parse().unwrap();
-        println!("Ast: {:?}", ast);
+        // println!("Ast: {:?}", ast);
         match eval(env.clone(), ast) {
             Ok(v) => {
                 println!("{}", v)
