@@ -1,10 +1,11 @@
 use std::{borrow::Borrow, cell::RefCell, collections::HashMap, rc::Rc};
 
+use crate::parser;
+
 use super::Sexpr;
 
 #[derive(Debug, Clone)]
 pub struct Env {
-    tag: String,
     parent: Option<Rc<RefCell<Env>>>,
     entries: HashMap<String, Sexpr>,
 }
@@ -12,8 +13,14 @@ pub struct Env {
 impl Env {
     pub fn new() -> Self {
         Self {
-            tag: "root".to_string(),
             parent: None,
+            entries: HashMap::new(),
+        }
+    }
+
+    pub fn create_child(parent: Rc<RefCell<Self>>) -> Self {
+        Self {
+            parent: Some(parent),
             entries: HashMap::new(),
         }
     }
@@ -36,29 +43,21 @@ impl Env {
         self.entries.remove(&name);
     }
 
-    pub fn create_child(&self) -> Self {
-        Self {
-            tag: format!("child of {}", self.tag),
-            parent: Some(Rc::new(RefCell::new(self.clone()))),
-            entries: HashMap::new(),
-        }
-    }
+    // pub fn dump_entries(&self) -> HashMap<String, Sexpr> {
+    //     self.entries.clone()
+    // }
 
-    pub fn dump_entries(&self) -> HashMap<String, Sexpr> {
-        self.entries.clone()
-    }
-
-    pub fn dump_all_entries(&self) -> HashMap<String, HashMap<String, Sexpr>> {
-        let mut tables = HashMap::new();
-        tables.insert(self.tag.to_string(), self.dump_entries());
-        if let Some(parent) = &self.parent {
-            tables = tables
-                .into_iter()
-                .chain(parent.as_ref().borrow().dump_all_entries())
-                .collect();
-        }
-        tables
-    }
+    // pub fn dump_all_entries(&self) -> HashMap<String, HashMap<String, Sexpr>> {
+    //     let mut tables = HashMap::new();
+    //     tables.insert(self.tag.to_string(), self.dump_entries());
+    //     if let Some(parent) = &self.parent {
+    //         tables = tables
+    //             .into_iter()
+    //             .chain(parent.as_ref().borrow().dump_all_entries())
+    //             .collect();
+    //     }
+    //     tables
+    // }
 
     pub fn get_parent(&self) -> Option<Rc<RefCell<Env>>> {
         self.parent.clone()

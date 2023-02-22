@@ -27,7 +27,7 @@ pub fn default_env() -> Rc<RefCell<Env>> {
     );
     env.define(
         String::from("mod"),
-        Sexpr::NativeFn(|_, args| Ok(mod_number_list(args)?)),
+        Sexpr::NativeFn(|env, args| Ok(mod_number_list(env, args)?)),
     );
     env.define(
         String::from(">"),
@@ -143,20 +143,26 @@ fn quo_number_list(args: Vec<Sexpr>) -> Result<Sexpr> {
     ))))
 }
 
-fn mod_number_list(args: Vec<Sexpr>) -> Result<Sexpr> {
-    if args.len() != 2 {
-        return Err(RuntimeError::new(&format!(
-            "mod takes two arguments, got `{}`",
-            args.len()
-        )));
-    }
-    let num = match args.get(0) {
-        Some(Sexpr::Atom(Atom::Lit(Lit::Number(n)))) => n,
-        _ => Err(RuntimeError::new("mod takes numbers"))?,
+fn mod_number_list(env: Rc<RefCell<Env>>, args: Vec<Sexpr>) -> Result<Sexpr> {
+    println!("mod args: {:?}", args);
+    let num = match eval(
+        env.clone(),
+        args.get(0)
+            .ok_or(RuntimeError::new("mod takes two arguments, got 0"))?,
+    )? {
+        Sexpr::Atom(Atom::Lit(Lit::Number(n))) => n,
+        sexpr @ _ => Err(RuntimeError::new(&format!(
+            "mod first argument must be a Number, got `{}`",
+            sexpr
+        )))?,
     };
-    let div = match args.get(1) {
-        Some(Sexpr::Atom(Atom::Lit(Lit::Number(n)))) => n,
-        _ => Err(RuntimeError::new("mod takes numbers"))?,
+    let div = match eval(
+        env.clone(),
+        args.get(1)
+            .ok_or(RuntimeError::new("mod takes two arguments, got 1"))?,
+    )? {
+        Sexpr::Atom(Atom::Lit(Lit::Number(n))) => n,
+        _ => Err(RuntimeError::new("mod second argument must be a Number"))?,
     };
 
     Ok(Sexpr::Atom(Atom::Lit(Lit::Number(

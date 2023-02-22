@@ -16,13 +16,9 @@ pub fn eval(env: Rc<RefCell<Env>>, sexpr: &Sexpr) -> Result<Sexpr> {
         lit @ Sexpr::Atom(Atom::Lit(_)) => Ok(lit.clone()),
         sym @ Sexpr::Atom(Atom::Sym(name)) => {
             if let Some(v) = env.borrow().find(&name) {
+                println!("sym: {}", v);
                 return Ok(v.clone());
             }
-
-            // println!("Env: {:p}", env.as_ref());
-            // for e in env.borrow().dump_all_entries() {
-            //     println!("\t{:?}", e);
-            // }
 
             Err(RuntimeError::new(&format!(
                 "use of unbound Symbol `{}`",
@@ -54,12 +50,8 @@ pub fn eval(env: Rc<RefCell<Env>>, sexpr: &Sexpr) -> Result<Sexpr> {
                     args,
                     body,
                 } => {
-                    println!("Env in call: {:p}", fn_env);
-                    for e in fn_env.borrow().dump_all_entries() {
-                        println!("\t{:?}", e);
-                    }
                     let params = list_iter.collect::<Vec<Sexpr>>();
-                    let arg_env = Rc::new(RefCell::new(fn_env.borrow().create_child()));
+                    let arg_env = Rc::new(RefCell::new(Env::create_child(fn_env)));
                     for (i, a) in args.iter().enumerate() {
                         if let Sexpr::Atom(Atom::Sym(s)) = a {
                             arg_env
@@ -106,9 +98,6 @@ fn eval_special_form(
                 env.borrow_mut().define(s.to_string(), val.clone());
 
                 println!("Env after def: {:p}", env.as_ref());
-                for e in env.borrow().dump_all_entries() {
-                    println!("\t{:?}", e);
-                }
 
                 return Ok(val.clone());
             }
@@ -128,14 +117,8 @@ fn eval_special_form(
                 .next()
                 .ok_or(RuntimeError::new("fn takes 2 arguments, got 1"))?;
 
-            let child = env.borrow().create_child();
-            // println!("Env after fn: {:p}", env.as_ref());
-            // for e in env.borrow().dump_all_entries() {
-            //     println!("\t{:?}", e);
-            // }
-
             Ok(Sexpr::Lambda {
-                env: Rc::new(RefCell::new(child)),
+                env: Rc::new(RefCell::new(Env::create_child(env))),
                 args: fn_args,
                 body: Box::new(body.clone()),
             })
@@ -150,6 +133,7 @@ fn eval_special_form(
                     .next()
                     .ok_or(RuntimeError::new("`if` takes 3 arguments, got 0"))?,
             )? {
+                println!("{:?}", &list_iter.clone().collect::<Vec<Sexpr>>());
                 if b {
                     return eval(
                         env.clone(),
@@ -159,6 +143,7 @@ fn eval_special_form(
                     );
                 } else {
                     list_iter.next().expect("list ended early");
+                    println!("else: {:?}", &list_iter.clone().collect::<Vec<Sexpr>>());
                     return eval(
                         env.clone(),
                         &list_iter
@@ -189,16 +174,16 @@ mod tests {
     #[test]
     fn eval_rec_gcd_call() {
         let env = default_env();
-        eval(
-            env.clone(),
-            &Parser::new(
-                "(def gcd (fn (a b) (if (eq b 0) (a) (gcd b (mod a b)))))",
-                false,
-            )
-            .parse()
-            .expect("expected recursive test to parse"),
+        let ast = &Parser::new(
+            "(def gcd (fn (a b) (if (eq b 0) (a) (gcd b (mod a b)))))",
+            false,
         )
-        .expect("expected recursive definition to eval");
+        .parse()
+        .expect("expected recursive test to parse");
+
+        println!("ast: {}", ast);
+
+        eval(env.clone(), ast).expect("expected recursive definition to eval");
         assert_eq!(
             eval(
                 env.clone(),
