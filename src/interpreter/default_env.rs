@@ -50,7 +50,7 @@ pub fn default_env() -> Rc<RefCell<Env>> {
         Sexpr::NativeFn(|env, args| Ok(not(env, args)?)),
     );
     env.define(
-        String::from("eq"),
+        String::from("="),
         Sexpr::NativeFn(|env, args| Ok(eql(env, args)?)),
     );
     env.define(
