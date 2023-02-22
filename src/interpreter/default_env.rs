@@ -85,6 +85,7 @@ fn type_of(env: Rc<RefCell<Env>>, args: Vec<Sexpr>) -> Result<Sexpr> {
         Sexpr::List(_) => Ok(Sexpr::Atom(Atom::Sym("List".to_string()))),
         Sexpr::Lambda { env, args, body } => todo!(),
         Sexpr::NativeFn(f) => Ok(Sexpr::Atom(Atom::Sym(format!("NativeFn: {:?}", f)))),
+        Sexpr::Env(_) => todo!(),
     }
 }
 

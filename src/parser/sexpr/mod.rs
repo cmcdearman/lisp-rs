@@ -34,6 +34,9 @@ pub enum Sexpr {
 
     // A native Rust function only constructed in env
     NativeFn(fn(env: Rc<RefCell<Env>>, args: Vec<Sexpr>) -> Result<Sexpr>),
+
+    // A Lisp environment
+    Env(Env),
 }
 
 impl Sexpr {
@@ -65,6 +68,7 @@ impl Display for Sexpr {
             Self::List(head) => write!(f, "{}", head),
             Self::Lambda { env, args, body } => write!(f, "<#fn>"),
             Self::NativeFn(_) => write!(f, "NativeFn"),
+            Self::Env(e) => write!(f, "<:env>"),
         }
     }
 }
@@ -76,6 +80,7 @@ impl Debug for Sexpr {
             Self::List(l) => write!(f, "{:?}", l),
             Self::Lambda { env, args, body } => write!(f, "<#fn({:?})>", args),
             Self::NativeFn(nf) => write!(f, "{:?}", nf),
+            Self::Env(e) => write!(f, "<#env>"),
         }
     }
 }
