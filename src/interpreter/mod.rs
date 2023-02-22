@@ -57,9 +57,12 @@ pub fn eval(env: Rc<RefCell<Env>>, sexpr: &Sexpr) -> Result<Sexpr> {
                         if let Sexpr::Atom(Atom::Sym(s)) = a {
                             arg_env
                                 .borrow_mut()
-                                .define(s.to_string(), params[i].clone());
+                                .define(s.to_string(), eval(env.clone(), &params[i].clone())?);
 
-                            println!("mappings: {:?}", (s.to_string(), params[i].clone()));
+                            // println!(
+                            //     "mappings: {:?}",
+                            //     (s.to_string(), eval(fn_env.clone(), &params[i].clone())?)
+                            // );
                         } else {
                             return Err(RuntimeError::new(
                                 "lambda arguments must be of type String",
