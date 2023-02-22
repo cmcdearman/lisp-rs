@@ -1,3 +1,4 @@
+use core::prelude;
 use std::{cell::RefCell, rc::Rc};
 
 use crate::parser::{
@@ -57,6 +58,8 @@ pub fn eval(env: Rc<RefCell<Env>>, sexpr: &Sexpr) -> Result<Sexpr> {
                             arg_env
                                 .borrow_mut()
                                 .define(s.to_string(), params[i].clone());
+
+                            println!("mappings: {:?}", (s.to_string(), params[i].clone()));
                         } else {
                             return Err(RuntimeError::new(
                                 "lambda arguments must be of type String",
@@ -87,6 +90,7 @@ fn eval_special_form(
 ) -> Result<Sexpr> {
     match special_form.as_str() {
         "def" => {
+            println!("def list: {:?}", &list_iter.clone().collect::<Vec<Sexpr>>());
             if let Some(Sexpr::Atom(Atom::Sym(s))) = list_iter.next() {
                 let val = eval(
                     env.clone(),
@@ -94,6 +98,8 @@ fn eval_special_form(
                         .next()
                         .ok_or(RuntimeError::new("def takes 2 arguments. got 0"))?,
                 )?;
+
+                println!("val: {}", val);
 
                 env.borrow_mut().define(s.to_string(), val.clone());
 

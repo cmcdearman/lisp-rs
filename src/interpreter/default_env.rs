@@ -151,7 +151,7 @@ fn mod_number_list(env: Rc<RefCell<Env>>, args: Vec<Sexpr>) -> Result<Sexpr> {
             .ok_or(RuntimeError::new("mod takes two arguments, got 0"))?,
     )? {
         Sexpr::Atom(Atom::Lit(Lit::Number(n))) => n,
-        sexpr @ _ => Err(RuntimeError::new(&format!(
+        sexpr => Err(RuntimeError::new(&format!(
             "mod first argument must be a Number, got `{}`",
             sexpr
         )))?,
