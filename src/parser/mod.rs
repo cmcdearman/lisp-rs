@@ -1,65 +1,88 @@
-use std::{iter::Peekable, vec::IntoIter};
-
-use either::Either;
+use logos::{Lexer, Logos};
 
 use crate::T;
 
 use sexpr::{Atom, Lit, Sexpr};
 
 use self::{
-    lexer::{
-        token::{Span, Token, TokenKind},
-        Lexer,
-    },
     parser_error::{ParserError, ParserErrorKind, Result},
     sexpr::{Cons, List, Number, NIL},
+    token::{Span, Token, TokenKind},
 };
 
-pub mod lexer;
 pub mod parser_error;
 pub mod sexpr;
+pub mod token;
 
+/// Parser is a recursive descent parser for the Lust language.
 pub struct Parser<'src> {
+    /// The source code to parse.
     src: &'src str,
-    tokens: Peekable<Either<Lexer<'src>, IntoIter<Token>>>,
+
+    /// The [`Lexer`] used to lex the source code.
+    logos: Lexer<'src, TokenKind>,
+
+    /// The next token to be consumed.
+    peek: Option<Token>,
 }
 
 impl<'src> Parser<'src> {
-    pub fn new(src: &'src str, lazy: bool) -> Self {
+    /// Creates a new [`Parser`].
+    pub fn new(src: &'src str) -> Self {
         Self {
             src,
-            tokens: if lazy {
-                Either::Left(Lexer::new(src, true)).peekable()
-            } else {
-                Either::Right(Lexer::new(src, true).collect::<Vec<Token>>().into_iter()).peekable()
-            },
+            logos: TokenKind::lexer(src),
+            peek: None,
         }
     }
 
+    /// Returns the source code of the token.
     fn text(&self, token: Token) -> &'src str {
         token.lit(&self.src)
     }
 
-    fn peek(&mut self) -> TokenKind {
-        self.tokens
-            .peek()
-            .map(|token| token.kind)
-            .unwrap_or(T![EOF])
+    /// Returns the peek token in the stream.
+    fn next(&mut self) -> Token {
+        if let Some(t) = self.peek.take() {
+            t
+        } else {
+            self.generate()
+        }
     }
 
+    /// Returns the next token in the stream without consuming it.
+    fn peek(&mut self) -> Token {
+        if let Some(t) = self.peek {
+            t
+        } else {
+            let t = self.generate();
+            self.peek = Some(t);
+            t
+        }
+    }
+
+    /// Gets the next token from the [`Lexer`].
+    fn generate(&mut self) -> Token {
+        match self.logos.next().map(|t| (t, self.logos.span())) {
+            None => Token {
+                kind: T![EOF],
+                span: Span::new(0, 0),
+            },
+            Some((T![;], _)) => self.generate(),
+            Some((t, s)) => Token {
+                kind: t,
+                span: Span::from(s),
+            },
+        }
+    }
+    
+    /// Returns true if the next token is of the given kind.
     fn at(&mut self, kind: TokenKind) -> bool {
-        self.peek() == kind
-    }
-
-    fn next(&mut self) -> Option<Token> {
-        self.tokens.next()
+        self.peek().kind == kind
     }
 
     fn consume(&mut self, expected: TokenKind) {
-        let token = self.next().expect(&format!(
-            "Expected to consume `{}`, but there was no next token",
-            expected
-        ));
+        let token = self.next();
         assert_eq!(
             token.kind, expected,
             "Expected to consume `{}`, but found `{}`",
@@ -68,7 +91,7 @@ impl<'src> Parser<'src> {
     }
 
     pub fn parse(&mut self) -> Result<Sexpr> {
-        match self.peek() {
+        match self.peek().kind {
             T!['('] => {
                 self.consume(T!['(']);
                 self.list()
@@ -103,11 +126,9 @@ impl<'src> Parser<'src> {
     }
 
     fn atom(&mut self) -> Result<Sexpr> {
-        match self.peek() {
+        match self.peek().kind {
             lit @ T![int] | lit @ T![float] | lit @ T![ratio] | lit @ T![str] | lit @ T![bool] => {
-                let lit_tok = self
-                    .next()
-                    .expect("expected `Token` but found `Option` None");
+                let lit_tok = self.next();
                 let lit_text = self.text(lit_tok);
                 let lit = match lit {
                     T![int] => Lit::Number(Number::Fixnum(lit_text.parse().map_err(|_| {
@@ -126,9 +147,7 @@ impl<'src> Parser<'src> {
                 Ok(Sexpr::Atom(Atom::Lit(lit)))
             }
             TokenKind::Ident => {
-                let ident = self
-                    .next()
-                    .expect("expected `Token` but found `Option` None");
+                let ident = self.next();
                 Ok(Sexpr::Atom(Atom::Sym(self.text(ident).to_string())))
             }
             kind => {

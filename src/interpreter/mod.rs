@@ -185,7 +185,6 @@ mod tests {
         let env = default_env();
         let ast = &Parser::new(
             "(def gcd (fn (a b) (if (= b 0) a (gcd b (mod a b)))))",
-            false,
         )
         .parse()
         .expect("expected recursive test to parse");
@@ -194,7 +193,7 @@ mod tests {
         assert_eq!(
             eval(
                 env.clone(),
-                &Parser::new("(gcd 18 24)", false)
+                &Parser::new("(gcd 18 24)")
                     .parse()
                     .expect("expected recursive test to parse")
             )
