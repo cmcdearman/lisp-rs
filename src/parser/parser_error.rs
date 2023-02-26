@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use super::lexer::token::Span;
+use super::token::Span;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum ParserErrorKind {
