@@ -183,11 +183,9 @@ mod tests {
     #[test]
     fn eval_rec_gcd_call() {
         let env = default_env();
-        let ast = &Parser::new(
-            "(def gcd (fn (a b) (if (= b 0) a (gcd b (mod a b)))))",
-        )
-        .parse()
-        .expect("expected recursive test to parse");
+        let ast = &Parser::new("(def gcd (fn (a b) (if (= b 0) a (gcd b (% a b)))))")
+            .parse()
+            .expect("expected recursive test to parse");
 
         eval(env.clone(), ast).expect("expected recursive definition to eval");
         assert_eq!(
