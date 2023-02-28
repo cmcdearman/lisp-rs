@@ -26,7 +26,7 @@ pub fn default_env() -> Rc<RefCell<Env>> {
         Sexpr::NativeFn(|_, args| Ok(quo_number_list(args)?)),
     );
     env.define(
-        String::from("mod"),
+        String::from("%"),
         Sexpr::NativeFn(|env, args| Ok(mod_number_list(env, args)?)),
     );
     env.define(
@@ -83,7 +83,7 @@ fn type_of(env: Rc<RefCell<Env>>, args: Vec<Sexpr>) -> Result<Sexpr> {
             },
         },
         Sexpr::List(_) => Ok(Sexpr::Atom(Atom::Sym("List".to_string()))),
-        Sexpr::Lambda { env, args, body } => todo!(),
+        Sexpr::Lambda { env, args, body } => Ok(Sexpr::Atom(Atom::Sym("Lambda".to_string()))),
         Sexpr::NativeFn(f) => Ok(Sexpr::Atom(Atom::Sym(format!("NativeFn: {:?}", f)))),
         Sexpr::Env(_) => todo!(),
     }
