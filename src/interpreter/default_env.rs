@@ -26,7 +26,7 @@ pub fn default_env() -> Rc<RefCell<Env>> {
         Sexpr::NativeFn(|_, args| Ok(quo_number_list(args)?)),
     );
     env.define(
-        String::from("mod"),
+        String::from("%"),
         Sexpr::NativeFn(|env, args| Ok(mod_number_list(env, args)?)),
     );
     env.define(
