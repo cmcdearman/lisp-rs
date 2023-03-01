@@ -1,10 +1,12 @@
 use std::{
     cell::RefCell,
+    collections::{HashMap, HashSet},
     fmt::{Debug, Display},
     ops::{Add, Div, Mul, Rem, Sub},
     rc::Rc,
 };
 
+use itertools::join;
 use num_bigint::BigInt;
 use num_rational::Rational64;
 use serde::Serialize;
@@ -208,6 +210,9 @@ pub enum Lit {
     Number(Number),
     Bool(bool),
     Str(String),
+    Vec(Vec<Sexpr>),
+    // HashMap(HashMap<Sexpr, Sexpr>),
+    // HashSet(HashSet<Sexpr>),
 }
 
 impl Display for Lit {
@@ -216,9 +221,22 @@ impl Display for Lit {
             Lit::Number(n) => write!(f, "{}", n),
             Lit::Bool(b) => write!(f, "{}", b),
             Lit::Str(s) => write!(f, "\"{}\"", s),
+            Lit::Vec(v) => write!(f, "[{}]", join(v, " ")),
         }
     }
 }
+
+// impl PartialEq for Lit {
+//     fn eq(&self, other: &Self) -> bool {
+//         match (self, other) {
+//             (Self::Number(l), Self::Number(r)) => l == r,
+//             (Self::Bool(l), Self::Bool(r)) => l == r,
+//             (Self::Str(l), Self::Str(r)) => l == r,
+//             (Self::Vec(l), Self::Vec(r)) => l == r,
+//             _ => false,
+//         }
+//     }
+// }
 
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub enum Number {

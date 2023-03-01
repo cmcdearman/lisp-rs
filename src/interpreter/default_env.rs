@@ -80,6 +80,7 @@ fn type_of(env: Rc<RefCell<Env>>, args: Vec<Sexpr>) -> Result<Sexpr> {
                 },
                 Lit::Bool(_) => Ok(Sexpr::Atom(Atom::Sym("Boolean".to_string()))),
                 Lit::Str(_) => Ok(Sexpr::Atom(Atom::Sym("String".to_string()))),
+                Lit::Vec(v) => Ok(Sexpr::Atom(Atom::Sym("Vector".to_string()))),
             },
         },
         Sexpr::List(_) => Ok(Sexpr::Atom(Atom::Sym("List".to_string()))),
