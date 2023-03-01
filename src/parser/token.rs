@@ -12,7 +12,7 @@ pub enum TokenKind {
     Whitespace,
     #[regex(r#";[^\n]*"#)]
     Comment,
-    #[regex(r#"[^\[\]()\s]+"#)]
+    #[regex(r#"[^\[\]()\s,]+"#)]
     Ident,
     #[regex(r#"(\+|-)?\d+(i8|u8|i16|u16|i32|u32|i64|u64)?"#, priority = 3)]
     Int,
@@ -37,6 +37,10 @@ pub enum TokenKind {
     RBrack,
     #[token(":")]
     Colon,
+    #[token(".")]
+    Period,
+    #[token(",")]
+    Comma,
 }
 
 #[macro_export]
@@ -86,6 +90,12 @@ macro_rules! T {
     [:] => {
         $crate::parser::token::TokenKind::Colon
     };
+    [.] => {
+        $crate::parser::token::TokenKind::Period
+    };
+    [,] => {
+        $crate::parser::token::TokenKind::Comma
+    };
 }
 
 impl fmt::Display for TokenKind {
@@ -109,6 +119,8 @@ impl fmt::Display for TokenKind {
                 T!['['] => "[",
                 T![']'] => "]",
                 T![:] => ":",
+                T![.] => ".",
+                T![,] => ",",
             }
         )
     }

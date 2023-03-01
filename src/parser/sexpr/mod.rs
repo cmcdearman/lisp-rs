@@ -78,7 +78,7 @@ impl Display for Sexpr {
 impl Debug for Sexpr {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Atom(a) => write!(f, "{}", a),
+            Self::Atom(a) => write!(f, "{:?}", a),
             Self::List(l) => write!(f, "{:?}", l),
             Self::Lambda { env, args, body } => write!(f, "<#fn({:?})>", args),
             Self::NativeFn(nf) => write!(f, "{:?}", nf),

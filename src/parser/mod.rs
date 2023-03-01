@@ -75,7 +75,7 @@ impl<'src> Parser<'src> {
             },
         }
     }
-    
+
     /// Returns true if the next token is of the given kind.
     fn at(&mut self, kind: TokenKind) -> bool {
         self.peek().kind == kind
@@ -146,7 +146,16 @@ impl<'src> Parser<'src> {
                 };
                 Ok(Sexpr::Atom(Atom::Lit(lit)))
             }
-            TokenKind::Ident => {
+            T!['['] => {
+                self.consume(T!['[']);
+                let mut vec = vec![];
+                while !self.at(T![']']) {
+                    vec.push(self.parse()?);
+                }
+                self.consume(T![']']);
+                Ok(Sexpr::Atom(Atom::Lit(Lit::Vec(vec))))
+            }
+            T![ident] => {
                 let ident = self.next();
                 Ok(Sexpr::Atom(Atom::Sym(self.text(ident).to_string())))
             }
