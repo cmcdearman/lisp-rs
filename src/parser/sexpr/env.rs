@@ -1,4 +1,4 @@
-use std::{borrow::Borrow, cell::RefCell, collections::HashMap, rc::Rc};
+use std::{borrow::Borrow, cell::RefCell, collections::HashMap, hash::Hash, rc::Rc};
 
 use crate::parser;
 
@@ -69,3 +69,14 @@ impl PartialEq for Env {
         self.parent == other.parent && self.entries == other.entries
     }
 }
+
+// impl Hash for Env {
+//     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+//         if let Some(parent) = &self.parent {
+//             parent.as_ref().borrow().hash(state);
+//         } else {
+//             None.hash(state);
+//         }
+//         self.entries.as_ref().hash(state);
+//     }
+// }

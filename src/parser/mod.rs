@@ -1,3 +1,5 @@
+use std::{cell::RefCell, collections::HashMap, rc::Rc};
+
 use logos::{Lexer, Logos};
 
 use crate::T;
@@ -81,6 +83,7 @@ impl<'src> Parser<'src> {
         self.peek().kind == kind
     }
 
+    /// Consumes the next token if it is of the given kind.
     fn consume(&mut self, expected: TokenKind) {
         let token = self.next();
         assert_eq!(
@@ -90,6 +93,7 @@ impl<'src> Parser<'src> {
         );
     }
 
+    /// Parses the source code into a [`Sexpr`].
     pub fn parse(&mut self) -> Result<Sexpr> {
         match self.peek().kind {
             T!['('] => {
@@ -100,6 +104,7 @@ impl<'src> Parser<'src> {
         }
     }
 
+    /// Parses a list of [`Sexpr`]s.
     fn list(&mut self) -> Result<Sexpr> {
         if self.at(T![')']) {
             return Ok(NIL);
@@ -125,6 +130,7 @@ impl<'src> Parser<'src> {
         })))))
     }
 
+    /// Parses an atom.
     fn atom(&mut self) -> Result<Sexpr> {
         match self.peek().kind {
             lit @ T![int] | lit @ T![float] | lit @ T![ratio] | lit @ T![str] | lit @ T![bool] => {
@@ -154,6 +160,19 @@ impl<'src> Parser<'src> {
                 }
                 self.consume(T![']']);
                 Ok(Sexpr::Atom(Atom::Lit(Lit::Vec(vec))))
+            }
+            T!['{'] => {
+                self.consume(T!['{']);
+                let mut map = HashMap::new();
+                while !self.at(T!['}']) {
+                    let key = self.parse()?;
+                    let val = self.parse()?;
+                    map.insert(key, val);
+                }
+                self.consume(T!['}']);
+                Ok(Sexpr::Atom(Atom::Lit(Lit::HashMap(Rc::new(RefCell::new(
+                    map,
+                ))))))
             }
             T![ident] => {
                 let ident = self.next();

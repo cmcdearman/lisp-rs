@@ -58,6 +58,14 @@ pub fn default_env() -> Rc<RefCell<Env>> {
         Sexpr::NativeFn(|env, args| Ok(neq(env, args)?)),
     );
     env.define(String::from("type-of"), Sexpr::NativeFn(type_of));
+    env.define(
+        "list".to_string(),
+        Sexpr::NativeFn(|_, args| Ok(Sexpr::List(args.into()))),
+    );
+    env.define(
+        "vector".to_string(),
+        Sexpr::NativeFn(|_, args| Ok(Sexpr::Atom(Atom::Lit(Lit::Vec(args))))),
+    );
 
     Rc::new(RefCell::new(env))
 }
@@ -81,12 +89,14 @@ fn type_of(env: Rc<RefCell<Env>>, args: Vec<Sexpr>) -> Result<Sexpr> {
                 Lit::Bool(_) => Ok(Sexpr::Atom(Atom::Sym("Boolean".to_string()))),
                 Lit::Str(_) => Ok(Sexpr::Atom(Atom::Sym("String".to_string()))),
                 Lit::Vec(v) => Ok(Sexpr::Atom(Atom::Sym("Vector".to_string()))),
+                Lit::HashMap(_) => Ok(Sexpr::Atom(Atom::Sym("HashMap".to_string()))),
+                Lit::HashSet(_) => Ok(Sexpr::Atom(Atom::Sym("HashSet".to_string()))),
             },
         },
         Sexpr::List(_) => Ok(Sexpr::Atom(Atom::Sym("List".to_string()))),
         Sexpr::Lambda { env, args, body } => Ok(Sexpr::Atom(Atom::Sym("Lambda".to_string()))),
         Sexpr::NativeFn(f) => Ok(Sexpr::Atom(Atom::Sym(format!("NativeFn: {:?}", f)))),
-        Sexpr::Env(_) => todo!(),
+        // Sexpr::Env(_) => todo!(),
     }
 }
 

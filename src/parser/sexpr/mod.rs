@@ -2,11 +2,13 @@ use std::{
     cell::RefCell,
     collections::{HashMap, HashSet},
     fmt::{Debug, Display},
+    hash::{Hash, Hasher},
     ops::{Add, Div, Mul, Rem, Sub},
+    ptr::hash,
     rc::Rc,
 };
 
-use itertools::join;
+use itertools::{join, Itertools};
 use num_bigint::BigInt;
 use num_rational::Rational64;
 use serde::Serialize;
@@ -36,9 +38,8 @@ pub enum Sexpr {
 
     // A native Rust function only constructed in env
     NativeFn(fn(env: Rc<RefCell<Env>>, args: Vec<Sexpr>) -> Result<Sexpr>),
-
     // A Lisp environment
-    Env(Env),
+    // Env(Env),
 }
 
 impl Sexpr {
@@ -70,7 +71,7 @@ impl Display for Sexpr {
             Self::List(head) => write!(f, "{}", head),
             Self::Lambda { env, args, body } => write!(f, "<#fn>"),
             Self::NativeFn(_) => write!(f, "NativeFn"),
-            Self::Env(e) => write!(f, "<:env>"),
+            // Self::Env(e) => write!(f, "<:env>"),
         }
     }
 }
@@ -82,7 +83,7 @@ impl Debug for Sexpr {
             Self::List(l) => write!(f, "{:?}", l),
             Self::Lambda { env, args, body } => write!(f, "<#fn({:?})>", args),
             Self::NativeFn(nf) => write!(f, "{:?}", nf),
-            Self::Env(e) => write!(f, "<#env>"),
+            // Self::Env(e) => write!(f, "<#env>"),
         }
     }
 }
@@ -98,9 +99,25 @@ impl PartialEq for Sexpr {
 
 impl Eq for Sexpr {}
 
+impl Hash for Sexpr {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        match self {
+            Self::Atom(a) => a.hash(state),
+            Self::List(l) => l.hash(state),
+            Self::Lambda { env, args, body } => {
+                env.as_ptr().hash(state);
+                args.hash(state);
+                body.hash(state);
+            }
+            Self::NativeFn(f) => hash(f, state),
+            // Self::Env(e) => e.hash(state),
+        }
+    }
+}
+
 pub const NIL: Sexpr = Sexpr::List(List { head: None });
 
-#[derive(Clone, Default, PartialEq)]
+#[derive(Clone, Default, PartialEq, Hash)]
 pub struct List {
     head: Option<Box<Cons>>,
 }
@@ -139,7 +156,17 @@ impl IntoIterator for List {
     }
 }
 
-#[derive(Clone, PartialEq)]
+impl From<Vec<Sexpr>> for List {
+    fn from(v: Vec<Sexpr>) -> Self {
+        let mut head = None;
+        for s in v.into_iter().rev() {
+            head = Some(Box::new(Cons { car: s, cdr: head }));
+        }
+        Self { head }
+    }
+}
+
+#[derive(Clone, PartialEq, Hash)]
 pub struct Cons {
     pub car: Sexpr,
     pub cdr: Option<Box<Cons>>,
@@ -190,7 +217,7 @@ impl ExactSizeIterator for ConsIter {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Hash)]
 pub enum Atom {
     Sym(String),
     Lit(Lit),
@@ -205,14 +232,14 @@ impl Display for Atom {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone)]
 pub enum Lit {
     Number(Number),
     Bool(bool),
     Str(String),
     Vec(Vec<Sexpr>),
-    // HashMap(HashMap<Sexpr, Sexpr>),
-    // HashSet(HashSet<Sexpr>),
+    HashMap(Rc<RefCell<HashMap<Sexpr, Sexpr>>>),
+    HashSet(Rc<RefCell<HashSet<Sexpr>>>),
 }
 
 impl Display for Lit {
@@ -222,21 +249,40 @@ impl Display for Lit {
             Lit::Bool(b) => write!(f, "{}", b),
             Lit::Str(s) => write!(f, "\"{}\"", s),
             Lit::Vec(v) => write!(f, "[{}]", join(v, " ")),
+            Lit::HashMap(m) => write!(
+                f,
+                "{{{}}}",
+                join(m.borrow().iter().map(|(k, v)| format!("{} {}", k, v)), " ")
+            ),
+            Lit::HashSet(s) => write!(f, "#{{{}}}", join(s.borrow().iter(), " ")),
         }
     }
 }
 
-// impl PartialEq for Lit {
-//     fn eq(&self, other: &Self) -> bool {
-//         match (self, other) {
-//             (Self::Number(l), Self::Number(r)) => l == r,
-//             (Self::Bool(l), Self::Bool(r)) => l == r,
-//             (Self::Str(l), Self::Str(r)) => l == r,
-//             (Self::Vec(l), Self::Vec(r)) => l == r,
-//             _ => false,
-//         }
-//     }
-// }
+impl Hash for Lit {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        match self {
+            Lit::Number(n) => n.hash(state),
+            Lit::Bool(b) => b.hash(state),
+            Lit::Str(s) => s.hash(state),
+            Lit::Vec(v) => v.hash(state),
+            Lit::HashMap(m) => m.as_ptr().hash(state),
+            Lit::HashSet(s) => s.as_ptr().hash(state),
+        }
+    }
+}
+
+impl PartialEq for Lit {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (Self::Number(l), Self::Number(r)) => l == r,
+            (Self::Bool(l), Self::Bool(r)) => l == r,
+            (Self::Str(l), Self::Str(r)) => l == r,
+            (Self::Vec(l), Self::Vec(r)) => l == r,
+            _ => false,
+        }
+    }
+}
 
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub enum Number {
@@ -458,6 +504,17 @@ impl Rem for Number {
             | (Number::Rational(_), Number::Bignum(_)) => {
                 Err(RuntimeError::new("cannot modulo arguments"))
             }
+        }
+    }
+}
+
+impl Hash for Number {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        match self {
+            Number::Fixnum(n) => n.hash(state),
+            Number::Float(n) => n.to_bits().hash(state),
+            Number::Rational(n) => n.numer().hash(state),
+            Number::Bignum(n) => n.hash(state),
         }
     }
 }
