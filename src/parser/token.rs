@@ -12,7 +12,7 @@ pub enum TokenKind {
     Whitespace,
     #[regex(r#";[^\n]*"#)]
     Comment,
-    #[regex(r##"([A-Za-z]|_)([A-Za-z]|(_|-)|\d)*"##)]
+    #[regex(r#"[^\[\]()\s,{};]+"#)]
     Ident,
     #[regex(r#"(\+|-)?\d+(i8|u8|i16|u16|i32|u32|i64|u64)?"#, priority = 3)]
     Int,

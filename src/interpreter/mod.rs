@@ -88,7 +88,6 @@ fn eval_special_form(
 ) -> Result<Sexpr> {
     match special_form.as_str() {
         "def" => {
-            // println!("def list: {:?}", &list_iter.clone().collect::<Vec<Sexpr>>());
             if let Some(Sexpr::Atom(Atom::Sym(s))) = list_iter.next() {
                 let val = eval(
                     env.clone(),
@@ -97,15 +96,12 @@ fn eval_special_form(
                         .ok_or(RuntimeError::new("def takes 2 arguments. got 0"))?,
                 )?;
 
-                // println!("val: {}", val);
-
                 env.borrow_mut().define(s.to_string(), val.clone());
 
-                // println!("Env after def: {:p}", env.as_ref());
-
-                return Ok(val.clone());
+                Ok(val.clone())
+            } else {
+                Err(RuntimeError::new("first def argument must be a Symbol"))
             }
-            Err(RuntimeError::new("first def argument must be a Symbol"))
         }
         "let" => todo!(),
         "fn" => {
