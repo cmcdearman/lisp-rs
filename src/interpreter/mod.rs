@@ -103,7 +103,42 @@ fn eval_special_form(
                 Err(RuntimeError::new("first def argument must be a Symbol"))
             }
         }
-        "let" => todo!(),
+        "let" => {
+            let mut let_env = Env::create_child(env.clone());
+            if let Some(Sexpr::List(l)) = list_iter.next() {
+                for binding in l.into_iter() {
+                    if let Sexpr::Atom(Atom::Lit(Lit::Vec(v))) = binding {
+                        let mut binding_iter = v.into_iter();
+                        if let Some(Sexpr::Atom(Atom::Sym(s))) = binding_iter.next() {
+                            let val = eval(
+                                env.clone(),
+                                &binding_iter
+                                    .next()
+                                    .ok_or(RuntimeError::new("let binding must have 2 elements"))?,
+                            )?;
+                            let_env.define(s.to_string(), val);
+                        } else {
+                            return Err(RuntimeError::new(
+                                "first let binding argument must be a Symbol",
+                            ));
+                        }
+                    } else {
+                        return Err(RuntimeError::new(
+                            "let bindings must be of type Vector, got Atom",
+                        ));
+                    }
+                }
+                if let Some(s) = list_iter.next() {
+                    eval(Rc::new(RefCell::new(let_env)), &s)
+                } else {
+                    Err(RuntimeError::new("let takes 2 arguments, got 1"))
+                }
+            } else {
+                Err(RuntimeError::new(
+                    "let bindings must be of type List, got Atom",
+                ))
+            }
+        }
         "fn" => {
             let mut fn_args = vec![];
             if let Sexpr::List(l) = &list_iter
