@@ -7,5 +7,5 @@
 (def gcd 
   (fn (a b) 
     (match b
-      ()
-      (gcd b (% a b)))))
+      ([0 a]
+      [_ (gcd b (% a b))]))))
