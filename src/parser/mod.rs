@@ -12,6 +12,7 @@ use self::{
     token::{Span, Token, TokenKind},
 };
 
+pub mod chum;
 pub mod parser_error;
 pub mod sexpr;
 pub mod token;
@@ -120,8 +121,8 @@ impl<'src> Parser<'src> {
 
         self.consume(T![')']);
 
-        for sexpr in rest.into_iter().rev() {
-            cdr = Some(Box::new(Cons { car: sexpr, cdr }));
+        for car in rest.into_iter().rev() {
+            cdr = Some(Box::new(Cons { car, cdr }));
         }
 
         Ok(Sexpr::List(List::new(Some(Box::new(Cons {
