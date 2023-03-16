@@ -8,6 +8,7 @@ pub fn repl() {
     println!("Welcome to the Lust REPL!");
     print!("> ");
     io::stdout().flush().expect("failed to flush stdout");
+    let mut indent = 0;
     let mut src = String::new();
     let env = default_env();
     loop {
