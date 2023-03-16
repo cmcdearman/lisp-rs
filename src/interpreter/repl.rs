@@ -1,6 +1,7 @@
 use rustyline::{
-    error::ReadlineError, validate::MatchingBracketValidator, Completer, DefaultEditor, Helper,
-    Highlighter, Hinter, Validator,
+    error::ReadlineError, highlight::MatchingBracketHighlighter,
+    validate::MatchingBracketValidator, Completer, DefaultEditor, Editor, Helper, Highlighter,
+    Hinter, Validator,
 };
 
 use crate::{
@@ -10,27 +11,30 @@ use crate::{
 use std::io::{self, Write};
 
 #[derive(Completer, Helper, Highlighter, Hinter, Validator)]
-struct Validator {
+struct ReplHelper {
     #[rustyline(Validator)]
-    parens: MatchingBracketValidator,
+    validator: MatchingBracketValidator,
+    #[rustyline(Highlighter)]
+    highlighter: MatchingBracketHighlighter,
 }
 
-impl Validator {
+impl ReplHelper {
     fn new() -> Self {
         Self {
-            parens: MatchingBracketValidator::new(),
+            validator: MatchingBracketValidator::new(),
+            highlighter: MatchingBracketHighlighter::new(),
         }
     }
 }
 
 pub fn repl() {
-    let mut rl = DefaultEditor::new().expect("failed to create editor");
-    rl.set_helper(Some(Validator::new()));
+    let mut rl = Editor::new().expect("failed to create editor");
+    rl.set_helper(Some(ReplHelper::new()));
     let env = default_env();
 
     println!("Welcome to the Lust REPL!");
     loop {
-        match rl.readline(">> ") {
+        match rl.readline("> ") {
             Ok(line) => {
                 let ast = &Parser::new(&line).parse().unwrap();
                 match eval(env.clone(), ast) {
@@ -54,42 +58,4 @@ pub fn repl() {
             }
         }
     }
-
-    // println!("Welcome to the Lust REPL!");
-    // print!("> ");
-    // io::stdout().flush().expect("failed to flush stdout");
-    // let mut indent = 0;
-    // let mut src = String::new();
-    // let env = default_env();
-    // loop {
-    //     let mut parens = 0;
-    //     io::stdin()
-    //         .read_line(&mut src)
-    //         .expect("failed to read line");
-
-    //     src.chars().for_each(|c| {
-    //         if c == '(' {
-    //             parens += 1;
-    //         } else if c == ')' {
-    //             parens -= 1;
-    //         }
-    //     });
-    //     if parens == 0 {
-    //         let ast = &Parser::new(&src).parse().unwrap();
-    //         // println!("Ast: {:?}", ast);
-    //         match eval(env.clone(), ast) {
-    //             Ok(v) => {
-    //                 println!("{}", v)
-    //             }
-    //             Err(e) => panic!("{}", e),
-    //         }
-    //         src.clear();
-    //     } else {
-    //         print!("- ");
-    //         io::stdout().flush().expect("failed to flush stdout");
-    //         continue;
-    //     }
-    //     print!("\n> ");
-    //     io::stdout().flush().expect("failed to flush stdout");
-    // }
 }
