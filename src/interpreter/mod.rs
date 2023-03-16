@@ -33,11 +33,7 @@ pub fn eval(env: Rc<RefCell<Env>>, sexpr: &Sexpr) -> Result<Sexpr> {
                 .ok_or(RuntimeError::new("unexpected end to list"))?;
 
             if let Some(special_form) = first.get_special_form() {
-                return eval_special_form(
-                    env.clone(),
-                    special_form,
-                    &mut list_iter,
-                );
+                return eval_special_form(env.clone(), special_form, &mut list_iter);
             }
 
             match eval(env.clone(), &first)? {
@@ -86,7 +82,7 @@ fn eval_special_form(
     special_form: String,
     list_iter: &mut ConsIter,
 ) -> Result<Sexpr> {
-    match special_form.as_str() {
+    match &*special_form {
         "def" => {
             if let Some(Sexpr::Atom(Atom::Sym(s))) = list_iter.next() {
                 let val = eval(
@@ -141,17 +137,15 @@ fn eval_special_form(
         }
         "fn" => {
             let mut fn_args = vec![];
-            // if let Sexpr::List(l) = &list_iter
-            //     .next()
-            //     .ok_or(RuntimeError::new("fn takes 2 arguments, got 0"))?
-            // {
-            //     fn_args = l.clone().into_iter().map(|x| x.clone()).collect();
-            // }
-            if let Sexpr::Atom(Atom::Lit(Lit::Vec(v))) = &list_iter
+            if let Sexpr::List(l) = &list_iter
                 .next()
                 .ok_or(RuntimeError::new("fn takes 2 arguments, got 0"))?
             {
-                fn_args = v.clone();
+                fn_args = l.clone().into_iter().map(|x| x.clone()).collect();
+            } else {
+                return Err(RuntimeError::new(
+                    "fn arguments must be of type List, got Atom",
+                ));
             }
 
             let body = &list_iter
