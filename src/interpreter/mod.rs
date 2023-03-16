@@ -141,11 +141,17 @@ fn eval_special_form(
         }
         "fn" => {
             let mut fn_args = vec![];
-            if let Sexpr::List(l) = &list_iter
+            // if let Sexpr::List(l) = &list_iter
+            //     .next()
+            //     .ok_or(RuntimeError::new("fn takes 2 arguments, got 0"))?
+            // {
+            //     fn_args = l.clone().into_iter().map(|x| x.clone()).collect();
+            // }
+            if let Sexpr::Atom(Atom::Lit(Lit::Vec(v))) = &list_iter
                 .next()
                 .ok_or(RuntimeError::new("fn takes 2 arguments, got 0"))?
             {
-                fn_args = l.clone().into_iter().map(|x| x.clone()).collect();
+                fn_args = v.clone();
             }
 
             let body = &list_iter
