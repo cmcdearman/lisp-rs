@@ -5,29 +5,40 @@ use crate::{
 use std::io::{self, Write};
 
 pub fn repl() {
-    // let env_rc = Rc::new(RefCell::new(env));
-    print!("lust> ");
+    println!("Welcome to the Lust REPL!");
+    print!("> ");
     io::stdout().flush().expect("failed to flush stdout");
+    let mut src = String::new();
     let env = default_env();
     loop {
-        let mut src = String::new();
+        let mut parens = 0;
         io::stdin()
             .read_line(&mut src)
             .expect("failed to read line");
-        // match Parser::new(&src, false).parse() {
-        //     Ok(ast) => println!("{:?}", ast),
-        //     Err(err) => panic!("{}", err),
-        // }
-        let ast = &Parser::new(&src).parse().unwrap();
-        // println!("Ast: {:?}", ast);
-        match eval(env.clone(), ast) {
-            Ok(v) => {
-                println!("{}", v)
+
+        src.chars().for_each(|c| {
+            if c == '(' {
+                parens += 1;
+            } else if c == ')' {
+                parens -= 1;
             }
-            Err(e) => panic!("{}", e),
+        });
+        if parens == 0 {
+            let ast = &Parser::new(&src).parse().unwrap();
+            // println!("Ast: {:?}", ast);
+            match eval(env.clone(), ast) {
+                Ok(v) => {
+                    println!("{}", v)
+                }
+                Err(e) => panic!("{}", e),
+            }
+            src.clear();
+        } else {
+            print!("- ");
+            io::stdout().flush().expect("failed to flush stdout");
+            continue;
         }
-        // env_rc.clone(),
-        print!("\nlust> ");
+        print!("\n> ");
         io::stdout().flush().expect("failed to flush stdout");
     }
 }

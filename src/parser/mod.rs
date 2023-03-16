@@ -12,7 +12,6 @@ use self::{
     token::{Span, Token, TokenKind},
 };
 
-pub mod chum;
 pub mod parser_error;
 pub mod sexpr;
 pub mod token;
