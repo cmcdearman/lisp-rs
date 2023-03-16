@@ -32,10 +32,10 @@ pub fn eval(env: Rc<RefCell<Env>>, sexpr: &Sexpr) -> Result<Sexpr> {
                 .next()
                 .ok_or(RuntimeError::new("unexpected end to list"))?;
 
-            if first.is_special_form() {
+            if let Some(special_form) = first.get_special_form() {
                 return eval_special_form(
                     env.clone(),
-                    first.get_special_form().expect("expected special form"),
+                    special_form,
                     &mut list_iter,
                 );
             }
