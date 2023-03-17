@@ -39,7 +39,8 @@ pub fn repl() {
                 let ast = &Parser::new(&line).parse().unwrap();
                 match eval(env.clone(), ast) {
                     Ok(v) => {
-                        println!("{}", v)
+                        println!("{}", v);
+                        println!();
                     }
                     Err(e) => panic!("{}", e),
                 }

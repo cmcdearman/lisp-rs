@@ -56,7 +56,7 @@ impl Sexpr {
     pub fn get_special_form(&self) -> Option<String> {
         if let Sexpr::Atom(Atom::Sym(s)) = &self {
             return match s.as_str() {
-                "def" | "let" | "fn" | "quote" | "if" => Some(s.clone()),
+                "def" | "let" | "fn" | "quote" | "if" | "cond" => Some(s.clone()),
                 _ => None,
             };
         }
@@ -71,7 +71,6 @@ impl Display for Sexpr {
             Self::List(head) => write!(f, "{}", head),
             Self::Lambda { env, args, body } => write!(f, "<#fn>"),
             Self::NativeFn(_) => write!(f, "NativeFn"),
-            // Self::Env(e) => write!(f, "<:env>"),
         }
     }
 }
@@ -220,6 +219,7 @@ impl ExactSizeIterator for ConsIter {
 #[derive(Debug, Clone, PartialEq, Hash)]
 pub enum Atom {
     Sym(String),
+    Keyword(String),
     Lit(Lit),
 }
 
@@ -227,6 +227,7 @@ impl Display for Atom {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Atom::Sym(s) => write!(f, "{}", s),
+            Atom::Keyword(k) => write!(f, ":{}", k),
             Atom::Lit(l) => write!(f, "{}", l),
         }
     }

@@ -79,6 +79,12 @@ fn type_of(env: Rc<RefCell<Env>>, args: Vec<Sexpr>) -> Result<Sexpr> {
                 }
                 Ok(Sexpr::Atom(Atom::Sym("Symbol".to_string())))
             }
+            Atom::Keyword(s) => {
+                if let Some(var) = env.borrow().find(s) {
+                    return type_of(env.clone(), vec![var]);
+                }
+                Ok(Sexpr::Atom(Atom::Keyword("Keyword".to_string())))
+            }
             Atom::Lit(l) => match l {
                 Lit::Number(n) => match n {
                     Number::Fixnum(_) => Ok(Sexpr::Atom(Atom::Sym("Fixnum".to_string()))),

@@ -176,7 +176,11 @@ impl<'src> Parser<'src> {
             }
             T![ident] => {
                 let ident = self.next();
-                Ok(Sexpr::Atom(Atom::Sym(self.text(ident).to_string())))
+                if self.text(ident).starts_with(":") {
+                    Ok(Sexpr::Atom(Atom::Keyword(self.text(ident).to_string())))
+                } else {
+                    Ok(Sexpr::Atom(Atom::Sym(self.text(ident).to_string())))
+                }
             }
             kind => {
                 panic!("Unknown start of atom: `{}`", kind);

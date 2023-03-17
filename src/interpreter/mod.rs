@@ -17,7 +17,6 @@ pub fn eval(env: Rc<RefCell<Env>>, sexpr: &Sexpr) -> Result<Sexpr> {
         lit @ Sexpr::Atom(Atom::Lit(_)) => Ok(lit.clone()),
         sym @ Sexpr::Atom(Atom::Sym(name)) => {
             if let Some(v) = env.borrow().find(&name) {
-                // println!("sym: {}", v);
                 return Ok(v.clone());
             }
 
@@ -26,6 +25,7 @@ pub fn eval(env: Rc<RefCell<Env>>, sexpr: &Sexpr) -> Result<Sexpr> {
                 sym.clone()
             )))
         }
+        keyword @ Sexpr::Atom(Atom::Keyword(_)) => Ok(keyword.clone()),
         Sexpr::List(l) => {
             let mut list_iter = l.clone().into_iter();
             let first = list_iter
@@ -108,9 +108,9 @@ fn eval_special_form(
                         if let Some(Sexpr::Atom(Atom::Sym(s))) = binding_iter.next() {
                             let val = eval(
                                 env.clone(),
-                                &binding_iter
-                                    .next()
-                                    .ok_or(RuntimeError::new("let binding must have 2 elements"))?,
+                                &binding_iter.next().ok_or(RuntimeError::new(
+                                    "let binding must have 2 elements, found 0",
+                                ))?,
                             )?;
                             let_env.define(s.to_string(), val);
                         } else {
@@ -188,6 +188,51 @@ fn eval_special_form(
                 }
             }
             Err(RuntimeError::new("`if` first argument must be Boolean"))
+        }
+        "cond" => {
+            while let Sexpr::List(l) = list_iter
+                .next()
+                .ok_or(RuntimeError::new("`cond` unexpected EOF"))?
+            {
+                let mut l_iter = l.into_iter();
+                match eval(
+                    env.clone(),
+                    &l_iter
+                        .next()
+                        .ok_or(RuntimeError::new("`cond` test cases must not be empty"))?,
+                )? {
+                    Sexpr::Atom(Atom::Lit(Lit::Bool(cond))) => {
+                        if cond {
+                            return eval(
+                                env.clone(),
+                                &l_iter.next().ok_or(RuntimeError::new(
+                                    "`cond` branches take 2 arguments, got 1",
+                                ))?,
+                            );
+                        }
+                        continue;
+                    }
+                    Sexpr::Atom(Atom::Keyword(else_)) => {
+                        if else_ == ":else" {
+                            return eval(
+                                env.clone(),
+                                &l_iter.next().ok_or(RuntimeError::new(
+                                    "`cond` branches take 2 arguments, got 1",
+                                ))?,
+                            );
+                        }
+                        return Err(RuntimeError::new(
+                            "`cond` branch first argument must be Boolean or `:else`",
+                        ));
+                    }
+                    _ => {
+                        return Err(RuntimeError::new(
+                            "`cond` branch first argument must be Boolean or `:else`",
+                        ));
+                    }
+                }
+            }
+            todo!()
         }
         _ => panic!("expected special form got `{}`", special_form),
     }
