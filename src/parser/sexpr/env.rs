@@ -1,10 +1,12 @@
-use std::collections::HashMap;
+use std::{borrow::Borrow, cell::RefCell, collections::HashMap, hash::Hash, rc::Rc};
+
+use crate::parser;
 
 use super::Sexpr;
 
 #[derive(Debug, Clone)]
 pub struct Env {
-    parent: Option<Box<Env>>,
+    parent: Option<Rc<RefCell<Env>>>,
     entries: HashMap<String, Sexpr>,
 }
 
@@ -16,15 +18,22 @@ impl Env {
         }
     }
 
+    pub fn create_child(parent: Rc<RefCell<Self>>) -> Self {
+        Self {
+            parent: Some(parent),
+            entries: HashMap::new(),
+        }
+    }
+
     pub fn define(&mut self, name: String, value: Sexpr) {
         self.entries.insert(name, value);
     }
 
-    pub fn find(&self, name: String) -> Option<Sexpr> {
-        if let Some(v) = self.entries.get(&name) {
+    pub fn find(&self, name: &String) -> Option<Sexpr> {
+        if let Some(v) = self.entries.get(name) {
             Some(v.clone())
         } else if let Some(parent) = &self.parent {
-            parent.as_ref().find(name)
+            parent.as_ref().borrow().find(name)
         } else {
             None
         }
@@ -33,6 +42,26 @@ impl Env {
     pub fn remove(&mut self, name: String) {
         self.entries.remove(&name);
     }
+
+    // pub fn dump_entries(&self) -> HashMap<String, Sexpr> {
+    //     self.entries.clone()
+    // }
+
+    // pub fn dump_all_entries(&self) -> HashMap<String, HashMap<String, Sexpr>> {
+    //     let mut tables = HashMap::new();
+    //     tables.insert(self.tag.to_string(), self.dump_entries());
+    //     if let Some(parent) = &self.parent {
+    //         tables = tables
+    //             .into_iter()
+    //             .chain(parent.as_ref().borrow().dump_all_entries())
+    //             .collect();
+    //     }
+    //     tables
+    // }
+
+    pub fn get_parent(&self) -> Option<Rc<RefCell<Env>>> {
+        self.parent.clone()
+    }
 }
 
 impl PartialEq for Env {
@@ -40,3 +69,14 @@ impl PartialEq for Env {
         self.parent == other.parent && self.entries == other.entries
     }
 }
+
+// impl Hash for Env {
+//     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+//         if let Some(parent) = &self.parent {
+//             parent.as_ref().borrow().hash(state);
+//         } else {
+//             None.hash(state);
+//         }
+//         self.entries.as_ref().hash(state);
+//     }
+// }

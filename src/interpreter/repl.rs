@@ -1,21 +1,62 @@
-use crate::parser::Parser;
+use rustyline::{
+    error::ReadlineError, highlight::MatchingBracketHighlighter,
+    validate::MatchingBracketValidator, Completer, DefaultEditor, Editor, Helper, Highlighter,
+    Hinter, Validator,
+};
+
+use crate::{
+    interpreter::{default_env::default_env, eval},
+    parser::Parser,
+};
 use std::io::{self, Write};
 
-pub fn repl() {
-    // let env_rc = Rc::new(RefCell::new(env));
-    print!("lust> ");
-    io::stdout().flush().expect("failed to flush stdout");
-    loop {
-        let mut src = String::new();
-        io::stdin()
-            .read_line(&mut src)
-            .expect("failed to read line");
-        match Parser::new(&src, false).sexpr() {
-            Ok(ast) => println!("{}", ast),
-            Err(err) => panic!("{}", err),
+#[derive(Completer, Helper, Highlighter, Hinter, Validator)]
+struct ReplHelper {
+    #[rustyline(Validator)]
+    validator: MatchingBracketValidator,
+    #[rustyline(Highlighter)]
+    highlighter: MatchingBracketHighlighter,
+}
+
+impl ReplHelper {
+    fn new() -> Self {
+        Self {
+            validator: MatchingBracketValidator::new(),
+            highlighter: MatchingBracketHighlighter::new(),
         }
-        // env_rc.clone(),
-        print!("\nlust> ");
-        io::stdout().flush().expect("failed to flush stdout");
+    }
+}
+
+pub fn repl() {
+    let mut rl = Editor::new().expect("failed to create editor");
+    rl.set_helper(Some(ReplHelper::new()));
+    let env = default_env();
+
+    println!("Welcome to the Lust REPL!");
+    loop {
+        match rl.readline("> ") {
+            Ok(line) => {
+                let ast = &Parser::new(&line).parse().unwrap();
+                match eval(env.clone(), ast) {
+                    Ok(v) => {
+                        println!("{}", v);
+                        println!();
+                    }
+                    Err(e) => panic!("{}", e),
+                }
+            }
+            Err(ReadlineError::Interrupted) => {
+                println!("Ctrl-C");
+                break;
+            }
+            Err(ReadlineError::Eof) => {
+                println!("Ctrl-D");
+                break;
+            }
+            Err(err) => {
+                println!("Error: {:?}", err);
+                break;
+            }
+        }
     }
 }

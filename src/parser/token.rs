@@ -12,12 +12,17 @@ pub enum TokenKind {
     Whitespace,
     #[regex(r#";[^\n]*"#)]
     Comment,
-    #[regex(r#"[^\[\]()\s]+"#)]
+    #[regex(r#"[^\[\]()\s,{};]+"#)]
     Ident,
     #[regex(r#"(\+|-)?\d+(i8|u8|i16|u16|i32|u32|i64|u64)?"#, priority = 3)]
     Int,
-    #[regex(r#"(\+|-)?((\d+(\.\d+)?)|(\.\d+))([Ee](\+|-)?\d+)?(f32|f64)?"#, priority = 2)]
+    #[regex(
+        r#"(\+|-)?((\d+(\.\d+)?)|(\.\d+))([Ee](\+|-)?\d+)?(f32|f64)?"#,
+        priority = 2
+    )]
     Float,
+    #[regex(r#"(\+|-)?\d+/\d+"#)]
+    Rational,
     #[regex(r#""((\\"|\\\\)|[^\\"])*""#)]
     String,
     #[regex(r#"(true|false)"#)]
@@ -30,8 +35,16 @@ pub enum TokenKind {
     LBrack,
     #[token("]")]
     RBrack,
+    #[token("{")]
+    LBrace,
+    #[token("}")]
+    RBrace,
     #[token(":")]
     Colon,
+    #[token(".")]
+    Period,
+    #[token(",")]
+    Comma,
 }
 
 #[macro_export]
@@ -57,6 +70,9 @@ macro_rules! T {
     [float] => {
         $crate::parser::token::TokenKind::Float
     };
+    [ratio] => {
+        $crate::parser::token::TokenKind::Rational
+    };
     [str] => {
         $crate::parser::token::TokenKind::String
     };
@@ -75,8 +91,20 @@ macro_rules! T {
     [']'] => {
         $crate::parser::token::TokenKind::RBrack
     };
+    ['{'] => {
+        $crate::parser::token::TokenKind::LBrace
+    };
+    ['}'] => {
+        $crate::parser::token::TokenKind::RBrace
+    };
     [:] => {
         $crate::parser::token::TokenKind::Colon
+    };
+    [.] => {
+        $crate::parser::token::TokenKind::Period
+    };
+    [,] => {
+        $crate::parser::token::TokenKind::Comma
     };
 }
 
@@ -93,13 +121,18 @@ impl fmt::Display for TokenKind {
                 T![ident] => "Ident",
                 T![int] => "Int",
                 T![float] => "Float",
+                T![ratio] => "Rational",
                 T![str] => "String",
                 T![bool] => "Bool",
                 T!['('] => "(",
                 T![')'] => ")",
                 T!['['] => "[",
                 T![']'] => "]",
+                T!['{'] => "{",
+                T!['}'] => "}",
                 T![:] => ":",
+                T![.] => ".",
+                T![,] => ",",
             }
         )
     }
@@ -173,4 +206,3 @@ impl fmt::Display for Token {
         write!(f, "{}", self.kind)
     }
 }
-
