@@ -10,7 +10,7 @@ use std::{
 
 use itertools::{join, Itertools};
 use num_bigint::BigInt;
-use num_rational::Rational64;
+use num_rational::{BigRational, Rational64};
 use serde::Serialize;
 
 use crate::interpreter::runtime_error::{Result, RuntimeError};
@@ -288,18 +288,20 @@ impl PartialEq for Lit {
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub enum Number {
     Fixnum(i64),
+    Bignum(BigInt),
     Float(f64),
     Rational(Rational64),
-    Bignum(BigInt),
+    BigRational(BigRational),
 }
 
 impl Display for Number {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Number::Fixnum(n) => write!(f, "{}", n),
+            Number::Bignum(b) => write!(f, "{}", b),
             Number::Float(d) => write!(f, "{}", d),
             Number::Rational(r) => write!(f, "{}", r),
-            Number::Bignum(b) => write!(f, "{}", b),
+            Number::BigRational(br) => write!(f, "{}", br),
         }
     }
 }
