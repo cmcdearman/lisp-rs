@@ -94,7 +94,7 @@ impl<'src> Parser<'src> {
     }
 
     /// Parses the source code into a [`Sexpr`].
-    pub fn parse(&mut self) -> Result<Sexpr> {
+    pub fn sexpr(&mut self) -> Result<Sexpr> {
         match self.peek().kind {
             T!['('] => {
                 self.consume(T!['(']);
@@ -110,12 +110,12 @@ impl<'src> Parser<'src> {
             return Ok(NIL);
         }
 
-        let car = Box::new(self.parse()?);
+        let car = Box::new(self.sexpr()?);
         let mut cdr = None;
         let mut rest = vec![];
 
         while !self.at(T![')']) {
-            rest.push(self.parse()?)
+            rest.push(self.sexpr()?)
         }
 
         self.consume(T![')']);
@@ -156,7 +156,7 @@ impl<'src> Parser<'src> {
                 self.consume(T!['[']);
                 let mut vec = vec![];
                 while !self.at(T![']']) {
-                    vec.push(self.parse()?);
+                    vec.push(self.sexpr()?);
                 }
                 self.consume(T![']']);
                 Ok(Sexpr::Atom(Atom::Lit(Lit::Vec(vec))))
@@ -165,8 +165,8 @@ impl<'src> Parser<'src> {
                 self.consume(T!['{']);
                 let mut map = HashMap::new();
                 while !self.at(T!['}']) {
-                    let key = self.parse()?;
-                    let val = self.parse()?;
+                    let key = self.sexpr()?;
+                    let val = self.sexpr()?;
                     map.insert(key, val);
                 }
                 self.consume(T!['}']);

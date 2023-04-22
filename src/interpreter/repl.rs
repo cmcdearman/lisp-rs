@@ -36,7 +36,7 @@ pub fn repl() {
     loop {
         match rl.readline("> ") {
             Ok(line) => {
-                let ast = &Parser::new(&line).parse().unwrap();
+                let ast = &Parser::new(&line).sexpr().unwrap();
                 match eval(env.clone(), ast) {
                     Ok(v) => {
                         println!("{}", v);
