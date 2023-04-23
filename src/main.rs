@@ -1,8 +1,8 @@
 mod interpreter;
 mod parser;
+mod util;
 
-use crate::interpreter::repl::repl;
 
 fn main() {
-    repl();
+    // repl();
 }
