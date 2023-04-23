@@ -10,10 +10,6 @@ impl<T> List<T> {
     pub fn new(head: Option<Box<Node<T>>>) -> Self {
         Self { head }
     }
-
-    pub fn head(&self) -> Option<&T> {
-        self.head.as_ref().map(|node| &node.data)
-    }
 }
 
 impl<T> Iterator for List<T> {
