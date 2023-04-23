@@ -287,8 +287,8 @@ impl PartialEq for Lit {
 
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub enum Number {
-    Integer(i64),
-    Bignum(BigInt),
+    Int(i64),
+    BigInt(BigInt),
     Float(f64),
     Rational(Rational64),
     BigRational(BigRational),
@@ -297,8 +297,8 @@ pub enum Number {
 impl Display for Number {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Number::Fixnum(n) => write!(f, "{}", n),
-            Number::Bignum(b) => write!(f, "{}", b),
+            Number::Int(n) => write!(f, "{}", n),
+            Number::BigInt(b) => write!(f, "{}", b),
             Number::Float(d) => write!(f, "{}", d),
             Number::Rational(r) => write!(f, "{}", r),
             Number::BigRational(br) => write!(f, "{}", br),
@@ -311,38 +311,45 @@ impl Add for Number {
 
     fn add(self, rhs: Self) -> Self::Output {
         match (self, rhs) {
-            (Number::Fixnum(l), Number::Fixnum(r)) => {
+            (Number::Int(l), Number::Int(r)) => {
                 if let Some(sum) = l.checked_add(r) {
-                    Ok(Number::Fixnum(sum))
+                    Ok(Number::Int(sum))
                 } else {
-                    Ok(Number::Bignum(BigInt::from(l) + r))
+                    Ok(Number::BigInt(BigInt::from(l) + r))
                 }
             }
-            (Number::Fixnum(l), Number::Float(r)) => Ok(Number::Float(l as f64 + r)),
-            (Number::Fixnum(l), Number::Rational(r)) => {
-                Ok(Number::Rational(Rational64::from(l) + r))
-            }
-            (Number::Fixnum(l), Number::Bignum(r)) => Ok(Number::Bignum(l + r)),
-            (Number::Float(l), Number::Fixnum(r)) => Ok(Number::Float(l + r as f64)),
+            (Number::Int(l), Number::Float(r)) => Ok(Number::Float(l as f64 + r)),
+            (Number::Int(l), Number::Rational(r)) => Ok(Number::Rational(Rational64::from(l) + r)),
+            (Number::Int(l), Number::BigInt(r)) => Ok(Number::BigInt(l + r)),
+            (Number::Int(l), Number::BigRational(r)) => Ok(Number::BigRational(
+                BigRational::from(Rational64::from(l)) + r,
+            )),
+            (Number::Float(l), Number::Int(r)) => Ok(Number::Float(l + r as f64)),
             (Number::Float(l), Number::Float(r)) => Ok(Number::Float(l + r)),
             (Number::Float(l), Number::Rational(r)) => {
                 Ok(Number::Float(l + *r.numer() as f64 / *r.denom() as f64))
             }
-            (Number::Rational(l), Number::Fixnum(r)) => {
-                Ok(Number::Rational(l + Rational64::from(r)))
-            }
+            (Number::Rational(l), Number::Int(r)) => Ok(Number::Rational(l + Rational64::from(r))),
             (Number::Rational(l), Number::Float(r)) => {
                 Ok(Number::Float(*l.numer() as f64 / *l.denom() as f64 + r))
             }
             (Number::Rational(l), Number::Rational(r)) => Ok(Number::Rational(l + r)),
-            (Number::Bignum(l), Number::Fixnum(r)) => Ok(Number::Bignum(l + r)),
-            (Number::Bignum(l), Number::Bignum(r)) => Ok(Number::Bignum(l + r)),
-            (Number::Bignum(_), Number::Float(_))
-            | (Number::Float(_), Number::Bignum(_))
-            | (Number::Bignum(_), Number::Rational(_))
-            | (Number::Rational(_), Number::Bignum(_)) => {
+            (Number::BigInt(l), Number::Int(r)) => Ok(Number::BigInt(l + r)),
+            (Number::BigInt(l), Number::BigInt(r)) => Ok(Number::BigInt(l + r)),
+            (Number::BigInt(_), Number::Float(_))
+            | (Number::Float(_), Number::BigInt(_))
+            | (Number::BigInt(_), Number::Rational(_))
+            | (Number::Rational(_), Number::BigInt(_)) => {
                 Err(RuntimeError::new("cannot add arguments"))
             }
+            (Number::BigInt(_), Number::BigRational(_)) => todo!(),
+            (Number::Float(_), Number::BigRational(_)) => todo!(),
+            (Number::Rational(_), Number::BigRational(_)) => todo!(),
+            (Number::BigRational(_), Number::Int(_)) => todo!(),
+            (Number::BigRational(_), Number::BigInt(_)) => todo!(),
+            (Number::BigRational(_), Number::Float(_)) => todo!(),
+            (Number::BigRational(_), Number::Rational(_)) => todo!(),
+            (Number::BigRational(_), Number::BigRational(_)) => todo!(),
         }
     }
 }
@@ -352,36 +359,32 @@ impl Sub for Number {
 
     fn sub(self, rhs: Self) -> Self::Output {
         match (self, rhs) {
-            (Number::Fixnum(l), Number::Fixnum(r)) => {
+            (Number::Int(l), Number::Int(r)) => {
                 if let Some(diff) = l.checked_sub(r) {
-                    Ok(Number::Fixnum(diff))
+                    Ok(Number::Int(diff))
                 } else {
-                    Ok(Number::Bignum(BigInt::from(l) - r))
+                    Ok(Number::BigInt(BigInt::from(l) - r))
                 }
             }
-            (Number::Fixnum(l), Number::Float(r)) => Ok(Number::Float(l as f64 - r)),
-            (Number::Fixnum(l), Number::Rational(r)) => {
-                Ok(Number::Rational(Rational64::from(l) - r))
-            }
-            (Number::Fixnum(l), Number::Bignum(r)) => Ok(Number::Bignum(l - r)),
-            (Number::Float(l), Number::Fixnum(r)) => Ok(Number::Float(l - r as f64)),
+            (Number::Int(l), Number::Float(r)) => Ok(Number::Float(l as f64 - r)),
+            (Number::Int(l), Number::Rational(r)) => Ok(Number::Rational(Rational64::from(l) - r)),
+            (Number::Int(l), Number::BigInt(r)) => Ok(Number::BigInt(l - r)),
+            (Number::Float(l), Number::Int(r)) => Ok(Number::Float(l - r as f64)),
             (Number::Float(l), Number::Float(r)) => Ok(Number::Float(l - r)),
             (Number::Float(l), Number::Rational(r)) => {
                 Ok(Number::Float(l - *r.numer() as f64 / *r.denom() as f64))
             }
-            (Number::Rational(l), Number::Fixnum(r)) => {
-                Ok(Number::Rational(l - Rational64::from(r)))
-            }
+            (Number::Rational(l), Number::Int(r)) => Ok(Number::Rational(l - Rational64::from(r))),
             (Number::Rational(l), Number::Float(r)) => {
                 Ok(Number::Float(*l.numer() as f64 / *l.denom() as f64 - r))
             }
             (Number::Rational(l), Number::Rational(r)) => Ok(Number::Rational(l - r)),
-            (Number::Bignum(l), Number::Fixnum(r)) => Ok(Number::Bignum(l - r)),
-            (Number::Bignum(l), Number::Bignum(r)) => Ok(Number::Bignum(l - r)),
-            (Number::Bignum(_), Number::Float(_))
-            | (Number::Float(_), Number::Bignum(_))
-            | (Number::Bignum(_), Number::Rational(_))
-            | (Number::Rational(_), Number::Bignum(_)) => {
+            (Number::BigInt(l), Number::Int(r)) => Ok(Number::BigInt(l - r)),
+            (Number::BigInt(l), Number::BigInt(r)) => Ok(Number::BigInt(l - r)),
+            (Number::BigInt(_), Number::Float(_))
+            | (Number::Float(_), Number::BigInt(_))
+            | (Number::BigInt(_), Number::Rational(_))
+            | (Number::Rational(_), Number::BigInt(_)) => {
                 Err(RuntimeError::new("cannot subtract arguments"))
             }
         }
@@ -393,36 +396,32 @@ impl Mul for Number {
 
     fn mul(self, rhs: Self) -> Self::Output {
         match (self, rhs) {
-            (Number::Fixnum(l), Number::Fixnum(r)) => {
+            (Number::Int(l), Number::Int(r)) => {
                 if let Some(prod) = l.checked_mul(r) {
-                    Ok(Number::Fixnum(prod))
+                    Ok(Number::Int(prod))
                 } else {
-                    Ok(Number::Bignum(BigInt::from(l) * r))
+                    Ok(Number::BigInt(BigInt::from(l) * r))
                 }
             }
-            (Number::Fixnum(l), Number::Float(r)) => Ok(Number::Float(l as f64 * r)),
-            (Number::Fixnum(l), Number::Rational(r)) => {
-                Ok(Number::Rational(Rational64::from(l) * r))
-            }
-            (Number::Fixnum(l), Number::Bignum(r)) => Ok(Number::Bignum(l * r)),
-            (Number::Float(l), Number::Fixnum(r)) => Ok(Number::Float(l * r as f64)),
+            (Number::Int(l), Number::Float(r)) => Ok(Number::Float(l as f64 * r)),
+            (Number::Int(l), Number::Rational(r)) => Ok(Number::Rational(Rational64::from(l) * r)),
+            (Number::Int(l), Number::BigInt(r)) => Ok(Number::BigInt(l * r)),
+            (Number::Float(l), Number::Int(r)) => Ok(Number::Float(l * r as f64)),
             (Number::Float(l), Number::Float(r)) => Ok(Number::Float(l * r)),
             (Number::Float(l), Number::Rational(r)) => {
                 Ok(Number::Float(l * *r.numer() as f64 / *r.denom() as f64))
             }
-            (Number::Rational(l), Number::Fixnum(r)) => {
-                Ok(Number::Rational(l * Rational64::from(r)))
-            }
+            (Number::Rational(l), Number::Int(r)) => Ok(Number::Rational(l * Rational64::from(r))),
             (Number::Rational(l), Number::Float(r)) => {
                 Ok(Number::Float(*l.numer() as f64 / *l.denom() as f64 * r))
             }
             (Number::Rational(l), Number::Rational(r)) => Ok(Number::Rational(l * r)),
-            (Number::Bignum(l), Number::Fixnum(r)) => Ok(Number::Bignum(l * r)),
-            (Number::Bignum(l), Number::Bignum(r)) => Ok(Number::Bignum(l * r)),
-            (Number::Bignum(_), Number::Float(_))
-            | (Number::Float(_), Number::Bignum(_))
-            | (Number::Bignum(_), Number::Rational(_))
-            | (Number::Rational(_), Number::Bignum(_)) => {
+            (Number::BigInt(l), Number::Int(r)) => Ok(Number::BigInt(l * r)),
+            (Number::BigInt(l), Number::BigInt(r)) => Ok(Number::BigInt(l * r)),
+            (Number::BigInt(_), Number::Float(_))
+            | (Number::Float(_), Number::BigInt(_))
+            | (Number::BigInt(_), Number::Rational(_))
+            | (Number::Rational(_), Number::BigInt(_)) => {
                 Err(RuntimeError::new("cannot multiply arguments"))
             }
         }
@@ -434,36 +433,32 @@ impl Div for Number {
 
     fn div(self, rhs: Self) -> Self::Output {
         match (self, rhs) {
-            (Number::Fixnum(l), Number::Fixnum(r)) => {
+            (Number::Int(l), Number::Int(r)) => {
                 if let Some(quo) = l.checked_div(r) {
-                    Ok(Number::Fixnum(quo))
+                    Ok(Number::Int(quo))
                 } else {
-                    Ok(Number::Bignum(BigInt::from(l) / r))
+                    Ok(Number::BigInt(BigInt::from(l) / r))
                 }
             }
-            (Number::Fixnum(l), Number::Float(r)) => Ok(Number::Float(l as f64 / r)),
-            (Number::Fixnum(l), Number::Rational(r)) => {
-                Ok(Number::Rational(Rational64::from(l) / r))
-            }
-            (Number::Fixnum(l), Number::Bignum(r)) => Ok(Number::Bignum(l / r)),
-            (Number::Float(l), Number::Fixnum(r)) => Ok(Number::Float(l / r as f64)),
+            (Number::Int(l), Number::Float(r)) => Ok(Number::Float(l as f64 / r)),
+            (Number::Int(l), Number::Rational(r)) => Ok(Number::Rational(Rational64::from(l) / r)),
+            (Number::Int(l), Number::BigInt(r)) => Ok(Number::BigInt(l / r)),
+            (Number::Float(l), Number::Int(r)) => Ok(Number::Float(l / r as f64)),
             (Number::Float(l), Number::Float(r)) => Ok(Number::Float(l / r)),
             (Number::Float(l), Number::Rational(r)) => {
                 Ok(Number::Float(l / (*r.numer() as f64 / *r.denom() as f64)))
             }
-            (Number::Rational(l), Number::Fixnum(r)) => {
-                Ok(Number::Rational(l / Rational64::from(r)))
-            }
+            (Number::Rational(l), Number::Int(r)) => Ok(Number::Rational(l / Rational64::from(r))),
             (Number::Rational(l), Number::Float(r)) => {
                 Ok(Number::Float((*l.numer() as f64 / *l.denom() as f64) / r))
             }
             (Number::Rational(l), Number::Rational(r)) => Ok(Number::Rational(l / r)),
-            (Number::Bignum(l), Number::Fixnum(r)) => Ok(Number::Bignum(l / r)),
-            (Number::Bignum(l), Number::Bignum(r)) => Ok(Number::Bignum(l / r)),
-            (Number::Bignum(_), Number::Float(_))
-            | (Number::Float(_), Number::Bignum(_))
-            | (Number::Bignum(_), Number::Rational(_))
-            | (Number::Rational(_), Number::Bignum(_)) => {
+            (Number::BigInt(l), Number::Int(r)) => Ok(Number::BigInt(l / r)),
+            (Number::BigInt(l), Number::BigInt(r)) => Ok(Number::BigInt(l / r)),
+            (Number::BigInt(_), Number::Float(_))
+            | (Number::Float(_), Number::BigInt(_))
+            | (Number::BigInt(_), Number::Rational(_))
+            | (Number::Rational(_), Number::BigInt(_)) => {
                 Err(RuntimeError::new("cannot divide arguments"))
             }
         }
@@ -475,36 +470,32 @@ impl Rem for Number {
 
     fn rem(self, rhs: Self) -> Self::Output {
         match (self, rhs) {
-            (Number::Fixnum(l), Number::Fixnum(r)) => {
+            (Number::Int(l), Number::Int(r)) => {
                 if let Some(rem) = l.checked_rem(r) {
-                    Ok(Number::Fixnum(rem))
+                    Ok(Number::Int(rem))
                 } else {
-                    Ok(Number::Bignum(BigInt::from(l) / r))
+                    Ok(Number::BigInt(BigInt::from(l) / r))
                 }
             }
-            (Number::Fixnum(l), Number::Float(r)) => Ok(Number::Float(l as f64 % r)),
-            (Number::Fixnum(l), Number::Rational(r)) => {
-                Ok(Number::Rational(Rational64::from(l) % r))
-            }
-            (Number::Fixnum(l), Number::Bignum(r)) => Ok(Number::Bignum(l % r)),
-            (Number::Float(l), Number::Fixnum(r)) => Ok(Number::Float(l % r as f64)),
+            (Number::Int(l), Number::Float(r)) => Ok(Number::Float(l as f64 % r)),
+            (Number::Int(l), Number::Rational(r)) => Ok(Number::Rational(Rational64::from(l) % r)),
+            (Number::Int(l), Number::BigInt(r)) => Ok(Number::BigInt(l % r)),
+            (Number::Float(l), Number::Int(r)) => Ok(Number::Float(l % r as f64)),
             (Number::Float(l), Number::Float(r)) => Ok(Number::Float(l % r)),
             (Number::Float(l), Number::Rational(r)) => {
                 Ok(Number::Float(l % (*r.numer() as f64 / *r.denom() as f64)))
             }
-            (Number::Rational(l), Number::Fixnum(r)) => {
-                Ok(Number::Rational(l % Rational64::from(r)))
-            }
+            (Number::Rational(l), Number::Int(r)) => Ok(Number::Rational(l % Rational64::from(r))),
             (Number::Rational(l), Number::Float(r)) => {
                 Ok(Number::Float((*l.numer() as f64 / *l.denom() as f64) % r))
             }
             (Number::Rational(l), Number::Rational(r)) => Ok(Number::Rational(l % r)),
-            (Number::Bignum(l), Number::Fixnum(r)) => Ok(Number::Bignum(l % r)),
-            (Number::Bignum(l), Number::Bignum(r)) => Ok(Number::Bignum(l % r)),
-            (Number::Bignum(_), Number::Float(_))
-            | (Number::Float(_), Number::Bignum(_))
-            | (Number::Bignum(_), Number::Rational(_))
-            | (Number::Rational(_), Number::Bignum(_)) => {
+            (Number::BigInt(l), Number::Int(r)) => Ok(Number::BigInt(l % r)),
+            (Number::BigInt(l), Number::BigInt(r)) => Ok(Number::BigInt(l % r)),
+            (Number::BigInt(_), Number::Float(_))
+            | (Number::Float(_), Number::BigInt(_))
+            | (Number::BigInt(_), Number::Rational(_))
+            | (Number::Rational(_), Number::BigInt(_)) => {
                 Err(RuntimeError::new("cannot modulo arguments"))
             }
         }
@@ -514,10 +505,10 @@ impl Rem for Number {
 impl Hash for Number {
     fn hash<H: Hasher>(&self, state: &mut H) {
         match self {
-            Number::Fixnum(n) => n.hash(state),
+            Number::Int(n) => n.hash(state),
             Number::Float(n) => n.to_bits().hash(state),
             Number::Rational(n) => n.numer().hash(state),
-            Number::Bignum(n) => n.hash(state),
+            Number::BigInt(n) => n.hash(state),
         }
     }
 }
