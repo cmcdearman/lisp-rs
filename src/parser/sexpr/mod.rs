@@ -287,7 +287,7 @@ impl PartialEq for Lit {
 
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub enum Number {
-    Fixnum(i64),
+    Integer(i64),
     Bignum(BigInt),
     Float(f64),
     Rational(Rational64),
