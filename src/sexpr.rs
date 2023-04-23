@@ -20,27 +20,6 @@ use self::env::Env;
 pub mod env;
 
 // A Lisp S-expression
-#[repr(C)]
-#[derive(Clone)]
-pub enum Sexpr {
-    // A Lisp atom
-    Atom(Atom),
-
-    // A Lisp list represented as a singly-linked list of conses
-    List(List),
-
-    // A Lisp lambda only constructed in eval
-    Lambda {
-        env: Rc<RefCell<Env>>,
-        args: Vec<Self>,
-        body: Box<Self>,
-    },
-
-    // A native Rust function only constructed in env
-    NativeFn(fn(env: Rc<RefCell<Env>>, args: Vec<Sexpr>) -> Result<Sexpr>),
-    // A Lisp environment
-    // Env(Env),
-}
 
 impl Sexpr {
     pub fn is_special_form(&self) -> bool {
@@ -69,8 +48,6 @@ impl Display for Sexpr {
         match self {
             Self::Atom(a) => write!(f, "{}", a),
             Self::List(head) => write!(f, "{}", head),
-            Self::Lambda { env, args, body } => write!(f, "<#fn>"),
-            Self::NativeFn(_) => write!(f, "NativeFn"),
         }
     }
 }
@@ -80,9 +57,6 @@ impl Debug for Sexpr {
         match self {
             Self::Atom(a) => write!(f, "{:?}", a),
             Self::List(l) => write!(f, "{:?}", l),
-            Self::Lambda { env, args, body } => write!(f, "<#fn({:?})>", args),
-            Self::NativeFn(nf) => write!(f, "{:?}", nf),
-            // Self::Env(e) => write!(f, "<#env>"),
         }
     }
 }

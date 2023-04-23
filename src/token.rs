@@ -50,61 +50,61 @@ pub enum TokenKind {
 #[macro_export]
 macro_rules! T {
     [EOF] => {
-        $crate::parser::token::TokenKind::Eof
+        $crate::token::TokenKind::Eof
     };
     [err] => {
-        $crate::parser::token::TokenKind::Err
+        $crate::token::TokenKind::Err
     };
     [ws] => {
-        $crate::parser::token::TokenKind::Whitespace
+        $crate::token::TokenKind::Whitespace
     };
     [;] => {
-        $crate::parser::token::TokenKind::Comment
+        $crate::token::TokenKind::Comment
     };
     [ident] => {
-        $crate::parser::token::TokenKind::Ident
+        $crate::token::TokenKind::Ident
     };
     [int] => {
-        $crate::parser::token::TokenKind::Int
+        $crate::token::TokenKind::Int
     };
     [float] => {
-        $crate::parser::token::TokenKind::Float
+        $crate::token::TokenKind::Float
     };
     [ratio] => {
-        $crate::parser::token::TokenKind::Rational
+        $crate::token::TokenKind::Rational
     };
     [str] => {
-        $crate::parser::token::TokenKind::String
+        $crate::token::TokenKind::String
     };
     [bool] => {
-        $crate::parser::token::TokenKind::Bool
+        $crate::token::TokenKind::Bool
     };
     ['('] => {
-        $crate::parser::token::TokenKind::LParen
+        $crate::token::TokenKind::LParen
     };
     [')'] => {
-        $crate::parser::token::TokenKind::RParen
+        $crate::token::TokenKind::RParen
     };
     ['['] => {
-        $crate::parser::token::TokenKind::LBrack
+        $crate::token::TokenKind::LBrack
     };
     [']'] => {
-        $crate::parser::token::TokenKind::RBrack
+        $crate::token::TokenKind::RBrack
     };
     ['{'] => {
-        $crate::parser::token::TokenKind::LBrace
+        $crate::token::TokenKind::LBrace
     };
     ['}'] => {
-        $crate::parser::token::TokenKind::RBrace
+        $crate::token::TokenKind::RBrace
     };
     [:] => {
-        $crate::parser::token::TokenKind::Colon
+        $crate::token::TokenKind::Colon
     };
     [.] => {
-        $crate::parser::token::TokenKind::Period
+        $crate::token::TokenKind::Period
     };
     [,] => {
-        $crate::parser::token::TokenKind::Comma
+        $crate::token::TokenKind::Comma
     };
 }
 

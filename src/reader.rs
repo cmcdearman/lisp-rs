@@ -1,27 +1,35 @@
-use std::{
-    cell::RefCell,
-    collections::{BTreeMap, HashMap},
-    rc::Rc,
-};
+use logos::Lexer;
 
-use logos::{Lexer, Logos};
-
-use crate::T;
-
-use sexpr::{Atom, Lit, Sexpr};
-
-use self::{
-    parser_error::{ParserError, ParserErrorKind, Result},
-    sexpr::{Cons, List, Number, NIL},
+use crate::{
+    interner::InternedString,
     token::{Span, Token, TokenKind},
+    T,
 };
 
-pub mod parser_error;
-mod sexpr;
-mod token;
+#[derive(Debug, Clone)]
+pub enum Sexpr {
+    Atom(Atom),
+    List(Box<Self>, Box<Self>),
+}
+
+#[derive(Debug, Clone)]
+pub struct Cons {
+    pub head: Sexpr,
+    pub tail: <Cons>,
+}
+
+pub enum Atom {
+    Number(Number),
+    Symbol(InternedString),
+}
+
+pub enum Number {
+    Integer(i64),
+    Float(f64),
+}
 
 /// Parser is a recursive descent parser for the Lust language.
-pub struct Parser<'src> {
+pub struct Reader<'src> {
     /// The source code to parse.
     src: &'src str,
 
@@ -32,7 +40,7 @@ pub struct Parser<'src> {
     peek: Option<Token>,
 }
 
-impl<'src> Parser<'src> {
+impl<'src> Reader<'src> {
     /// Creates a new [`Parser`].
     pub fn new(src: &'src str) -> Self {
         Self {

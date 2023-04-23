@@ -1,7 +1,10 @@
+mod compiler;
+mod interner;
+mod list;
 mod parser;
-mod util;
+mod reader;
+mod sexpr;
+mod token;
 mod vm;
 
-fn main() {
-    // repl();
-}
+fn main() {}
