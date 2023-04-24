@@ -1,9 +1,12 @@
-use std::fmt::Display;
+use std::fmt::{Debug, Display};
 
-use crate::{interner::InternedString, list::List};
+use num_bigint::BigInt;
+use num_rational::{BigRational, Rational64};
+
+use crate::{interner::InternedString, list::List, reader::Sexpr};
 
 #[derive(Debug, Clone, PartialEq)]
-pub enum Ast {
+pub enum Expr {
     Atom(Atom),
     List(List<Self>),
     Lambda {
@@ -15,7 +18,7 @@ pub enum Ast {
         arg: Box<Self>,
     },
     Let {
-        name: String,
+        name: InternedString,
         value: Box<Self>,
         body: Box<Self>,
     },
@@ -26,16 +29,48 @@ pub enum Ast {
     },
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Clone, PartialEq)]
 pub enum Atom {
-    Number(Number),
+    Lit(Lit),
     Symbol(InternedString),
+}
+
+impl Debug for Atom {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Lit(l) => write!(f, "{:?}", l),
+            Self::Symbol(s) => write!(f, "{:?}", s),
+        }
+    }
+}
+
+#[derive(Clone, PartialEq)]
+pub enum Lit {
+    Number(Number),
+    String(InternedString),
+    Char(char),
+    Bool(bool),
+}
+
+impl Debug for Lit {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Number(n) => write!(f, "{:?}", n),
+            Self::String(s) => write!(f, "{:?}", s),
+            Self::Char(c) => write!(f, "{:?}", c),
+            Self::Bool(b) => write!(f, "{:?}", b),
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Number {
-    Integer(i64),
+    Int(i64),
+    BigInt(BigInt),
     Float(f64),
+    // BigFloat(),
+    Rational(Rational64),
+    BigRational(BigRational),
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -54,3 +89,10 @@ impl Display for ParserError {
 }
 
 pub type Result<T> = std::result::Result<T, ParserError>;
+
+pub fn parse(sexpr: &Sexpr) -> Result<Expr> {
+    match sexpr {
+        Sexpr::Atom(_) => todo!(),
+        Sexpr::List(_) => todo!(),
+    }
+}
