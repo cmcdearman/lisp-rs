@@ -1,4 +1,7 @@
 <sexpr> ::= <atom> | <list>
 <list> ::= "(" <sexpr>* ")"
-<atom> ::= <number> | <symbol> | <vector>
+<atom> ::= <number> | <symbol> | <vector> | <string>
+<number> ::= <int> | <float>
+<integer> ::= <digit>+
+<string> ::= '"' <character>* '"'
 <vector> ::= "[" <sexpr>* "]"

@@ -1,4 +1,6 @@
 use logos::Lexer;
+use num_bigint::BigInt;
+use num_rational::{BigRational, Rational64};
 
 use crate::{
     interner::InternedString,
@@ -6,26 +8,53 @@ use crate::{
     T,
 };
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Sexpr {
     Atom(Atom),
-    List(Box<Self>, Box<Self>),
+    List(List),
+    Nil,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
+pub struct List {
+    head: Option<Box<Cons>>,
+}
+
+impl List {
+    pub fn new(head: Option<Box<Cons>>) -> Self {
+        Self { head }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
 pub struct Cons {
-    pub head: Sexpr,
-    pub tail: <Cons>,
+    car: Sexpr,
+    cdr: Option<Box<Sexpr>>,
 }
 
+#[derive(Debug, Clone, PartialEq)]
 pub enum Atom {
     Number(Number),
     Symbol(InternedString),
 }
 
+#[derive(Debug, Clone, PartialEq)]
 pub enum Number {
-    Integer(i64),
+    Int(i64),
+    BigInt(BigInt),
     Float(f64),
+    // BigFloat(),
+    Rational(Rational64),
+    BigRational(BigRational),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ReaderError(pub String);
+
+impl ReaderError {
+    pub fn new(msg: &str) -> Self {
+        Self(msg.to_string())
+    }
 }
 
 /// Parser is a recursive descent parser for the Lust language.
@@ -119,7 +148,7 @@ impl<'src> Reader<'src> {
     /// Parses a list of [`Sexpr`]s.
     fn list(&mut self) -> Result<Sexpr> {
         if self.at(T![')']) {
-            return Ok(NIL);
+            return Ok(Sexpr::Nil);
         }
 
         let car = Box::new(self.sexpr()?);
@@ -133,13 +162,16 @@ impl<'src> Reader<'src> {
         self.consume(T![')']);
 
         for car in rest.into_iter().rev() {
-            cdr = Some(Box::new(Cons { car, cdr }));
+            cdr = Some(Box::new(Sexpr::List(List::new(Some(Box::new(Cons {
+                car,
+                cdr,
+            }))))));
         }
 
-        Ok(Sexpr::List(List::new(Some(Box::new(Cons {
-            car: *car,
-            cdr,
-        })))))
+        // Ok(Sexpr::List(List::new(Some(Box::new(Cons {
+        //     car: *car,
+        //     cdr,
+        // })))))
     }
 
     /// Parses an atom.
