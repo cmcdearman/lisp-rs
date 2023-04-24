@@ -1,6 +1,6 @@
-use std::fmt::{Display, Debug};
+use std::fmt::{Debug, Display};
 
-use lasso::{ThreadedRodeo, Spur};
+use lasso::{Spur, ThreadedRodeo};
 use once_cell::sync::Lazy;
 
 pub static mut INTERNER: Lazy<ThreadedRodeo> = Lazy::new(|| ThreadedRodeo::default());
@@ -26,7 +26,9 @@ impl From<&str> for InternedString {
 
 impl Debug for InternedString {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Ident({})", unsafe { INTERNER.resolve(&self.key) })
+        write!(f, "InternedString({})", unsafe {
+            INTERNER.resolve(&self.key)
+        })
     }
 }
 

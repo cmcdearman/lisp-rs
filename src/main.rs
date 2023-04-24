@@ -1,3 +1,5 @@
+use reader::Reader;
+
 mod compiler;
 mod interner;
 mod list;
@@ -7,4 +9,6 @@ mod sexpr;
 mod token;
 mod vm;
 
-fn main() {}
+fn main() {
+    let reader = Reader::new("(+ 1 2)");
+}

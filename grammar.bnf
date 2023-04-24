@@ -1,7 +1,12 @@
 <sexpr> ::= <atom> | <list>
 <list> ::= "(" <sexpr>* ")"
-<atom> ::= <number> | <symbol> | <vector> | <string>
+<atom> ::= <lit> | <symbol>
+<lit> ::= <number> |<bool> | <string>
 <number> ::= <int> | <float>
-<integer> ::= <digit>+
+<int> ::= <digit>+
+<float> ::= <digit>+ "." <digit>+
+<bool> ::= "true" | "false"
 <string> ::= '"' <character>* '"'
+<symbol> ::= <letter> <letter>*
+<letter> ::= [a-zA-Z]
 <vector> ::= "[" <sexpr>* "]"

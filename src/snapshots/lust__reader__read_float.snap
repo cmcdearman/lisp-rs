@@ -1,0 +1,5 @@
+---
+source: src/reader.rs
+expression: sexpr
+---
+Float(12.2)

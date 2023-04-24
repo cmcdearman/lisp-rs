@@ -14,19 +14,19 @@ pub enum TokenKind {
     Comment,
     #[regex(r#"[^\[\]()\s,{};]+"#)]
     Ident,
-    #[regex(r#"(\+|-)?\d+(i8|u8|i16|u16|i32|u32|i64|u64)?"#, priority = 3)]
+    #[regex(r#"([1-9]\d*|0)"#, priority = 3)]
     Int,
-    #[regex(
-        r#"(\+|-)?((\d+(\.\d+)?)|(\.\d+))([Ee](\+|-)?\d+)?(f32|f64)?"#,
-        priority = 2
-    )]
+    #[regex(r#"((\d+(\.\d+))|(\.\d+))([Ee](\+|-)?\d+)?"#, priority = 2)]
     Float,
-    #[regex(r#"(\+|-)?\d+/\d+"#)]
-    Rational,
+    #[regex(r#"'\w'"#)]
+    Char,
     #[regex(r#""((\\"|\\\\)|[^\\"])*""#)]
     String,
-    #[regex(r#"(true|false)"#)]
+    #[regex(r#"(true)|(false)"#)]
     Bool,
+
+    #[regex(r#"(\+|-)?\d+/\d+"#)]
+    Rational,
     #[token("(")]
     LParen,
     #[token(")")]
@@ -72,6 +72,9 @@ macro_rules! T {
     };
     [ratio] => {
         $crate::token::TokenKind::Rational
+    };
+    [char] => {
+        $crate::token::TokenKind::Char
     };
     [str] => {
         $crate::token::TokenKind::String
@@ -122,6 +125,7 @@ impl fmt::Display for TokenKind {
                 T![int] => "Int",
                 T![float] => "Float",
                 T![ratio] => "Rational",
+                T![char] => "Char",
                 T![str] => "String",
                 T![bool] => "Bool",
                 T!['('] => "(",

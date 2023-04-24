@@ -1,4 +1,6 @@
-use crate::list::List;
+use std::fmt::Display;
+
+use crate::{interner::InternedString, list::List};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Ast {
@@ -27,7 +29,7 @@ pub enum Ast {
 #[derive(Debug, Clone, PartialEq)]
 pub enum Atom {
     Number(Number),
-    Symbol(String),
+    Symbol(InternedString),
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -37,29 +39,17 @@ pub enum Number {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum ParserErrorKind {
-    ParseIntegerError,
-    ParseFloatError,
-    ParseRationalError,
-    ParseStringError,
-    UnexpectedEofError,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct ParserError {
-    kind: ParserErrorKind,
-    span: Span,
-}
+pub struct ParserError(pub InternedString);
 
 impl ParserError {
-    pub fn new(kind: ParserErrorKind, span: Span) -> Self {
-        Self { kind, span }
+    pub fn new(msg: &str) -> Self {
+        Self(msg.into())
     }
 }
 
 impl Display for ParserError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:?}", self)
+        write!(f, "{:?}", InternedString::from(self.0.key))
     }
 }
 
