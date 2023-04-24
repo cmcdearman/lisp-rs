@@ -38,15 +38,6 @@ impl List {
     }
 }
 
-// impl Display for List {
-//     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-//         match &self.head {
-//             Some(h) => write!(f, "({})", h),
-//             None => write!(f, "Nil"),
-//         }
-//     }
-// }
-
 impl Debug for List {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match &self.head {
@@ -61,15 +52,6 @@ pub struct Cons {
     car: Sexpr,
     cdr: Option<Box<Cons>>,
 }
-
-// impl Display for Cons {
-//     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-//         match &self.cdr {
-//             Some(cdr) => write!(f, "{} {}", self.car, cdr.as_ref()),
-//             None => write!(f, "{}", self.car),
-//         }
-//     }
-// }
 
 impl Debug for Cons {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
