@@ -3,7 +3,11 @@ use std::fmt::{Debug, Display};
 use num_bigint::BigInt;
 use num_rational::{BigRational, Rational64};
 
-use crate::{interner::InternedString, list::List, reader::Sexpr};
+use crate::{
+    interner::InternedString,
+    list::List,
+    reader::{self, Cons, Sexpr},
+};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Expr {
@@ -27,6 +31,7 @@ pub enum Expr {
         then: Box<Self>,
         else_: Box<Self>,
     },
+    Unit,
 }
 
 #[derive(Clone, PartialEq)]
@@ -90,9 +95,47 @@ impl Display for ParserError {
 
 pub type Result<T> = std::result::Result<T, ParserError>;
 
-pub fn parse(sexpr: &Sexpr) -> Result<Expr> {
+// Parser entry point
+pub fn parse_expr(sexpr: &Sexpr) -> Result<Expr> {
     match sexpr {
-        Sexpr::Atom(_) => todo!(),
-        Sexpr::List(_) => todo!(),
+        Sexpr::Atom(a) => match a {
+            reader::Atom::Lit(l) => match l {
+                reader::Lit::Number(n) => Ok(Expr::Atom(Atom::Lit(Lit::Number(match n {
+                    reader::Number::Int(i) => Number::Int(*i),
+                    reader::Number::BigInt(b) => Number::BigInt(b.clone()),
+                    reader::Number::Float(f) => Number::Float(*f),
+                    reader::Number::Rational(r) => Number::Rational(r.clone()),
+                    reader::Number::BigRational(br) => Number::BigRational(br.clone()),
+                })))),
+                reader::Lit::String(s) => Ok(Expr::Atom(Atom::Lit(Lit::String(s.clone())))),
+                reader::Lit::Char(c) => Ok(Expr::Atom(Atom::Lit(Lit::Char(*c)))),
+                reader::Lit::Bool(b) => Ok(Expr::Atom(Atom::Lit(Lit::Bool(*b)))),
+            },
+            reader::Atom::Symbol(s) => Ok(Expr::Atom(Atom::Symbol(s.clone()))),
+        },
+        Sexpr::List(l) => match l.clone() {
+            reader::List { head: None } => Ok(Expr::Unit),
+            reader::List { head: Some(h) } => match *h.clone() {
+                Cons {
+                    car: sexpr,
+                    cdr: None,
+                } => parse_expr(&sexpr),
+                Cons {
+                    car: sexpr,
+                    cdr: Some(cdr),
+                } => match sexpr {
+                    Sexpr::Atom(a) => match a {
+                        reader::Atom::Symbol(s) => match &*s.to_string() {
+                            "lambda" => parse_lambda(&cdr),
+                            "let" => parse_let(&cdr),
+                            "if" => parse_if(&cdr),
+                            _ => parse_apply(&sexpr, &cdr),
+                        },
+                        _ => parse_apply(&sexpr, &cdr),
+                    },
+                    _ => parse_apply(&sexpr, &cdr),
+                },
+            },
+        },
     }
 }

@@ -27,7 +27,7 @@ impl Debug for Sexpr {
 
 #[derive(Clone, PartialEq)]
 pub struct List {
-    head: Option<Box<Cons>>,
+    pub head: Option<Box<Cons>>,
 }
 
 impl List {
@@ -49,8 +49,8 @@ impl Debug for List {
 
 #[derive(Clone, PartialEq)]
 pub struct Cons {
-    car: Sexpr,
-    cdr: Option<Box<Cons>>,
+    pub car: Sexpr,
+    pub cdr: Option<Box<Cons>>,
 }
 
 impl Debug for Cons {
