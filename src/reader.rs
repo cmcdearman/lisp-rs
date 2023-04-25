@@ -47,6 +47,16 @@ impl Debug for List {
     }
 }
 
+impl IntoIterator for List {
+    type Item = Sexpr;
+
+    type IntoIter = ConsIter;
+
+    fn into_iter(self) -> Self::IntoIter {
+        ConsIter(self.head.clone())
+    }
+}
+
 #[derive(Clone, PartialEq)]
 pub struct Cons {
     pub car: Sexpr,
@@ -59,6 +69,33 @@ impl Debug for Cons {
             Some(cdr) => write!(f, "({:?} . {:?})", self.car, cdr.as_ref()),
             None => write!(f, "({:?} . Nil)", self.car),
         }
+    }
+}
+
+#[derive(Clone)]
+pub struct ConsIter(Option<Box<Cons>>);
+
+impl Iterator for ConsIter {
+    type Item = Sexpr;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.0.clone().map(|cons| {
+            let sexpr = cons.car.clone();
+
+            self.0 = cons.cdr.clone();
+
+            sexpr
+        })
+    }
+}
+
+impl ExactSizeIterator for ConsIter {
+    fn len(&self) -> usize {
+        let mut length: usize = 0;
+
+        self.clone().for_each(|_| length += 1);
+
+        length
     }
 }
 

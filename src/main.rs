@@ -3,6 +3,7 @@ use reader::Reader;
 mod compiler;
 mod interner;
 mod list;
+mod lower;
 mod parser;
 mod reader;
 mod sexpr;

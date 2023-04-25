@@ -37,6 +37,12 @@ impl<T> From<Vec<T>> for List<T> {
     }
 }
 
+impl<T> FromIterator<T> for List<T> {
+    fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> Self {
+        iter.into_iter().collect::<Vec<_>>().into()
+    }
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct Node<T> {
     pub data: T,

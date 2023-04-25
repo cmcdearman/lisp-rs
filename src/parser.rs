@@ -115,27 +115,48 @@ pub fn parse_expr(sexpr: &Sexpr) -> Result<Expr> {
         },
         Sexpr::List(l) => match l.clone() {
             reader::List { head: None } => Ok(Expr::Unit),
-            reader::List { head: Some(h) } => match *h.clone() {
-                Cons {
-                    car: sexpr,
-                    cdr: None,
-                } => parse_expr(&sexpr),
-                Cons {
-                    car: sexpr,
-                    cdr: Some(cdr),
-                } => match sexpr {
+            _ => {
+                let mut iter = l.into_iter();
+                let head = iter.next().unwrap();
+                let tail = iter.collect::<List<Sexpr>>();
+                match head {
                     Sexpr::Atom(a) => match a {
                         reader::Atom::Symbol(s) => match &*s.to_string() {
-                            "lambda" => parse_lambda(&cdr),
-                            "let" => parse_let(&cdr),
-                            "if" => parse_if(&cdr),
-                            _ => parse_apply(&sexpr, &cdr),
+                            "lambda" => {
+                                let (param, body) = parse_lambda(&tail)?;
+                                Ok(Expr::Lambda { param, body })
+                            }
+                            "let" => parse_let(&tail),
+                            "if" => parse_if(&tail),
+                            _ => parse_apply(&head, &tail),
                         },
-                        _ => parse_apply(&sexpr, &cdr),
+                        _ => parse_apply(&head, &tail),
                     },
-                    _ => parse_apply(&sexpr, &cdr),
-                },
-            },
+                    _ => parse_apply(&head, &tail),
+                }
+            }
+                // Cons {
+                //     car: sexpr,
+                //     cdr: None,
+                // } => parse_expr(&sexpr),
+                // Cons {
+                //     car: sexpr,
+                //     cdr: Some(cdr),
+                // } => match sexpr {
+                //     Sexpr::Atom(a) => match a {
+                //         reader::Atom::Symbol(s) => match &*s.to_string() {
+                //             "lambda" => {
+                //                 let (param, body) = parse_lambda(&cdr)?;
+                //                 Ok(Expr::Lambda { param, body })
+                //             }
+                //             "let" => parse_let(&cdr),
+                //             "if" => parse_if(&cdr),
+                //             _ => parse_apply(&sexpr, &cdr),
+                //         },
+                //         _ => parse_apply(&sexpr, &cdr),
+                //     },
+                //     _ => parse_apply(&sexpr, &cdr),
+                // },
         },
     }
 }
