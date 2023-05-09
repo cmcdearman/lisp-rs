@@ -95,47 +95,48 @@ impl Display for ParserError {
 
 pub type Result<T> = std::result::Result<T, ParserError>;
 
-// Parser entry point
-pub fn parse_expr(sexpr: &Sexpr) -> Result<Expr> {
-    match sexpr {
-        Sexpr::Atom(a) => match a {
-            reader::Atom::Lit(l) => match l {
-                reader::Lit::Number(n) => Ok(Expr::Atom(Atom::Lit(Lit::Number(match n {
-                    reader::Number::Int(i) => Number::Int(*i),
-                    reader::Number::BigInt(b) => Number::BigInt(b.clone()),
-                    reader::Number::Float(f) => Number::Float(*f),
-                    reader::Number::Rational(r) => Number::Rational(r.clone()),
-                    reader::Number::BigRational(br) => Number::BigRational(br.clone()),
-                })))),
-                reader::Lit::String(s) => Ok(Expr::Atom(Atom::Lit(Lit::String(s.clone())))),
-                reader::Lit::Char(c) => Ok(Expr::Atom(Atom::Lit(Lit::Char(*c)))),
-                reader::Lit::Bool(b) => Ok(Expr::Atom(Atom::Lit(Lit::Bool(*b)))),
-            },
-            reader::Atom::Symbol(s) => Ok(Expr::Atom(Atom::Symbol(s.clone()))),
-        },
-        Sexpr::List(l) => {
-            let mut iter = l.clone().into_iter();
-            if let Some(first) = iter.next() {
-                let lam = match first {
-                    Sexpr::Atom(a) => match a {
-                        reader::Atom::Symbol(s) => match &*s.to_string() {
-                            "lambda" => parse_lambda(&mut iter),
-                            "let" => parse_let(&mut iter),
-                            "if" => parse_if(&mut iter),
-                            _ => parse_apply(&mut iter),
-                        },
-                        _ => Err(ParserError::new("cannot apply non-lambda")),
-                    },
-                    Sexpr::List(_) => parse_apply(&mut iter),
-                }?;
-                todo!()
-            } else {
-                Ok(Expr::Unit)
-            }
-        }
-    }
+// // Parser entry point
+// pub fn parse_expr(sexpr: &Sexpr) -> Result<Expr> {
+//     match sexpr {
+//         Sexpr::Atom(a) => match a {
+//             reader::Atom::Lit(l) => match l {
+//                 reader::Lit::Number(n) => Ok(Expr::Atom(Atom::Lit(Lit::Number(match n {
+//                     reader::Number::Int(i) => Number::Int(*i),
+//                     reader::Number::BigInt(b) => Number::BigInt(b.clone()),
+//                     reader::Number::Float(f) => Number::Float(*f),
+//                     reader::Number::Rational(r) => Number::Rational(r.clone()),
+//                     reader::Number::BigRational(br) => Number::BigRational(br.clone()),
+//                 })))),
+//                 reader::Lit::String(s) => Ok(Expr::Atom(Atom::Lit(Lit::String(s.clone())))),
+//                 reader::Lit::Char(c) => Ok(Expr::Atom(Atom::Lit(Lit::Char(*c)))),
+//                 reader::Lit::Bool(b) => Ok(Expr::Atom(Atom::Lit(Lit::Bool(*b)))),
+//             },
+//             reader::Atom::Symbol(s) => Ok(Expr::Atom(Atom::Symbol(s.clone()))),
+//         },
+//         Sexpr::List(l) => {
+//             todo!()
+//             // let mut iter = l.clone().into_iter();
+//             // if let Some(first) = iter.next() {
+//             //     let lam = match first {
+//             //         Sexpr::Atom(a) => match a {
+//             //             reader::Atom::Symbol(s) => match &*s.to_string() {
+//             //                 "lambda" => parse_lambda(&mut iter),
+//             //                 "let" => parse_let(&mut iter),
+//             //                 "if" => parse_if(&mut iter),
+//             //                 _ => parse_apply(&mut iter),
+//             //             },
+//             //             _ => Err(ParserError::new("cannot apply non-lambda")),
+//             //         },
+//             //         Sexpr::List(_) => parse_apply(&mut iter),
+//             //     }?;
+//             //     todo!()
+//             // } else {
+//             //     Ok(Expr::Unit)
+//             // }
+//         }
+//     }
 
-    fn parse_special_form() -> Result<Expr> {
-        todo!()
-    }
-}
+//     fn parse_special_form() -> Result<Expr> {
+//         todo!()
+//     }
+// }

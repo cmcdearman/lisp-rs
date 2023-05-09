@@ -1,6 +1,7 @@
 use reader::Reader;
 
 mod compiler;
+mod gc;
 mod interner;
 mod list;
 mod lower;
