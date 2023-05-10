@@ -57,7 +57,7 @@ impl GarbageCollector {
 
     fn scan(&mut self, obj: *mut u8) {
         let mut p = obj as *mut *mut u8;
-        while p < unsafe { (obj as *mut *mut u8).add(align(unsafe { *(obj as *const usize) })) } {
+        while p < unsafe { (obj as *mut *mut u8).add(align(*(obj as *const usize))) } {
             let p_val = unsafe { *p };
             if self.from_space <= p_val
                 && p_val < self.from_space_end

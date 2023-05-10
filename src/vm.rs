@@ -78,17 +78,16 @@ impl VM {
         }
     }
 
-    pub fn run(&self) -> Option<Value> {
-        todo!()
-        // while self.pc < self.program.len() {
-        //     let opcode = self.read_opcode();
-        //     match opcode {
-        //         OpCode::Halt => None,
-        //         _ => {
-        //             panic!("Unimplemented opcode: {:?}", opcode);
-        //         }
-        //     }
-        // }
+    pub fn run(&self) {
+        while self.pc < self.program.len() {
+            let opcode = self.read_opcode();
+            match opcode {
+                OpCode::Halt => break,
+                _ => {
+                    panic!("Unimplemented opcode: {:?}", opcode);
+                }
+            }
+        }
     }
 
     fn read_byte(&mut self) -> u8 {
