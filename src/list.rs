@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 /// A singly-linked list with owned nodes.
 #[derive(Debug, Clone, Default, PartialEq)]
 pub struct List<T> {
@@ -47,4 +49,22 @@ impl<T> FromIterator<T> for List<T> {
 pub struct Node<T> {
     pub data: T,
     pub next: Option<Box<Node<T>>>,
+}
+
+impl<T> Display for Node<T>
+where
+    T: Display + Clone,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut node = self;
+        write!(f, "[")?;
+        while let Some(next) = &node.next {
+            write!(f, "{}", node.data)?;
+            node = next;
+            if node.next.is_some() {
+                write!(f, ", ")?;
+            }
+        }
+        write!(f, "]")
+    }
 }
