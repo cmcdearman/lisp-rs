@@ -1,5 +1,220 @@
 use std::fmt;
 
+use logos::Logos;
+use num_bigint::BigInt;
+use num_rational::{BigRational, Rational64};
+
+use crate::interner::InternedString;
+
+#[derive(Logos, Debug, Clone, Copy, Default, PartialEq, Eq, Hash)]
+pub enum TokenKind {
+    #[default]
+    Eof,
+    #[error]
+    Err,
+    #[regex(r"[ \t\r\n\f]+", logos::skip)]
+    Whitespace,
+    #[regex(r#";[^\n]*"#)]
+    Comment,
+    #[regex(r#"[^\[\]()\s,{};]+"#)]
+    Ident,
+    #[regex(r#"([1-9]\d*|0)"#, priority = 3)]
+    Int,
+    #[regex(r#"((\d+(\.\d+))|(\.\d+))([Ee](\+|-)?\d+)?"#, priority = 2)]
+    Real,
+    #[regex(r#"'\w'"#)]
+    Char,
+    #[regex(r#""((\\"|\\\\)|[^\\"])*""#)]
+    String,
+    #[regex(r#"(true)|(false)"#)]
+    Bool,
+
+    #[regex(r#"(\+|-)?\d+/\d+"#)]
+    Rational,
+    #[token("(")]
+    LParen,
+    #[token(")")]
+    RParen,
+    #[token("[")]
+    LBrack,
+    #[token("]")]
+    RBrack,
+    #[token("{")]
+    LBrace,
+    #[token("}")]
+    RBrace,
+    #[token(":")]
+    Colon,
+    #[token(".")]
+    Period,
+    #[token(",")]
+    Comma,
+}
+
+#[macro_export]
+macro_rules! T {
+    [EOF] => {
+        $crate::parser::reader::TokenKind::Eof
+    };
+    [err] => {
+        $crate::parser::reader::TokenKind::Err
+    };
+    [ws] => {
+        $crate::parser::reader::TokenKind::Whitespace
+    };
+    [;] => {
+        $crate::parser::reader::TokenKind::Comment
+    };
+    [ident] => {
+        $crate::parser::reader::TokenKind::Ident
+    };
+    [int] => {
+        $crate::parser::reader::TokenKind::Int
+    };
+    [real] => {
+        $crate::parser::reader::TokenKind::Real
+    };
+    [ratio] => {
+        $crate::parser::reader::TokenKind::Rational
+    };
+    [char] => {
+        $crate::parser::reader::TokenKind::Char
+    };
+    [str] => {
+        $crate::parser::reader::TokenKind::String
+    };
+    [bool] => {
+        $crate::parser::reader::TokenKind::Bool
+    };
+    ['('] => {
+        $crate::parser::reader::TokenKind::LParen
+    };
+    [')'] => {
+        $crate::parser::reader::TokenKind::RParen
+    };
+    ['['] => {
+        $crate::parser::reader::TokenKind::LBrack
+    };
+    [']'] => {
+        $crate::parser::reader::TokenKind::RBrack
+    };
+    ['{'] => {
+        $crate::parser::reader::TokenKind::LBrace
+    };
+    ['}'] => {
+        $crate::parser::reader::TokenKind::RBrace
+    };
+    [:] => {
+        $crate::parser::reader::TokenKind::Colon
+    };
+    [.] => {
+        $crate::parser::reader::TokenKind::Period
+    };
+    [,] => {
+        $crate::parser::reader::TokenKind::Comma
+    };
+}
+
+impl fmt::Display for TokenKind {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                T![EOF] => "<EOF>",
+                T![err] => "Error",
+                T![ws] => "Whitespace",
+                T![;] => "Comment",
+                T![ident] => "Ident",
+                T![int] => "Int",
+                T![real] => "Real",
+                T![ratio] => "Rational",
+                T![char] => "Char",
+                T![str] => "String",
+                T![bool] => "Bool",
+                T!['('] => "(",
+                T![')'] => ")",
+                T!['['] => "[",
+                T![']'] => "]",
+                T!['{'] => "{",
+                T!['}'] => "}",
+                T![:] => ":",
+                T![.] => ".",
+                T![,] => ",",
+            }
+        )
+    }
+}
+
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Default, Hash)]
+pub struct Span {
+    pub start: u32,
+    pub end: u32,
+}
+
+impl Span {
+    pub fn new(start: u32, end: u32) -> Self {
+        Self { start, end }
+    }
+}
+
+impl fmt::Display for Span {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "<{}, {}>", self.start, self.end)
+    }
+}
+
+impl From<Span> for Range<usize> {
+    fn from(span: Span) -> Self {
+        span.start as usize..span.end as usize
+    }
+}
+
+impl From<Range<usize>> for Span {
+    fn from(range: Range<usize>) -> Self {
+        Self {
+            start: range.start as u32,
+            end: range.end as u32,
+        }
+    }
+}
+
+impl Index<Span> for str {
+    type Output = str;
+
+    fn index(&self, index: Span) -> &Self::Output {
+        &self[Range::from(index)]
+    }
+}
+
+#[derive(Clone, Copy, Eq, PartialEq, Hash)]
+pub struct Token {
+    pub kind: TokenKind,
+    pub span: Span,
+}
+
+impl Token {
+    pub fn len(&self) -> usize {
+        (self.span.end - self.span.start) as usize
+    }
+
+    pub fn lit<'a>(&self, src: &'a str) -> &'a str {
+        &src[self.span]
+    }
+}
+
+impl fmt::Debug for Token {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:?} - {}", self.kind, self.span)
+    }
+}
+
+impl fmt::Display for Token {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.kind)
+    }
+}
+
 #[derive(Clone, PartialEq)]
 pub enum Sexpr {
     Atom(Atom),
@@ -106,30 +321,29 @@ impl Debug for Atom {
 
 #[derive(Clone, PartialEq)]
 pub enum Lit {
-    Number(Number),
-    String(InternedString),
-    Char(char),
-    Bool(bool),
-}
-
-impl Debug for Lit {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::Number(n) => write!(f, "{:?}", n),
-            Self::String(s) => write!(f, "{:?}", s),
-            Self::Char(c) => write!(f, "{:?}", c),
-            Self::Bool(b) => write!(f, "{:?}", b),
-        }
-    }
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub enum Number {
     Int(i64),
     BigInt(BigInt),
     Real(f64),
     Rational(Rational64),
     BigRational(BigRational),
+    Bool(bool),
+    Char(char),
+    String(InternedString),
+}
+
+impl fmt::Debug for Lit {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Int(i) => write!(f, "{:?}", i),
+            Self::BigInt(i) => write!(f, "{:?}", i),
+            Self::Real(r) => write!(f, "{:?}", r),
+            Self::Rational(r) => write!(f, "{:?}", r),
+            Self::BigRational(r) => write!(f, "{:?}", r),
+            Self::String(s) => write!(f, "{:?}", s),
+            Self::Char(c) => write!(f, "{:?}", c),
+            Self::Bool(b) => write!(f, "{:?}", b),
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -324,29 +538,4 @@ impl<'src> Reader<'src> {
         let text = self.text(token);
         Ok(InternedString::from(text))
     }
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub enum Expr {
-    Atom(Atom),
-    List(List<Self>),
-    Lambda {
-        param: Vec<Self>,
-        body: Box<Self>,
-    },
-    Apply {
-        func: Box<Self>,
-        arg: Box<Self>,
-    },
-    Let {
-        name: InternedString,
-        value: Box<Self>,
-        body: Box<Self>,
-    },
-    If {
-        cond: Box<Self>,
-        then: Box<Self>,
-        else_: Box<Self>,
-    },
-    Unit,
 }
