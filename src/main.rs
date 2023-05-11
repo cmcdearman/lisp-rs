@@ -1,4 +1,4 @@
-use reader::Reader;
+use parser::Reader;
 
 mod compiler;
 mod gc;
@@ -6,9 +6,6 @@ mod interner;
 mod list;
 mod lower;
 mod parser;
-mod reader;
-mod sexpr;
-mod token;
 mod vm;
 
 fn main() {
