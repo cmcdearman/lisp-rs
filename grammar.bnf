@@ -2,9 +2,9 @@
 <list> ::= "(" <sexpr>* ")"
 <atom> ::= <lit> | <symbol>
 <lit> ::= <number> |<bool> | <string>
-<number> ::= <int> | <float>
+<number> ::= <int> | <real>
 <int> ::= <digit>+
-<float> ::= <digit>+ "." <digit>+
+<real> ::= <digit>+ "." <digit>+
 <bool> ::= "true" | "false"
 <string> ::= '"' <character>* '"'
 <symbol> ::= <letter> <letter>*
