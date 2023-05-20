@@ -1,4 +1,4 @@
-use std::fmt;
+use std::fmt::{self, Debug};
 
 use logos::Logos;
 use num_bigint::BigInt;
@@ -296,11 +296,7 @@ impl Iterator for ConsIter {
 
 impl ExactSizeIterator for ConsIter {
     fn len(&self) -> usize {
-        let mut length: usize = 0;
-
-        self.clone().for_each(|_| length += 1);
-
-        length
+        self.count()
     }
 }
 
