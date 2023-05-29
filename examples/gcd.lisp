@@ -3,6 +3,8 @@
     (if (= b 0) 
       a 
       (gcd b (% a b)))))
+    
+(gcd 51 85)
 
 (def gcd 
   (fn (a b) 
