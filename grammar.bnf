@@ -10,3 +10,5 @@
 <symbol> ::= <letter> <letter>*
 <letter> ::= [a-zA-Z]
 <vector> ::= "[" <sexpr>* "]"
+<digit> ::= [0-9]
+<character> ::= [a-zA-Z0-9]

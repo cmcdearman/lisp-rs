@@ -5,29 +5,29 @@ pub mod chunk;
 pub mod opcode;
 pub mod value;
 
-// #[derive(Debug, Clone, PartialEq)]
-// pub struct RuntimeError(pub String);
-
-// impl RuntimeError {
-//     pub fn new(msg: String) -> RuntimeError {
-//         RuntimeError(msg)
-//     }
-// }
-
-// impl From<&str> for RuntimeError {
-//     fn from(msg: &str) -> RuntimeError {
-//         RuntimeError::new(msg.to_string())
-//     }
-// }
-
-// pub type Result<T> = std::result::Result<T, RuntimeError>;
-
 #[derive(Debug, Clone, PartialEq)]
-pub enum InterpretResult {
-    Ok,
-    CompileError,
-    RuntimeError,
+pub struct RuntimeError(pub String);
+
+impl RuntimeError {
+    pub fn new(msg: String) -> RuntimeError {
+        RuntimeError(msg)
+    }
 }
+
+impl From<&str> for RuntimeError {
+    fn from(msg: &str) -> RuntimeError {
+        RuntimeError::new(msg.to_string())
+    }
+}
+
+pub type Result<T> = std::result::Result<T, RuntimeError>;
+
+// #[derive(Debug, Clone, PartialEq)]
+// pub enum InterpretResult {
+//     Ok,
+//     CompileError,
+//     RuntimeError,
+// }
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct VM {
@@ -47,7 +47,7 @@ impl VM {
         }
     }
 
-    pub fn run(&mut self) -> InterpretResult {
+    pub fn run(&mut self) -> Result<Value> {
         loop {
             let instr = self.read_instr();
             log::trace!("Instr: {:?}", instr);
@@ -62,7 +62,7 @@ impl VM {
                     let a = self.pop();
                     match (a, b) {
                         (Value::Number(a), Value::Number(b)) => self.push(Value::Number(a + b)),
-                        _ => return InterpretResult::RuntimeError,
+                        _ => return Err(RuntimeError::from("Operands must be numbers")),
                     }
                 }
                 OpCode::Sub => {
@@ -70,7 +70,7 @@ impl VM {
                     let a = self.pop();
                     match (a, b) {
                         (Value::Number(a), Value::Number(b)) => self.push(Value::Number(a - b)),
-                        _ => return InterpretResult::RuntimeError,
+                        _ => return Err(RuntimeError::from("Operands must be numbers")),
                     }
                 }
                 OpCode::Mul => {
@@ -78,7 +78,7 @@ impl VM {
                     let a = self.pop();
                     match (a, b) {
                         (Value::Number(a), Value::Number(b)) => self.push(Value::Number(a * b)),
-                        _ => return InterpretResult::RuntimeError,
+                        _ => return Err(RuntimeError::from("Operands must be numbers")),
                     }
                 }
                 OpCode::Div => {
@@ -86,21 +86,21 @@ impl VM {
                     let a = self.pop();
                     match (a, b) {
                         (Value::Number(a), Value::Number(b)) => self.push(Value::Number(a / b)),
-                        _ => return InterpretResult::RuntimeError,
+                        _ => return Err(RuntimeError::from("Operands must be numbers")),
                     }
                 }
                 OpCode::Neg => {
                     let value = self.pop();
                     match value {
                         Value::Number(n) => self.push(Value::Number(-n)),
-                        _ => return InterpretResult::RuntimeError,
+                        _ => return Err(RuntimeError::from("Operand must be a number")),
                     }
                 }
                 OpCode::Return => {
-                    println!("{}", self.pop());
-                    return InterpretResult::Ok;
+                    // println!("{}", self.pop());
+                    return self.pop();
                 }
-                _ => return InterpretResult::RuntimeError,
+                _ => return Err(RuntimeError::from("Unknown opcode")),
             }
         }
     }
@@ -123,7 +123,9 @@ impl VM {
         self.stack.push(value);
     }
 
-    fn pop(&mut self) -> Value {
-        self.stack.pop().expect("Stack underflow")
+    fn pop(&mut self) -> Result<Value> {
+        self.stack
+            .pop()
+            .ok_or(RuntimeError::from("Stack underflow"))
     }
 }
