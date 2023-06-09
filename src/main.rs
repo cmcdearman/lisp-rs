@@ -1,4 +1,4 @@
-use parser::Reader;
+use parser::reader::Reader;
 
 mod compiler;
 mod gc;

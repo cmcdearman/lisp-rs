@@ -57,45 +57,45 @@ impl VM {
                     let constant = self.read_constant();
                     self.push(constant);
                 }
-                OpCode::Add => {
-                    let b = self.pop();
-                    let a = self.pop();
-                    match (a, b) {
-                        (Value::Number(a), Value::Number(b)) => self.push(Value::Number(a + b)),
-                        _ => return Err(RuntimeError::from("Operands must be numbers")),
-                    }
-                }
-                OpCode::Sub => {
-                    let b = self.pop();
-                    let a = self.pop();
-                    match (a, b) {
-                        (Value::Number(a), Value::Number(b)) => self.push(Value::Number(a - b)),
-                        _ => return Err(RuntimeError::from("Operands must be numbers")),
-                    }
-                }
-                OpCode::Mul => {
-                    let b = self.pop();
-                    let a = self.pop();
-                    match (a, b) {
-                        (Value::Number(a), Value::Number(b)) => self.push(Value::Number(a * b)),
-                        _ => return Err(RuntimeError::from("Operands must be numbers")),
-                    }
-                }
-                OpCode::Div => {
-                    let b = self.pop();
-                    let a = self.pop();
-                    match (a, b) {
-                        (Value::Number(a), Value::Number(b)) => self.push(Value::Number(a / b)),
-                        _ => return Err(RuntimeError::from("Operands must be numbers")),
-                    }
-                }
-                OpCode::Neg => {
-                    let value = self.pop();
-                    match value {
-                        Value::Number(n) => self.push(Value::Number(-n)),
-                        _ => return Err(RuntimeError::from("Operand must be a number")),
-                    }
-                }
+                // OpCode::Add => {
+                //     let b = self.pop();
+                //     let a = self.pop();
+                //     match (a, b) {
+                //         (Value::Number(a), Value::Number(b)) => self.push(Value::Number(a + b)),
+                //         _ => return Err(RuntimeError::from("Operands must be numbers")),
+                //     }
+                // }
+                // OpCode::Sub => {
+                //     let b = self.pop();
+                //     let a = self.pop();
+                //     match (a, b) {
+                //         (Value::Number(a), Value::Number(b)) => self.push(Value::Number(a - b)),
+                //         _ => return Err(RuntimeError::from("Operands must be numbers")),
+                //     }
+                // }
+                // OpCode::Mul => {
+                //     let b = self.pop();
+                //     let a = self.pop();
+                //     match (a, b) {
+                //         (Value::Number(a), Value::Number(b)) => self.push(Value::Number(a * b)),
+                //         _ => return Err(RuntimeError::from("Operands must be numbers")),
+                //     }
+                // }
+                // OpCode::Div => {
+                //     let b = self.pop();
+                //     let a = self.pop();
+                //     match (a, b) {
+                //         (Value::Number(a), Value::Number(b)) => self.push(Value::Number(a / b)),
+                //         _ => return Err(RuntimeError::from("Operands must be numbers")),
+                //     }
+                // }
+                // OpCode::Neg => {
+                //     let value = self.pop();
+                //     match value {
+                //         Value::Number(n) => self.push(Value::Number(-n)),
+                //         _ => return Err(RuntimeError::from("Operand must be a number")),
+                //     }
+                // }
                 OpCode::Return => {
                     // println!("{}", self.pop());
                     return self.pop();

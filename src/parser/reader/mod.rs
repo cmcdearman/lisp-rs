@@ -1,4 +1,4 @@
-use crate::{interner::InternedString, T};
+use crate::T;
 use logos::{Lexer, Logos};
 use std::fmt::Debug;
 
@@ -7,6 +7,7 @@ use self::{
     token::{Span, Token, TokenKind},
 };
 
+pub mod cst;
 pub mod sexpr;
 pub mod token;
 
@@ -98,108 +99,108 @@ impl<'src> Reader<'src> {
         );
     }
 
-    /// Parses the source code into a [`Sexpr`].
-    pub fn sexpr(&mut self) -> ReadResult<Sexpr> {
-        match self.peek().kind {
-            T!['('] => self.list(),
-            _ => self.atom(),
-        }
-    }
+    // /// Parses the source code into a [`Sexpr`].
+    // pub fn sexpr(&mut self) -> ReadResult<Sexpr> {
+    //     match self.peek().kind {
+    //         T!['('] => self.list(),
+    //         _ => self.atom(),
+    //     }
+    // }
 
-    fn list(&mut self) -> ReadResult<Sexpr> {
-        self.consume(T!['(']);
-        let mut sexprs = vec![];
-        while !self.at(T![')']) {
-            sexprs.push(self.sexpr()?);
-        }
-        self.consume(T![')']);
-        Ok(Sexpr::List(ConsList::new(
-            sexprs
-                .into_iter()
-                .rev()
-                .fold(None, |cdr, car| Some(Box::new(Cons { car, cdr }))),
-        )))
-    }
+    // fn list(&mut self) -> ReadResult<Sexpr> {
+    //     self.consume(T!['(']);
+    //     let mut sexprs = vec![];
+    //     while !self.at(T![')']) {
+    //         sexprs.push(self.sexpr()?);
+    //     }
+    //     self.consume(T![')']);
+    //     Ok(Sexpr::List(ConsList::new(
+    //         sexprs
+    //             .into_iter()
+    //             .rev()
+    //             .fold(None, |cdr, car| Some(Box::new(Cons { car, cdr }))),
+    //     )))
+    // }
 
-    fn atom(&mut self) -> ReadResult<Sexpr> {
-        match self.peek().kind {
-            T![int] | T![real] | T![ratio] | T![char] | T![str] | T![bool] => {
-                Ok(Sexpr::Atom(Atom::Lit(self.lit()?)))
-            }
-            T![ident] => Ok(Sexpr::Atom(Atom::Symbol(self.symbol()?))),
-            _ => Err(ReaderError(format!(
-                "Unexpected token in atom `{}`",
-                self.peek().kind
-            ))),
-        }
-    }
+    // fn atom(&mut self) -> ReadResult<Sexpr> {
+    //     match self.peek().kind {
+    //         T![int] | T![real] | T![ratio] | T![char] | T![str] | T![bool] => {
+    //             Ok(Sexpr::Atom(Atom::Lit(self.lit()?)))
+    //         }
+    //         T![ident] => Ok(Sexpr::Atom(Atom::Symbol(self.symbol()?))),
+    //         _ => Err(ReaderError(format!(
+    //             "Unexpected token in atom `{}`",
+    //             self.peek().kind
+    //         ))),
+    //     }
+    // }
 
-    fn lit(&mut self) -> ReadResult<Lit> {
-        match self.peek().kind {
-            T![int] => Ok(Lit::Number(self.int()?)),
-            T![real] => Ok(Lit::Number(self.real()?)),
-            T![ratio] => Ok(Lit::Number(self.rational()?)),
-            T![char] => Ok(Lit::Char(self.char()?)),
-            T![str] => Ok(Lit::String(self.string()?)),
-            T![bool] => Ok(Lit::Bool(self.bool()?)),
-            _ => Err(ReaderError(format!(
-                "Unexpected token in literal `{}`",
-                self.peek().kind
-            ))),
-        }
-    }
+    // fn lit(&mut self) -> ReadResult<Lit> {
+    //     match self.peek().kind {
+    //         T![int] => Ok(Lit::Number(self.int()?)),
+    //         T![real] => Ok(Lit::Number(self.real()?)),
+    //         T![ratio] => Ok(Lit::Number(self.rational()?)),
+    //         T![char] => Ok(Lit::Char(self.char()?)),
+    //         T![str] => Ok(Lit::String(self.string()?)),
+    //         T![bool] => Ok(Lit::Bool(self.bool()?)),
+    //         _ => Err(ReaderError(format!(
+    //             "Unexpected token in literal `{}`",
+    //             self.peek().kind
+    //         ))),
+    //     }
+    // }
 
-    fn int(&mut self) -> ReadResult<Number> {
-        let token = self.next();
-        let text = self.text(token);
-        let num = text
-            .parse()
-            .map_err(|_| ReaderError::new("Failed to parse integer"))?;
-        Ok(Number::Int(num))
-    }
+    // fn int(&mut self) -> ReadResult<Number> {
+    //     let token = self.next();
+    //     let text = self.text(token);
+    //     let num = text
+    //         .parse()
+    //         .map_err(|_| ReaderError::new("Failed to parse integer"))?;
+    //     Ok(Number::Int(num))
+    // }
 
-    fn real(&mut self) -> ReadResult<Number> {
-        let token = self.next();
-        let text = self.text(token);
-        let num = text
-            .parse()
-            .map_err(|_| ReaderError::new("Failed to parse float"))?;
-        Ok(Number::Real(num))
-    }
+    // fn real(&mut self) -> ReadResult<Number> {
+    //     let token = self.next();
+    //     let text = self.text(token);
+    //     let num = text
+    //         .parse()
+    //         .map_err(|_| ReaderError::new("Failed to parse float"))?;
+    //     Ok(Number::Real(num))
+    // }
 
-    fn rational(&mut self) -> ReadResult<Number> {
-        let token = self.next();
-        let text = self.text(token);
-        let num = text
-            .parse()
-            .map_err(|_| ReaderError::new("Failed to parse rational"))?;
-        Ok(Number::Rational(num))
-    }
+    // fn rational(&mut self) -> ReadResult<Number> {
+    //     let token = self.next();
+    //     let text = self.text(token);
+    //     let num = text
+    //         .parse()
+    //         .map_err(|_| ReaderError::new("Failed to parse rational"))?;
+    //     Ok(Number::Rational(num))
+    // }
 
-    fn string(&mut self) -> ReadResult<InternedString> {
-        let token = self.next();
-        let text = self.text(token);
-        Ok(InternedString::from(&text[1..(text.len() - 1)]))
-    }
+    // fn string(&mut self) -> ReadResult<InternedString> {
+    //     let token = self.next();
+    //     let text = self.text(token);
+    //     Ok(InternedString::from(&text[1..(text.len() - 1)]))
+    // }
 
-    fn char(&mut self) -> ReadResult<char> {
-        let token = self.next();
-        let text = self.text(token);
-        Ok(text
-            .chars()
-            .nth(1)
-            .ok_or(ReaderError::new("Failed to parse char"))?)
-    }
+    // fn char(&mut self) -> ReadResult<char> {
+    //     let token = self.next();
+    //     let text = self.text(token);
+    //     Ok(text
+    //         .chars()
+    //         .nth(1)
+    //         .ok_or(ReaderError::new("Failed to parse char"))?)
+    // }
 
-    fn bool(&mut self) -> ReadResult<bool> {
-        let token = self.next();
-        let text = self.text(token);
-        Ok(text == "#t")
-    }
+    // fn bool(&mut self) -> ReadResult<bool> {
+    //     let token = self.next();
+    //     let text = self.text(token);
+    //     Ok(text == "#t")
+    // }
 
-    fn symbol(&mut self) -> ReadResult<InternedString> {
-        let token = self.next();
-        let text = self.text(token);
-        Ok(InternedString::from(text))
-    }
+    // fn symbol(&mut self) -> ReadResult<InternedString> {
+    //     let token = self.next();
+    //     let text = self.text(token);
+    //     Ok(InternedString::from(text))
+    // }
 }

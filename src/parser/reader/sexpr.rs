@@ -82,11 +82,11 @@ impl Iterator for ConsIter {
     }
 }
 
-impl ExactSizeIterator for ConsIter {
-    fn len(&self) -> usize {
-        self.count()
-    }
-}
+// impl ExactSizeIterator for ConsIter {
+//     fn len(&self) -> usize {
+//         self.count()
+//     }
+// }
 
 #[derive(Clone, PartialEq)]
 pub enum Atom {
