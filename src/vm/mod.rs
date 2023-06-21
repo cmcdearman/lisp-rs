@@ -1,33 +1,16 @@
-use self::{chunk::Chunk, value::Value};
+use std::fmt::{format, Display};
+
+use self::{
+    chunk::Chunk,
+    error::{Result, RuntimeError},
+    value::Value,
+};
 use crate::vm::opcode::OpCode;
 
 pub mod chunk;
+pub mod error;
 pub mod opcode;
 pub mod value;
-
-#[derive(Debug, Clone, PartialEq)]
-pub struct RuntimeError(pub String);
-
-impl RuntimeError {
-    pub fn new(msg: String) -> RuntimeError {
-        RuntimeError(msg)
-    }
-}
-
-impl From<&str> for RuntimeError {
-    fn from(msg: &str) -> RuntimeError {
-        RuntimeError::new(msg.to_string())
-    }
-}
-
-pub type Result<T> = std::result::Result<T, RuntimeError>;
-
-// #[derive(Debug, Clone, PartialEq)]
-// pub enum InterpretResult {
-//     Ok,
-//     CompileError,
-//     RuntimeError,
-// }
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct VM {
@@ -52,68 +35,113 @@ impl VM {
             let instr = self.read_instr();
             log::trace!("Instr: {:?}", instr);
             log::trace!("Stack: {:?}", self.stack);
+            log::trace!("IP: {}", self.ip);
+            // log::trace!("Chunk: {:?}", self.chunk);
             match instr {
                 OpCode::Const => {
                     let constant = self.read_constant();
                     self.push(constant);
                 }
-                // OpCode::Add => {
-                //     let b = self.pop();
-                //     let a = self.pop();
-                //     match (a, b) {
-                //         (Value::Number(a), Value::Number(b)) => self.push(Value::Number(a + b)),
-                //         _ => return Err(RuntimeError::from("Operands must be numbers")),
-                //     }
-                // }
-                // OpCode::Sub => {
-                //     let b = self.pop();
-                //     let a = self.pop();
-                //     match (a, b) {
-                //         (Value::Number(a), Value::Number(b)) => self.push(Value::Number(a - b)),
-                //         _ => return Err(RuntimeError::from("Operands must be numbers")),
-                //     }
-                // }
-                // OpCode::Mul => {
-                //     let b = self.pop();
-                //     let a = self.pop();
-                //     match (a, b) {
-                //         (Value::Number(a), Value::Number(b)) => self.push(Value::Number(a * b)),
-                //         _ => return Err(RuntimeError::from("Operands must be numbers")),
-                //     }
-                // }
-                // OpCode::Div => {
-                //     let b = self.pop();
-                //     let a = self.pop();
-                //     match (a, b) {
-                //         (Value::Number(a), Value::Number(b)) => self.push(Value::Number(a / b)),
-                //         _ => return Err(RuntimeError::from("Operands must be numbers")),
-                //     }
-                // }
-                // OpCode::Neg => {
-                //     let value = self.pop();
-                //     match value {
-                //         Value::Number(n) => self.push(Value::Number(-n)),
-                //         _ => return Err(RuntimeError::from("Operand must be a number")),
-                //     }
-                // }
-                OpCode::Return => {
-                    // println!("{}", self.pop());
-                    return self.pop();
+                OpCode::Add => {
+                    let b = self.pop();
+                    let a = self.pop();
+                    match (a.clone(), b.clone()) {
+                        (Value::Int(a), Value::Int(b)) => self.push(Value::Int(a + b)),
+                        (Value::Rational(a), Value::Rational(b)) => {
+                            self.push(Value::Rational(a + b))
+                        }
+                        (Value::Real(a), Value::Real(b)) => self.push(Value::Real(a + b)),
+                        (Value::Complex(a), Value::Complex(b)) => self.push(Value::Complex(a + b)),
+                        _ => return Err(RuntimeError(format!("Cannot add {:?} and {:?}", a, b))),
+                    }
                 }
-                _ => return Err(RuntimeError::from("Unknown opcode")),
+                OpCode::Sub => {
+                    let b = self.pop();
+                    let a = self.pop();
+                    match (a.clone(), b.clone()) {
+                        (Value::Int(a), Value::Int(b)) => self.push(Value::Int(a - b)),
+                        (Value::Rational(a), Value::Rational(b)) => {
+                            self.push(Value::Rational(a - b))
+                        }
+                        (Value::Real(a), Value::Real(b)) => self.push(Value::Real(a - b)),
+                        (Value::Complex(a), Value::Complex(b)) => self.push(Value::Complex(a - b)),
+                        _ => {
+                            return Err(RuntimeError(format!(
+                                "Cannot subtract {:?} and {:?}",
+                                a, b
+                            )))
+                        }
+                    }
+                }
+                OpCode::Mul => {
+                    let b = self.pop();
+                    let a = self.pop();
+                    match (a.clone(), b.clone()) {
+                        (Value::Int(a), Value::Int(b)) => self.push(Value::Int(a * b)),
+                        (Value::Rational(a), Value::Rational(b)) => {
+                            self.push(Value::Rational(a * b))
+                        }
+                        (Value::Real(a), Value::Real(b)) => self.push(Value::Real(a * b)),
+                        (Value::Complex(a), Value::Complex(b)) => self.push(Value::Complex(a * b)),
+                        _ => {
+                            return Err(RuntimeError(format!(
+                                "Cannot multiply {:?} and {:?}",
+                                a, b
+                            )))
+                        }
+                    }
+                }
+                OpCode::Div => {
+                    let b = self.pop();
+                    let a = self.pop();
+                    match (a.clone(), b.clone()) {
+                        (Value::Int(a), Value::Int(b)) => self.push(Value::Int(a / b)),
+                        (Value::Rational(a), Value::Rational(b)) => {
+                            self.push(Value::Rational(a / b))
+                        }
+                        (Value::Real(a), Value::Real(b)) => self.push(Value::Real(a / b)),
+                        (Value::Complex(a), Value::Complex(b)) => self.push(Value::Complex(a / b)),
+                        _ => {
+                            return Err(RuntimeError(format!("Cannot divide {:?} and {:?}", a, b)))
+                        }
+                    }
+                }
+                OpCode::Neg => {
+                    let value = self.pop();
+                    match value.clone() {
+                        Value::Int(n) => self.push(Value::Int(-n)),
+                        Value::Rational(n) => self.push(Value::Rational(-n)),
+                        Value::Real(n) => self.push(Value::Real(-n)),
+                        Value::Complex(n) => self.push(Value::Complex(-n)),
+                        _ => {
+                            return Err(RuntimeError(format!(
+                                "Cannot negate non number `{:?}`",
+                                value
+                            )))
+                        }
+                    }
+                }
+                OpCode::Return => {
+                    let val = self.pop();
+                    // println!("{}", val);
+                    return Ok(val);
+                }
+                _ => return Err(RuntimeError::new("Unknown opcode")),
             }
         }
     }
 
     fn read_instr(&mut self) -> OpCode {
+        log::trace!("ip instr: {}", self.ip);
         let instr = self.chunk.code[self.ip];
         self.ip += 1;
         OpCode::from(instr)
     }
 
     fn read_constant(&mut self) -> Value {
+        log::trace!("ip const: {}", self.ip);
         let op = self.read_instr();
-        self.chunk.constants[op as usize]
+        self.chunk.constants[op as usize].clone()
     }
 
     fn push(&mut self, value: Value) {
@@ -123,9 +151,7 @@ impl VM {
         self.stack.push(value);
     }
 
-    fn pop(&mut self) -> Result<Value> {
-        self.stack
-            .pop()
-            .ok_or(RuntimeError::from("Stack underflow"))
+    fn pop(&mut self) -> Value {
+        self.stack.pop().expect("Stack underflow")
     }
 }

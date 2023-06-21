@@ -19,6 +19,8 @@ pub enum TokenKind {
     Ident,
     #[regex(r#"([1-9]\d*|0)"#, priority = 3)]
     Int,
+    #[regex(r#"(\+|-)?\d+/\d+"#)]
+    Rational,
     #[regex(r#"((\d+(\.\d+))|(\.\d+))([Ee](\+|-)?\d+)?"#, priority = 2)]
     Real,
     #[regex(r#"'\w'"#)]
@@ -28,8 +30,6 @@ pub enum TokenKind {
     #[regex(r#"(true)|(false)"#)]
     Bool,
 
-    #[regex(r#"(\+|-)?\d+/\d+"#)]
-    Rational,
     #[token("(")]
     LParen,
     #[token(")")]
@@ -48,6 +48,10 @@ pub enum TokenKind {
     Period,
     #[token(",")]
     Comma,
+    #[token("#")]
+    Hash,
+    #[token("'")]
+    Quote,
 }
 
 #[macro_export]
@@ -112,6 +116,12 @@ macro_rules! T {
     [,] => {
         TokenKind::Comma
     };
+    [#] => {
+        TokenKind::Hash
+    };
+    [quote] => {
+        TokenKind::Quote
+    };
 }
 
 impl Display for TokenKind {
@@ -140,6 +150,8 @@ impl Display for TokenKind {
                 T![:] => ":",
                 T![.] => ".",
                 T![,] => ",",
+                T![#] => "#",
+                T![quote] => "'",
             }
         )
     }

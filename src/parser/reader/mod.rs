@@ -7,7 +7,6 @@ use self::{
     token::{Span, Token, TokenKind},
 };
 
-pub mod cst;
 pub mod sexpr;
 pub mod token;
 

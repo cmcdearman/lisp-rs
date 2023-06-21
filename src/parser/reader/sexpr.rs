@@ -1,4 +1,4 @@
-use crate::interner::InternedString;
+use crate::intern::InternedString;
 use num_bigint::BigInt;
 use num_rational::{BigRational, Rational64};
 use std::fmt::Debug;
@@ -82,11 +82,11 @@ impl Iterator for ConsIter {
     }
 }
 
-// impl ExactSizeIterator for ConsIter {
-//     fn len(&self) -> usize {
-//         self.count()
-//     }
-// }
+impl ExactSizeIterator for ConsIter {
+    fn len(&self) -> usize {
+        self.clone().count()
+    }
+}
 
 #[derive(Clone, PartialEq)]
 pub enum Atom {
