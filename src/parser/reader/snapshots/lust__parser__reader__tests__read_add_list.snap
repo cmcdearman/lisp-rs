@@ -1,0 +1,5 @@
+---
+source: src/parser/reader/tests.rs
+expression: sexpr
+---
+(InternedString(+) . (1 . (2 . Nil)))

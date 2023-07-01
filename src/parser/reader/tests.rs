@@ -1,4 +1,4 @@
-use crate::parser::Reader;
+use crate::parser::reader::Reader;
 
 #[test]
 fn test_read_int() {

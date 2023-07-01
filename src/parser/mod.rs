@@ -14,22 +14,6 @@
 pub mod reader;
 mod tests;
 
-// #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-// pub struct ParserError(pub InternedString);
-
-// impl ParserError {
-//     pub fn new(msg: &str) -> Self {
-//         Self(msg.into())
-//     }
-// }
-
-// impl Display for ParserError {
-//     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-//         write!(f, "{:?}", InternedString::from(self.0.key))
-//     }
-// }
-
-// pub type ParseResult<T> = std::result::Result<T, ParserError>;
 
 // #[derive(Debug, Clone, PartialEq)]
 // pub enum Expr {
