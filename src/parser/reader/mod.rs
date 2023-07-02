@@ -14,16 +14,11 @@ pub mod sexpr;
 mod tests;
 pub mod token;
 
-/// Parser is a recursive descent parser for the Lust language.
 pub struct Reader<'src> {
-    /// The source code to parse.
     src: &'src str,
-
-    /// The [`Lexer`] used to lex the source code.
     logos: Lexer<'src, TokenKind>,
-
-    /// The next token to be consumed.
     peek: Option<Token>,
+    errors: Vec<Error>,
 }
 
 impl<'src> Reader<'src> {
@@ -33,6 +28,7 @@ impl<'src> Reader<'src> {
             src,
             logos: TokenKind::lexer(src),
             peek: None,
+            errors: vec![],
         }
     }
 
@@ -61,20 +57,6 @@ impl<'src> Reader<'src> {
         }
     }
 
-    /// Gets the next token from the [`Lexer`].
-    fn fetch_token(&mut self) -> Token {
-        match self.logos.next().map(|t| (t, self.logos.span())) {
-            None => Token {
-                kind: T![EOF],
-                span: Span::new(0, 0),
-            },
-            Some((T![;], _)) => self.fetch_token(),
-            Some((t, s)) => Token {
-                kind: t,
-                span: Span::from(s),
-            },
-        }
-    }
 
     /// Returns true if the next token is of the given kind.
     fn at(&mut self, kind: TokenKind) -> bool {
