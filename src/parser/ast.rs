@@ -25,7 +25,7 @@ pub enum Expr {
         then: Box<Self>,
         else_: Box<Self>,
     },
-    Unit,
+    Nil,
 }
 
 #[derive(Debug, Clone, PartialEq)]

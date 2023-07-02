@@ -5,7 +5,6 @@ mod gc;
 mod intern;
 mod list;
 mod lower;
-mod lust;
 mod parser;
 mod vm;
 
