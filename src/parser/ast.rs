@@ -8,12 +8,12 @@ pub enum Expr {
     Lit(Lit),
     List(List<Self>),
     Lambda {
-        param: Vec<Self>,
+        params: Vec<Self>,
         body: Box<Self>,
     },
     Apply {
         func: Box<Self>,
-        arg: Box<Self>,
+        args: Vec<Self>,
     },
     Let {
         name: InternedString,
