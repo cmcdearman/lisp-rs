@@ -4,7 +4,9 @@
 <vector> ::= "[" <sexpr>* "]"
 <lit> ::= <number> |<bool> | <string>
 <number> ::= <int> | <real>
-<int> ::= <digit>+
+
+# Tokens/Terminals
+<int> ::= [0-9]+
 <real> ::= <digit>+ "." <digit>+
 <string> ::= '"' <char>* '"'
 <bool> ::= "true" | "false"
