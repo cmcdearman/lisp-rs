@@ -15,4 +15,4 @@ impl Display for ReaderError {
     }
 }
 
-pub type ReadResult<T> = std::result::Result<T, ReaderError>;
+pub type ReadResult<T> = std::result::Result<T, Vec<ReaderError>>;
