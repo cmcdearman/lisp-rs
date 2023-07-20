@@ -1,15 +1,5 @@
-(define (rec-fib n)
-    (let loop ((n n) (a 0) (b 1))
-        (if (= n 0)
-            a
-            (loop (- n 1) b (+ a b)))))
+(fn fib (n)
+  (if ((<= n 1) n)
+  (+ (fib (- n 1)) (fib (- n 2)))))
 
-(display (rec-fib 100000))
-
-(fn rec-fib (n)
-  (let loop ((n n) (a 0) (b 1))
-    (if (= n 0)
-      a
-      (loop (- n 1) b (+ a b)))))
-
-(display (rec-fib 100000))
+(display (fib 100000))

@@ -1,15 +1,16 @@
+use super::error::Error;
+use crate::{intern::InternedString, span::Spanned};
+use logos::Logos;
+use num_bigint::BigInt;
+use num_rational::BigRational;
 use std::{
     fmt::{Debug, Display},
     iter::Peekable,
-    ops::{Index, Range},
     vec::IntoIter,
 };
 
-use logos::Logos;
-use serde_json::map::IntoIter;
-
-#[derive(Logos, Debug, Clone, Copy, Default, PartialEq, Eq, Hash)]
-pub enum TokenKind {
+#[derive(Logos, Debug, Clone, Default, PartialEq, Eq, Hash)]
+pub enum Token {
     #[default]
     Eof,
     #[regex(r"[ \t\r\n\f]+", logos::skip)]
@@ -17,19 +18,17 @@ pub enum TokenKind {
     #[regex(r#";[^\n]*"#)]
     Comment,
     #[regex(r#"[^\[\]()\s,{};]+"#)]
-    Ident,
+    Ident(InternedString),
     #[regex(r#"([1-9]\d*|0)"#, priority = 3)]
-    Int,
+    Int(BigInt),
     #[regex(r#"(\+|-)?\d+/\d+"#)]
-    Rational,
+    Rational(BigRational),
     #[regex(r#"((\d+(\.\d+))|(\.\d+))([Ee](\+|-)?\d+)?"#, priority = 2)]
-    Real,
+    Real(f64),
     #[regex(r#"'\w'"#)]
-    Char,
+    Char(char),
     #[regex(r#""((\\"|\\\\)|[^\\"])*""#)]
-    String,
-    #[regex(r#"(true)|(false)"#)]
-    Bool,
+    String(InternedString),
 
     #[token("(")]
     LParen,
@@ -55,188 +54,46 @@ pub enum TokenKind {
     Quote,
 }
 
-#[macro_export]
-macro_rules! T {
-    [EOF] => {
-        TokenKind::Eof
-    };
-    [ws] => {
-        TokenKind::Whitespace
-    };
-    [;] => {
-        TokenKind::Comment
-    };
-    [ident] => {
-        TokenKind::Ident
-    };
-    [int] => {
-        TokenKind::Int
-    };
-    [real] => {
-        TokenKind::Real
-    };
-    [ratio] => {
-        TokenKind::Rational
-    };
-    [char] => {
-        TokenKind::Char
-    };
-    [str] => {
-        TokenKind::String
-    };
-    [bool] => {
-        TokenKind::Bool
-    };
-    ['('] => {
-        TokenKind::LParen
-    };
-    [')'] => {
-        TokenKind::RParen
-    };
-    ['['] => {
-        TokenKind::LBrack
-    };
-    [']'] => {
-        TokenKind::RBrack
-    };
-    ['{'] => {
-        TokenKind::LBrace
-    };
-    ['}'] => {
-        TokenKind::RBrace
-    };
-    [:] => {
-        TokenKind::Colon
-    };
-    [.] => {
-        TokenKind::Period
-    };
-    [,] => {
-        TokenKind::Comma
-    };
-    [#] => {
-        TokenKind::Hash
-    };
-    [quote] => {
-        TokenKind::Quote
-    };
-}
-
-impl Display for TokenKind {
+impl Display for Token {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
             "{}",
             match self {
-                T![EOF] => "<EOF>",
-                T![ws] => "Whitespace",
-                T![;] => "Comment",
-                T![ident] => "Ident",
-                T![int] => "Int",
-                T![real] => "Real",
-                T![ratio] => "Rational",
-                T![char] => "Char",
-                T![str] => "String",
-                T![bool] => "Bool",
-                T!['('] => "(",
-                T![')'] => ")",
-                T!['['] => "[",
-                T![']'] => "]",
-                T!['{'] => "{",
-                T!['}'] => "}",
-                T![:] => ":",
-                T![.] => ".",
-                T![,] => ",",
-                T![#] => "#",
-                T![quote] => "'",
+                Token::Eof => "<EOF>",
+                Token::Whitespace => "Whitespace",
+                Token::Comment => "Comment",
+                Token::Ident(name) => &format!("Ident({})", name),
+                Token::Int(i) => &format!("Int({})", i),
+                Token::Rational(r) => &format!("Rational({})", r),
+                Token::Real(r) => &format!("Real({})", r),
+                Token::Char(c) => &format!("Char({})", c),
+                Token::String(s) => &format!("String({})", s),
+                Token::LParen => "(",
+                Token::RParen => ")",
+                Token::LBrack => "[",
+                Token::RBrack => "]",
+                Token::LBrace => "{",
+                Token::RBrace => "}",
+                Token::Colon => ":",
+                Token::Period => ".",
+                Token::Comma => ",",
+                Token::Hash => "#",
+                Token::Quote => "'",
             }
         )
     }
 }
 
-#[derive(Debug, Clone, Copy, Eq, PartialEq, Default, Hash)]
-pub struct Span {
-    pub start: u32,
-    pub end: u32,
-}
-
-impl Span {
-    pub fn new(start: u32, end: u32) -> Self {
-        Self { start, end }
-    }
-}
-
-impl Display for Span {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "<{}, {}>", self.start, self.end)
-    }
-}
-
-impl From<Span> for Range<usize> {
-    fn from(span: Span) -> Self {
-        span.start as usize..span.end as usize
-    }
-}
-
-impl From<Range<usize>> for Span {
-    fn from(range: Range<usize>) -> Self {
-        Self {
-            start: range.start as u32,
-            end: range.end as u32,
-        }
-    }
-}
-
-impl Index<Span> for str {
-    type Output = str;
-
-    fn index(&self, index: Span) -> &Self::Output {
-        &self[Range::from(index)]
-    }
-}
-
-#[derive(Clone, Copy, Eq, PartialEq, Hash)]
-pub struct Token {
-    pub kind: TokenKind,
-    pub span: Span,
-}
-
-impl Token {
-    pub fn len(&self) -> usize {
-        (self.span.end - self.span.start) as usize
-    }
-
-    pub fn lit<'a>(&self, src: &'a str) -> &'a str {
-        &src[self.span]
-    }
-}
-
-impl Debug for Token {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:?} - {}", self.kind, self.span)
-    }
-}
-
-impl Display for Token {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.kind)
-    }
-}
-
 pub struct TokenStream {
-    tokens: Peekable<IntoIter<Token>>,
+    tokens: Peekable<IntoIter<Spanned<Token>>>,
 }
 
 impl TokenStream {
     pub fn new<'src>(src: &'src str) -> Self {
-        let tokens: Vec<Token> = TokenKind::lexer(src)
+        let tokens: Vec<Token> = Token::lexer(src)
             .spanned()
-            .filter_map(|(t, s)| {
-                t.ok().map(|t| Token {
-                    kind: t,
-                    span: s.into(),
-                })
-            })
+            .filter_map(|(t, s)| t.ok().map(|t| (t, s.into())))
             .collect();
         Self {
             tokens: tokens.into_iter().peekable(),
@@ -246,23 +103,18 @@ impl TokenStream {
     /// Fetches the next token from the [`Lexer`].
     fn fetch_token(&mut self) -> Token {
         match self.logos.next().map(|t| (t, self.logos.span())) {
-            None => Token {
-                kind: T![EOF],
-                span: Span::new(0, 0),
-            },
+            None => Token::Eof,
             Some((t, s)) => match t {
-                Ok(T![;]) => self.fetch_token(),
-                Ok(kind) => Token {
-                    kind,
-                    span: Span::new(s.start as u32, s.end as u32),
-                },
+                Ok(Token::Comment) => self.fetch_token(),
+                Ok(t) => t,
                 Err(e) => {
                     self.errors
                         .push(Error::from(format!("Lexer error: {:?}", e)));
-                    Token {
-                        kind: T![EOF],
-                        span: Span::new(s.start as u32, s.end as u32),
-                    }
+                    // Token {
+                    //     kind: T![EOF],
+                    //     span: Span::new(s.start as u32, s.end as u32),
+                    // }
+                    Token::Eof
                 }
             },
         }
@@ -276,11 +128,11 @@ impl TokenStream {
         self.tokens.next()
     }
 
-    pub fn at(&mut self, kind: TokenKind) -> bool {
+    pub fn at(&mut self, kind: Token) -> bool {
         self.peek().map(|t| t.kind == kind).unwrap_or(false)
     }
 
-    pub fn eat(&mut self, kind: TokenKind) -> bool {
+    pub fn eat(&mut self, kind: Token) -> bool {
         if self.at(kind) {
             self.next();
             true

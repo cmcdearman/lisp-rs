@@ -6,7 +6,7 @@ use crate::{intern::InternedString, list::List};
 pub enum Expr {
     Symbol(InternedString),
     Lit(Lit),
-    List(List<Self>),
+    List(Vec<Self>),
     Lambda {
         params: Vec<Self>,
         body: Box<Self>,

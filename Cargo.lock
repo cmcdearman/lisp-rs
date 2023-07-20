@@ -47,12 +47,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "630be753d4e58660abd17930c71b647fe46c27ea6b63cc59e1e3851406972e42"
 
 [[package]]
-name = "boehm_gc"
-version = "0.0.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "de22114cc8bc3419ac5ad594e9e834019136556d2551230762f62b9ab9588aef"
-
-[[package]]
 name = "cc"
 version = "1.0.79"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -344,7 +338,6 @@ dependencies = [
 name = "lust"
 version = "0.1.0"
 dependencies = [
- "boehm_gc",
  "env_logger",
  "insta",
  "itertools",

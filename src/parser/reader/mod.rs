@@ -1,12 +1,10 @@
-use crate::{intern::InternedString, T};
-use logos::{Lexer, Logos};
+use crate::intern::InternedString;
 use num_rational::Rational64;
-use std::fmt::Debug;
 
 use self::{
     error::{Error, ReadResult},
     sexpr::{Atom, Cons, ConsList, Lit, Sexpr},
-    token::{Span, Token, TokenKind},
+    token::{Token, TokenStream},
 };
 
 pub mod error;
@@ -14,82 +12,37 @@ pub mod sexpr;
 mod tests;
 pub mod token;
 
-pub struct Reader<'src> {
-    src: &'src str,
-    logos: Lexer<'src, TokenKind>,
-    peek: Option<Token>,
+pub struct Reader {
+    tokens: TokenStream,
     errors: Vec<Error>,
 }
 
-impl<'src> Reader<'src> {
+impl Reader {
     /// Creates a new [`Parser`].
-    pub fn new(src: &'src str) -> Self {
+    pub fn new(tokens: TokenStream) -> Self {
         Self {
-            src,
-            logos: TokenKind::lexer(src),
-            peek: None,
+            tokens,
             errors: vec![],
-        }
-    }
-
-    /// Returns the source code of the token.
-    fn text(&self, token: Token) -> &'src str {
-        token.lit(&self.src)
-    }
-
-    /// Returns the peek token in the stream.
-    fn next(&mut self) -> Token {
-        if let Some(t) = self.peek.take() {
-            t
-        } else {
-            self.fetch_token()
-        }
-    }
-
-    /// Returns the next token in the stream without consuming it.
-    fn peek(&mut self) -> Token {
-        if let Some(t) = self.peek {
-            t
-        } else {
-            let t = self.fetch_token();
-            self.peek = Some(t);
-            t
-        }
-    }
-
-
-    /// Returns true if the next token is of the given kind.
-    fn at(&mut self, kind: TokenKind) -> bool {
-        self.peek().kind == kind
-    }
-
-    /// Consumes the next token if it is of the given kind.
-    fn eat(&mut self, expected: TokenKind) -> bool {
-        if self.at(expected) {
-            self.next();
-            true
-        } else {
-            false
         }
     }
 
     /// Parses the source code into a [`Sexpr`].
     pub fn sexpr(&mut self) -> ReadResult<Sexpr> {
         match self.peek().kind {
-            T!['('] => self.list(),
+            Token::LParen => self.list(),
             _ => self.atom(),
         }
     }
 
     fn list(&mut self) -> ReadResult<Sexpr> {
-        if !self.eat(T!['(']) {
+        if !self.eat(Token::LParen) {
             return Err(Error::new("Expected `(`"));
         }
         let mut sexprs = vec![];
-        while !self.at(T![')']) {
+        while !self.at(Token::RParen) {
             sexprs.push(self.sexpr()?);
         }
-        if !self.eat(T![')']) {
+        if !self.eat(Token::RParen) {
             return Err(Error::new("Expected `)`"));
         }
         Ok(Sexpr::List(ConsList::new(
@@ -101,7 +54,7 @@ impl<'src> Reader<'src> {
     }
 
     fn atom(&mut self) -> ReadResult<Sexpr> {
-        match self.peek().kind {
+        match self.peek() {
             T![int] | T![real] | T![ratio] | T![char] | T![str] | T![bool] => {
                 Ok(Sexpr::Atom(Atom::Lit(self.lit()?)))
             }
