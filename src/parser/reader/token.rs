@@ -1,5 +1,8 @@
 use super::error::Error;
-use crate::{intern::InternedString, span::Spanned};
+use crate::{
+    intern::InternedString,
+    span::{Span, Spanned},
+};
 use logos::Logos;
 use num_bigint::BigInt;
 use num_rational::BigRational;
@@ -87,26 +90,53 @@ impl Display for Token {
 
 pub struct TokenStream {
     tokens: Peekable<IntoIter<Spanned<Token>>>,
+    errors: Vec<Error>,
 }
 
 impl TokenStream {
     pub fn new<'src>(src: &'src str) -> Self {
-        let tokens: Vec<Token> = Token::lexer(src)
-            .spanned()
-            .filter_map(|(t, s)| t.ok().map(|t| (t, s.into())))
-            .collect();
-        Self {
-            tokens: tokens.into_iter().peekable(),
-        }
+        // let tokens: Vec<Spanned<Token>> = Token::lexer(src)
+        //     .spanned()
+        //     .filter_map(|(t, s)| t.ok().map(|t| (t, s.into())))
+        //     .collect();
+        // Self {
+        //     tokens: tokens.into_iter().peekable(),
+        // }
+        let (tokens, errors): (Vec<Option<Spanned<Token>>>, Vec<Option<Error>>) = TokenKind::lexer(src)
+        .spanned()
+        .map(|(kind, span)| match kind {
+            Ok(kind) => (
+                Some(Token {
+                    kind: kind,
+                    span: span.into(),
+                }),
+                None,
+            ),
+            Err(err) => (
+                None,
+                Some(Error(format!("Lexer error - {}", Span::from(span)))),
+            ),
+        })
+        .unzip();
+
+    Self {
+        tokens: tokens
+            .into_iter()
+            .flatten()
+            .collect::<Vec<_>>()
+            .into_iter()
+            .peekable(),
+        errors: errors.into_iter().flatten().collect(),
+    }
     }
 
     /// Fetches the next token from the [`Lexer`].
-    fn fetch_token(&mut self) -> Token {
-        match self.logos.next().map(|t| (t, self.logos.span())) {
-            None => Token::Eof,
+    fn fetch_token(&mut self) -> Spanned<Token> {
+        match self.tokens.next() {
+            None => (Token::Eof, Span::from(0..0)),
             Some((t, s)) => match t {
-                Ok(Token::Comment) => self.fetch_token(),
-                Ok(t) => t,
+                Token::Comment => self.fetch_token(),
+                t => (t, s),
                 Err(e) => {
                     self.errors
                         .push(Error::from(format!("Lexer error: {:?}", e)));
