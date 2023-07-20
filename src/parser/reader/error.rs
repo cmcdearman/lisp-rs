@@ -1,3 +1,4 @@
+use crate::span::Spanned;
 use std::fmt::Display;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -15,4 +16,4 @@ impl Display for ReaderError {
     }
 }
 
-pub type ReadResult<T> = std::result::Result<T, Vec<ReaderError>>;
+pub type ReadResult<T> = std::result::Result<T, Vec<Spanned<ReaderError>>>;

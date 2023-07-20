@@ -1,6 +1,6 @@
 use num_rational::Rational64;
 
-use crate::{intern::InternedString, list::List};
+use crate::intern::InternedString;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Expr {
