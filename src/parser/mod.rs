@@ -1,9 +1,5 @@
-use crate::parser::{
-    error::Error,
-    reader::sexpr::{Atom, ConsIter},
-};
-
 use self::{ast::Expr, error::ParseResult, reader::sexpr::Sexpr};
+use crate::parser::{error::Error, reader::sexpr::Atom};
 use logos::{Lexer, Logos};
 use num_bigint::BigInt;
 use num_rational::{BigRational, Rational64};

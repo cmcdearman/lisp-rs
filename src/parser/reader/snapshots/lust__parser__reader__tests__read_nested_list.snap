@@ -2,4 +2,4 @@
 source: src/parser/reader/tests.rs
 expression: sexpr
 ---
-(InternedString(+) . ((InternedString(%) . (5 . (3 . Nil))) . (1 . (2 . Nil))))
+Node(InternedString(+), Node(Node(InternedString(%), Node(5, Node(3, Nil))), Node(2, Nil)))

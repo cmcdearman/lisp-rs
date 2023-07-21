@@ -1,19 +1,23 @@
-use crate::span::Spanned;
+use crate::span::{Span, Spanned};
 use std::fmt::Display;
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+use super::token::Token;
+
+#[derive(Debug, Clone, PartialEq)]
 pub enum ReaderError {
-    UnmatchedParen,
     LexerError,
+    UnmatchedParen(Span),
+    UnexpectedToken(Spanned<Token>),
 }
 
 impl Display for ReaderError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            ReaderError::UnmatchedParen => write!(f, "Unmatched paren"),
             ReaderError::LexerError => write!(f, "Lexer error"),
+            ReaderError::UnmatchedParen(s) => write!(f, "Unmatched paren at {}", s),
+            ReaderError::UnexpectedToken((t, s)) => write!(f, "Unexpected token {:?} at {}", t, s),
         }
     }
 }
 
-pub type ReadResult<T> = std::result::Result<T, Vec<Spanned<ReaderError>>>;
+pub type ReadResult<T> = std::result::Result<T, ReaderError>;

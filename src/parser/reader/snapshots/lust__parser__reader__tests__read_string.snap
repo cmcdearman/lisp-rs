@@ -2,4 +2,4 @@
 source: src/parser/reader/tests.rs
 expression: sexpr
 ---
-InternedString(Hello, world!)
+InternedString(Hello, World!)

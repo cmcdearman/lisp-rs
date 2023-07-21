@@ -4,7 +4,7 @@ use crate::{
 };
 use logos::Logos;
 use num_bigint::BigInt;
-use num_rational::BigRational;
+use num_rational::{BigRational, Rational64};
 use std::{
     fmt::{Debug, Display},
     iter::Peekable,
@@ -23,10 +23,10 @@ pub enum Token {
     Comment,
     #[regex(r#"[^\[\]()\s,{};]+"#, |lex| InternedString::from(lex.slice()))]
     Ident(InternedString),
-    #[regex(r#"([1-9]\d*|0)"#, priority = 3, callback = |lex| BigInt::parse_bytes(lex.slice().as_bytes(), 10))]
-    Int(BigInt),
+    #[regex(r#"([1-9]\d*|0)"#, priority = 3, callback = |lex| lex.slice().parse().ok())]
+    Int(i64),
     #[regex(r#"(\+|-)?\d+/\d+"#, |lex| lex.slice().parse().ok())]
-    Rational(BigRational),
+    Rational(Rational64),
     #[regex(r#"((\d+(\.\d+))|(\.\d+))([Ee](\+|-)?\d+)?"#, priority = 2, callback = |lex| lex.slice().parse().ok())]
     Real(f64),
     #[regex(r#"'\w'"#, |lex| lex.slice().chars().nth(1))]
@@ -64,26 +64,26 @@ impl Display for Token {
             f,
             "{}",
             match self {
-                Token::Eof => "<EOF>",
-                Token::Whitespace => "Whitespace",
-                Token::Comment => "Comment",
-                Token::Ident(name) => &format!("Ident({})", name),
-                Token::Int(i) => &format!("Int({})", i),
-                Token::Rational(r) => &format!("Rational({})", r),
-                Token::Real(r) => &format!("Real({})", r),
-                Token::Char(c) => &format!("Char({})", c),
-                Token::String(s) => &format!("String({})", s),
-                Token::LParen => "(",
-                Token::RParen => ")",
-                Token::LBrack => "[",
-                Token::RBrack => "]",
-                Token::LBrace => "{",
-                Token::RBrace => "}",
-                Token::Colon => ":",
-                Token::Period => ".",
-                Token::Comma => ",",
-                Token::Hash => "#",
-                Token::Quote => "'",
+                Token::Eof => "<EOF>".to_string(),
+                Token::Whitespace => "Whitespace".to_string(),
+                Token::Comment => "Comment".to_string(),
+                Token::Ident(name) => format!("Ident({})", name),
+                Token::Int(i) => format!("Int({})", i),
+                Token::Rational(r) => format!("Rational({})", r),
+                Token::Real(r) => format!("Real({})", r),
+                Token::Char(c) => format!("Char({})", c),
+                Token::String(s) => format!("String({})", s),
+                Token::LParen => "(".to_string(),
+                Token::RParen => ")".to_string(),
+                Token::LBrack => "[".to_string(),
+                Token::RBrack => "]".to_string(),
+                Token::LBrace => "{".to_string(),
+                Token::RBrace => "}".to_string(),
+                Token::Colon => ":".to_string(),
+                Token::Period => ".".to_string(),
+                Token::Comma => ",".to_string(),
+                Token::Hash => "#".to_string(),
+                Token::Quote => "'".to_string(),
             }
         )
     }
@@ -102,7 +102,7 @@ impl TokenStream {
             .spanned()
             .map(|(res, span)| match res {
                 Ok(t) => (Some((t, Span::from(span))), None),
-                Err(err) => (None, Some((ReaderError::LexerError, Span::from(span)))),
+                Err(_) => (None, Some((ReaderError::LexerError, Span::from(span)))),
             })
             .unzip();
 

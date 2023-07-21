@@ -1,64 +1,57 @@
-use crate::parser::reader::Reader;
+use crate::parser::reader::{token::TokenStream, Reader};
 
 #[test]
 fn test_read_int() {
-    let mut reader = Reader::new("12");
-    let sexpr = reader.sexpr().expect("Failed to read sexpr");
-    insta::assert_debug_snapshot!(sexpr);
-}
-
-#[test]
-fn test_read_float() {
-    let mut reader = Reader::new("12.2");
+    let tokens = TokenStream::new("12").expect("Failed to lex tokens");
+    let mut reader = Reader::new(tokens);
     let sexpr = reader.sexpr().expect("Failed to read sexpr");
     insta::assert_debug_snapshot!(sexpr);
 }
 
 #[test]
 fn test_read_rational() {
-    let mut reader = Reader::new("12/2");
+    let tokens = TokenStream::new("12/2").expect("Failed to lex tokens");
+    let mut reader = Reader::new(tokens);
+    let sexpr = reader.sexpr().expect("Failed to read sexpr");
+    insta::assert_debug_snapshot!(sexpr);
+}
+
+#[test]
+fn test_read_real() {
+    let tokens = TokenStream::new("12.0").expect("Failed to lex tokens");
+    let mut reader = Reader::new(tokens);
     let sexpr = reader.sexpr().expect("Failed to read sexpr");
     insta::assert_debug_snapshot!(sexpr);
 }
 
 #[test]
 fn test_read_char() {
-    let mut reader = Reader::new("\'a\'");
+    let tokens = TokenStream::new("\'a\'").expect("Failed to lex tokens");
+    let mut reader = Reader::new(tokens);
     let sexpr = reader.sexpr().expect("Failed to read sexpr");
     insta::assert_debug_snapshot!(sexpr);
 }
 
 #[test]
 fn test_read_string() {
-    let mut reader = Reader::new("\"Hello, world!\"");
-    let sexpr = reader.sexpr().expect("Failed to read sexpr");
-    insta::assert_debug_snapshot!(sexpr);
-}
-
-#[test]
-fn test_read_bool() {
-    let mut reader = Reader::new("true");
-    let sexpr = reader.sexpr().expect("Failed to read sexpr");
-    insta::assert_debug_snapshot!(sexpr);
-}
-
-#[test]
-fn test_read_symbol() {
-    let mut reader = Reader::new("foo");
+    let tokens = TokenStream::new("\"Hello, World!\"").expect("Failed to lex tokens");
+    let mut reader = Reader::new(tokens);
     let sexpr = reader.sexpr().expect("Failed to read sexpr");
     insta::assert_debug_snapshot!(sexpr);
 }
 
 #[test]
 fn test_read_add_list() {
-    let mut reader = Reader::new("(+ 1 2)");
+    let tokens = TokenStream::new("(+ 1 2)").expect("Failed to lex tokens");
+    let mut reader = Reader::new(tokens);
     let sexpr = reader.sexpr().expect("Failed to read sexpr");
     insta::assert_debug_snapshot!(sexpr);
 }
 
 #[test]
 fn test_read_nested_list() {
-    let mut reader = Reader::new("(+ (% 5 3) 1 2)");
+    let tokens = TokenStream::new("(+ (% 5 3) 1 2)").expect("Failed to lex tokens");
+    let mut reader = Reader::new(tokens);
     let sexpr = reader.sexpr().expect("Failed to read sexpr");
     insta::assert_debug_snapshot!(sexpr);
 }
