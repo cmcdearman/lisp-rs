@@ -1,0 +1,15 @@
+---
+source: src/parser/tests.rs
+expression: expr
+---
+(
+    Lit(
+        Int(
+            123,
+        ),
+    ),
+    Span {
+        start: 0,
+        end: 3,
+    },
+)

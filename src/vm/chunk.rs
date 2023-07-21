@@ -65,8 +65,8 @@ impl Chunk {
     }
 
     fn const_instr<W: Write>(&self, out: &mut W, offset: usize) -> Result<usize, std::fmt::Error> {
-        println!("offset: {}", offset);
-        println!("code: {:?}", self.code);
+        // println!("offset: {}", offset);
+        // println!("code: {:?}", self.code);
         let constant = self.code[offset + 1];
         write!(out, "CONST {:4} ", constant)?;
         write!(out, "'{}'", self.constants[constant as usize])?;
@@ -106,6 +106,15 @@ mod tests {
 
     #[test]
     fn test_const() {
+        let mut chunk = Chunk::new();
+        let c1 = chunk.add_constant(Value::Real(1.2));
+        chunk.write(OpCode::Const as u8, Span::from(0..0));
+        chunk.write(c1 as u8, Span::from(0..0));
+        insta::assert_debug_snapshot!(chunk);
+    }
+
+    #[test]
+    fn test_multiple_const() {
         let mut chunk = Chunk::new();
         let c1 = chunk.add_constant(Value::Real(1.2));
         let c2 = chunk.add_constant(Value::Real(2.3));

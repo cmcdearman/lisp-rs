@@ -3,7 +3,11 @@ use self::{
     sexpr::{Atom, Lit, Sexpr},
     token::{Token, TokenStream},
 };
-use crate::{intern::InternedString, list::List};
+use crate::{
+    intern::InternedString,
+    list::List,
+    span::{Span, Spanned},
+};
 
 pub mod error;
 pub mod sexpr;
@@ -21,14 +25,15 @@ impl Reader {
     }
 
     /// Parses the source code into a [`Sexpr`].
-    pub fn sexpr(&mut self) -> ReadResult<Sexpr> {
+    pub fn sexpr(&mut self) -> ReadResult<Spanned<Sexpr>> {
         match self.tokens.peek().0 {
             Token::LParen => self.list(),
             _ => self.atom(),
         }
     }
 
-    fn list(&mut self) -> ReadResult<Sexpr> {
+    fn list(&mut self) -> ReadResult<Spanned<Sexpr>> {
+        let start = self.tokens.peek().1.start as usize;
         if !self.tokens.eat(&Token::LParen) {
             return Err(ReaderError::UnmatchedParen(self.tokens.peek().1));
         }
@@ -41,30 +46,31 @@ impl Reader {
         if !self.tokens.eat(&Token::RParen) {
             return Err(ReaderError::UnmatchedParen(self.tokens.peek().1));
         }
-        let list: List<Sexpr> = sexprs.into_iter().rev().collect();
-        Ok(Sexpr::Cons(Box::new(list)))
+        let list: List<Spanned<Sexpr>> = sexprs.into_iter().rev().collect();
+        let end = self.tokens.peek().1.end as usize;
+        Ok((Sexpr::Cons(Box::new(list)), Span::from(start..end)))
     }
 
-    fn atom(&mut self) -> ReadResult<Sexpr> {
+    fn atom(&mut self) -> ReadResult<Spanned<Sexpr>> {
         match self.tokens.peek().0 {
-            Token::Int(_)
-            | Token::Rational(_)
-            | Token::Real(_)
-            | Token::Char(_)
-            | Token::String(_) => Ok(Sexpr::Atom(Atom::Lit(self.lit()?))),
-            Token::Ident(name) => Ok(Sexpr::Atom(Atom::Symbol(InternedString::from(name)))),
+            Token::Int(i) => Ok((Sexpr::Atom(Atom::Lit(Lit::Int(i))), self.tokens.peek().1)),
+            Token::Rational(r) => Ok((
+                Sexpr::Atom(Atom::Lit(Lit::Rational(r))),
+                self.tokens.peek().1,
+            )),
+            Token::Real(r) => Ok((Sexpr::Atom(Atom::Lit(Lit::Real(r))), self.tokens.peek().1)),
+            Token::Char(c) => Ok((Sexpr::Atom(Atom::Lit(Lit::Char(c))), self.tokens.peek().1)),
+            Token::String(s) => Ok((
+                Sexpr::Atom(Atom::Lit(Lit::String(InternedString::from(
+                    &s[1..(s.len() - 1)],
+                )))),
+                self.tokens.peek().1,
+            )),
+            Token::Ident(name) => Ok((
+                Sexpr::Atom(Atom::Symbol(InternedString::from(name))),
+                self.tokens.peek().1,
+            )),
             _ => Err(ReaderError::UnexpectedToken(self.tokens.peek())),
-        }
-    }
-
-    fn lit(&mut self) -> ReadResult<Lit> {
-        match self.tokens.peek().0 {
-            Token::Int(i) => Ok(Lit::Int(i)),
-            Token::Rational(r) => Ok(Lit::Rational(r)),
-            Token::Real(r) => Ok(Lit::Real(r)),
-            Token::Char(c) => Ok(Lit::Char(c)),
-            Token::String(s) => Ok(Lit::String(InternedString::from(&s[1..(s.len() - 1)]))),
-            _ => Err(ReaderError::UnexpectedToken(self.tokens.next())),
         }
     }
 }

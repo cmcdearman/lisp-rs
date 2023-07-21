@@ -1,18 +1,18 @@
-use crate::{intern::InternedString, list::List};
+use crate::{intern::InternedString, list::List, span::Spanned};
 use num_rational::Rational64;
 use std::fmt::Debug;
 
 #[derive(Clone, PartialEq)]
 pub enum Sexpr {
     Atom(Atom),
-    Cons(Box<List<Sexpr>>),
+    Cons(Box<List<Spanned<Sexpr>>>),
 }
 
 impl Debug for Sexpr {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Atom(a) => write!(f, "{:?}", a),
-            Self::Cons(l) => write!(f, "{:?}", l),
+            Self::Cons(l) => write!(f, "{:?}", *l),
         }
     }
 }

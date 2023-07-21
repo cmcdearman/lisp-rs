@@ -1,29 +1,38 @@
 use num_rational::Rational64;
 
-use crate::intern::InternedString;
+use crate::{intern::InternedString, span::Spanned};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Expr {
     Symbol(InternedString),
     Lit(Lit),
-    List(Vec<Self>),
+    List(Vec<Spanned<Self>>),
+    BinaryOp {
+        op: BinaryOp,
+        lhs: Box<Spanned<Self>>,
+        rhs: Box<Spanned<Self>>,
+    },
+    UnaryOp {
+        op: UnaryOp,
+        expr: Box<Spanned<Self>>,
+    },
     Lambda {
-        params: Vec<Self>,
-        body: Box<Self>,
+        params: Vec<Spanned<Self>>,
+        body: Box<Spanned<Self>>,
     },
     Apply {
-        func: Box<Self>,
-        args: Vec<Self>,
+        func: Box<Spanned<Self>>,
+        args: Vec<Spanned<Self>>,
     },
     Let {
-        name: InternedString,
-        value: Box<Self>,
-        body: Box<Self>,
+        name: Spanned<InternedString>,
+        value: Box<Spanned<Self>>,
+        body: Box<Spanned<Self>>,
     },
     If {
-        cond: Box<Self>,
-        then: Box<Self>,
-        else_: Box<Self>,
+        cond: Box<Spanned<Self>>,
+        then: Box<Spanned<Self>>,
+        else_: Box<Spanned<Self>>,
     },
     Nil,
 }
@@ -35,4 +44,19 @@ pub enum Lit {
     Real(f64),
     Char(char),
     String(InternedString),
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum BinaryOp {
+    Add,
+    Sub,
+    Mul,
+    Div,
+    Mod,
+    Pow,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum UnaryOp {
+    Neg,
 }
