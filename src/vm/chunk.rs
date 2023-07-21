@@ -65,6 +65,8 @@ impl Chunk {
     }
 
     fn const_instr<W: Write>(&self, out: &mut W, offset: usize) -> Result<usize, std::fmt::Error> {
+        println!("offset: {}", offset);
+        println!("code: {:?}", self.code);
         let constant = self.code[offset + 1];
         write!(out, "CONST {:4} ", constant)?;
         write!(out, "'{}'", self.constants[constant as usize])?;
