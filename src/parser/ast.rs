@@ -31,9 +31,8 @@ pub enum Expr {
 #[derive(Debug, Clone, PartialEq)]
 pub enum Lit {
     Int(i64),
-    Real(f64),
     Rational(Rational64),
-    Bool(bool),
+    Real(f64),
     Char(char),
     String(InternedString),
 }

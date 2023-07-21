@@ -1,4 +1,4 @@
-(define (gcd a b)
+(fn gcd (a b)
   (if (eq b 0)
-      a
-      (gcd b (remainder a b))))
+    a
+    (gcd b (% a b))))

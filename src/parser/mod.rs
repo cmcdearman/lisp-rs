@@ -1,5 +1,5 @@
 use self::{ast::Expr, error::ParseResult, reader::sexpr::Sexpr};
-use crate::parser::{error::Error, reader::sexpr::Atom};
+use crate::parser::{error::ParserError, reader::sexpr::Atom};
 use logos::{Lexer, Logos};
 use num_bigint::BigInt;
 use num_rational::{BigRational, Rational64};
@@ -17,16 +17,17 @@ mod tests;
 // pub fn expr(sexpr: &Sexpr) -> ParseResult<Expr> {
 //     match sexpr {
 //         Sexpr::Atom(a) => match a.clone() {
-//             Atom::Int(n) => Ok(Expr::Lit(ast::Lit::Int(n))),
-//             Atom::Real(f) => Ok(Expr::Lit(ast::Lit::Real(f))),
-//             Atom::Rational(r) => Ok(Expr::Lit(ast::Lit::Rational(r))),
-//             Atom::Bool(b) => Ok(Expr::Lit(ast::Lit::Bool(b))),
-//             Atom::Char(c) => Ok(Expr::Lit(ast::Lit::Char(c))),
-//             Atom::String(s) => Ok(Expr::Lit(ast::Lit::String(s))),
+//             Atom::Lit(l) => match l.clone() {
+//                 reader::sexpr::Lit::Int(n) => Ok(Expr::Lit(ast::Lit::Int(n))),
+//                 reader::sexpr::Lit::Rational(r) => Ok(Expr::Lit(ast::Lit::Rational(r))),
+//                 reader::sexpr::Lit::Real(f) => Ok(Expr::Lit(ast::Lit::Real(f))),
+//                 reader::sexpr::Lit::Char(c) => Ok(Expr::Lit(ast::Lit::Char(c))),
+//                 reader::sexpr::Lit::String(s) => Ok(Expr::Lit(ast::Lit::String(s))),
+//             },
 //             Atom::Symbol(s) => Ok(Expr::Symbol(s)),
 //         },
-//         Sexpr::List(l) => {
-//             let mut iter = l.clone().into_iter();
+//         Sexpr::Cons(c) => {
+//             let mut iter = c.clone().into_iter();
 //             if let Some(first) = iter.next() {
 //                 let lam = match first {
 //                     Sexpr::Atom(a) => match a {
@@ -38,7 +39,7 @@ mod tests;
 //                         },
 //                         _ => Err(Error::new("cannot apply non-lambda")),
 //                     },
-//                     Sexpr::List(_) => parse_apply(&mut iter),
+//                     Sexpr::Cons(_) => parse_apply(&mut iter),
 //                 }?;
 //             } else {
 //                 Ok(Expr::Unit)
@@ -57,18 +58,5 @@ mod tests;
 //             param: params,
 //             body: Box::new(expr(body)?),
 //         })
-//     }
-
-//     fn curry_fn(mut params: impl Iterator<Item = InternedString>, body: Expr) -> ParseResult<Expr> {
-//         Ok(params.fold(body, |acc, p| {
-//             Expr::Lit(Lit::Lambda {
-//                 param: p,
-//                 body: Box::new(acc),
-//             })
-//         }))
-//     }
-
-//     fn curry_apply(&mut self, args: impl Iterator<Item = Expr>, func: Expr) -> Expr {
-//         args.fold(func, |acc, arg| Expr::Apply(Box::new(acc), Box::new(arg)))
 //     }
 // }

@@ -1,5 +1,6 @@
 use parser::reader::token::TokenStream;
 
+mod compiler;
 mod intern;
 mod list;
 mod lower;
