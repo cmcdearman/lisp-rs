@@ -3,8 +3,6 @@ use std::{
     ops::{Index, Range},
 };
 
-use crate::intern::InternedString;
-
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Default, Hash)]
 pub struct Span {
     pub start: u32,
