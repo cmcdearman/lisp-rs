@@ -1,8 +1,6 @@
-use std::fmt::Display;
-
-use miniml_util::intern::InternedString;
-
 use crate::chunk::Chunk;
+use lust_util::intern::InternedString;
+use std::fmt::Display;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Object {

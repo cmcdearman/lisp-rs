@@ -1,11 +1,11 @@
-use crate::{intern::InternedString, list::List, span::Spanned};
+use lust_util::{intern::InternedString, list::List, span::Spanned};
 use num_rational::Rational64;
 use std::fmt::Debug;
 
 #[derive(Clone, PartialEq)]
 pub enum Sexpr {
     Atom(Atom),
-    Cons(Box<List<Spanned<Sexpr>>>),
+    Cons(List<Spanned<Sexpr>>),
 }
 
 impl Debug for Sexpr {

@@ -1,38 +1,27 @@
-use crate::{
-    intern::InternedString,
-    span::{Span, Spanned},
-};
 use logos::Logos;
-use num_bigint::BigInt;
-use num_rational::{BigRational, Rational64};
-use std::{
-    fmt::{Debug, Display},
-    iter::Peekable,
-    vec::IntoIter,
-};
-
-use super::error::ReaderError;
+use lust_util::span::Spanned;
+use std::fmt::{Debug, Display};
 
 #[derive(Logos, Debug, Clone, Default, PartialEq)]
-pub enum Token {
+pub enum TokenKind {
     #[default]
     Eof,
     #[regex(r"[ \t\r\n\f]+", logos::skip)]
     Whitespace,
     #[regex(r#";[^\n]*"#)]
     Comment,
-    #[regex(r#"[^\[\]()\s,{};]+"#, |lex| InternedString::from(lex.slice()))]
-    Ident(InternedString),
-    #[regex(r#"([1-9]\d*|0)"#, priority = 3, callback = |lex| lex.slice().parse().ok())]
-    Int(i64),
-    #[regex(r#"(\+|-)?\d+/\d+"#, |lex| lex.slice().parse().ok())]
-    Rational(Rational64),
-    #[regex(r#"((\d+(\.\d+))|(\.\d+))([Ee](\+|-)?\d+)?"#, priority = 2, callback = |lex| lex.slice().parse().ok())]
-    Real(f64),
-    #[regex(r#"'\w'"#, |lex| lex.slice().chars().nth(1))]
-    Char(char),
-    #[regex(r#""((\\"|\\\\)|[^\\"])*""#, |lex| InternedString::from(lex.slice()))]
-    String(InternedString),
+    #[regex(r#"[^\[\]()\s,{};]+"#)]
+    Ident,
+    #[regex(r#"([1-9]\d*|0)"#, priority = 3)]
+    Int,
+    #[regex(r#"(\+|-)?\d+/\d+"#)]
+    Rational,
+    #[regex(r#"((\d+(\.\d+))|(\.\d+))([Ee](\+|-)?\d+)?"#, priority = 2)]
+    Real,
+    #[regex(r#"'\w'"#)]
+    Char,
+    #[regex(r#""((\\"|\\\\)|[^\\"])*""#)]
+    String,
 
     #[token("(")]
     LParen,
@@ -56,91 +45,40 @@ pub enum Token {
     Hash,
     #[token("'")]
     Quote,
+    #[token("`")]
+    Backquote,
 }
 
-impl Display for Token {
+impl Display for TokenKind {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
             "{}",
             match self {
-                Token::Eof => "<EOF>".to_string(),
-                Token::Whitespace => "Whitespace".to_string(),
-                Token::Comment => "Comment".to_string(),
-                Token::Ident(name) => format!("Ident({})", name),
-                Token::Int(i) => format!("Int({})", i),
-                Token::Rational(r) => format!("Rational({})", r),
-                Token::Real(r) => format!("Real({})", r),
-                Token::Char(c) => format!("Char({})", c),
-                Token::String(s) => format!("String({})", s),
-                Token::LParen => "(".to_string(),
-                Token::RParen => ")".to_string(),
-                Token::LBrack => "[".to_string(),
-                Token::RBrack => "]".to_string(),
-                Token::LBrace => "{".to_string(),
-                Token::RBrace => "}".to_string(),
-                Token::Colon => ":".to_string(),
-                Token::Period => ".".to_string(),
-                Token::Comma => ",".to_string(),
-                Token::Hash => "#".to_string(),
-                Token::Quote => "'".to_string(),
+                TokenKind::Eof => "<EOF>",
+                TokenKind::Whitespace => "Whitespace",
+                TokenKind::Comment => "Comment",
+                TokenKind::Ident => "Ident",
+                TokenKind::Int => "Int",
+                TokenKind::Rational => "Rational",
+                TokenKind::Real => "Real",
+                TokenKind::Char => "Char",
+                TokenKind::String => "String",
+                TokenKind::LParen => "(",
+                TokenKind::RParen => ")",
+                TokenKind::LBrack => "[",
+                TokenKind::RBrack => "]",
+                TokenKind::LBrace => "{",
+                TokenKind::RBrace => "}",
+                TokenKind::Colon => ":",
+                TokenKind::Period => ".",
+                TokenKind::Comma => ",",
+                TokenKind::Hash => "#",
+                TokenKind::Quote => "'",
+                TokenKind::Backquote => "`",
             }
         )
     }
 }
 
-pub struct TokenStream {
-    tokens: Peekable<IntoIter<Spanned<Token>>>,
-}
-
-impl TokenStream {
-    pub fn new<'src>(src: &'src str) -> Result<Self, Vec<Spanned<ReaderError>>> {
-        let (tokens, errors): (
-            Vec<Option<Spanned<Token>>>,
-            Vec<Option<Spanned<ReaderError>>>,
-        ) = Token::lexer(src)
-            .spanned()
-            .map(|(res, span)| match res {
-                Ok(t) => (Some((t, Span::from(span))), None),
-                Err(_) => (None, Some((ReaderError::LexerError, Span::from(span)))),
-            })
-            .unzip();
-
-        if errors.iter().any(|e| e.is_some()) {
-            Err(errors.into_iter().flatten().collect())
-        } else {
-            Ok(Self {
-                tokens: tokens
-                    .into_iter()
-                    .flatten()
-                    .collect::<Vec<_>>()
-                    .into_iter()
-                    .peekable(),
-            })
-        }
-    }
-
-    pub fn peek(&mut self) -> Spanned<Token> {
-        self.tokens
-            .peek()
-            .unwrap_or(&(Token::Eof, Span::new(0, 0)))
-            .clone()
-    }
-
-    pub fn next(&mut self) -> Spanned<Token> {
-        self.tokens.next().unwrap_or((Token::Eof, Span::new(0, 0)))
-    }
-
-    pub fn at(&mut self, token: &Token) -> bool {
-        self.peek().0 == token.clone()
-    }
-
-    pub fn eat(&mut self, token: &Token) -> bool {
-        if self.at(token) {
-            self.next();
-            true
-        } else {
-            false
-        }
-    }
-}
+pub type Token = Spanned<TokenKind>;

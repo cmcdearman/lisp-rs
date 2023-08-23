@@ -1,7 +1,6 @@
-use crate::span::{Span, Spanned};
-use std::fmt::Display;
-
 use super::token::Token;
+use lust_util::span::{Span, Spanned};
+use std::fmt::Display;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum ReaderError {

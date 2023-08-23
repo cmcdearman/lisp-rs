@@ -1,5 +1,5 @@
 use crate::object::Object;
-use miniml_util::intern::InternedString;
+use lust_util::intern::InternedString;
 use num_complex::Complex64;
 use num_rational::Rational64;
 use std::fmt::Display;

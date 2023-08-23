@@ -1,6 +1,5 @@
+use lust_util::{intern::InternedString, span::Spanned};
 use num_rational::Rational64;
-
-use crate::{intern::InternedString, span::Spanned};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Expr {
@@ -59,4 +58,5 @@ pub enum BinaryOp {
 #[derive(Debug, Clone, PartialEq)]
 pub enum UnaryOp {
     Neg,
+    Not,
 }
