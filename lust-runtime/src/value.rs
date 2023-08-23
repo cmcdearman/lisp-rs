@@ -1,9 +1,8 @@
-use std::fmt::Display;
-
+use crate::object::Object;
+use miniml_util::intern::InternedString;
 use num_complex::Complex64;
 use num_rational::Rational64;
-
-use crate::{intern::InternedString, list::List};
+use std::fmt::Display;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Value {
@@ -14,11 +13,8 @@ pub enum Value {
     String(InternedString),
     Char(char),
     Bool(bool),
-    // List(List<Value>),
-    // Tuple(Tuple),
-    // Map(Map),
-    // Record(Record),
-    // Lambda(Lambda),
+    Object(Object),
+    Unit,
     Nil,
 }
 
@@ -32,6 +28,8 @@ impl Display for Value {
             Value::String(s) => write!(f, "{}", s),
             Value::Char(c) => write!(f, "{}", c),
             Value::Bool(b) => write!(f, "{}", b),
+            Value::Object(o) => write!(f, "{}", o),
+            Value::Unit => write!(f, "()"),
             Value::Nil => write!(f, "nil"),
         }
     }

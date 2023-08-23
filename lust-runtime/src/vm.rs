@@ -1,32 +1,26 @@
-use std::fmt::{format, Display};
-
-use self::{
+use crate::{
+    call_frame::CallFrame,
     chunk::Chunk,
     error::{Result, RuntimeError},
+    opcode::OpCode,
     value::Value,
 };
-use crate::vm::opcode::OpCode;
-
-pub mod chunk;
-pub mod error;
-pub mod opcode;
-pub mod value;
+use miniml_util::intern::InternedString;
+use std::collections::HashMap;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct VM {
-    chunk: Chunk,
-    ip: usize,
+    frames: Vec<CallFrame>,
     stack: Vec<Value>,
+    globals: HashMap<InternedString, Value>,
 }
 
 impl VM {
-    const STACK_MAX: usize = 256;
-
-    pub fn new(chunk: Chunk) -> Self {
+    pub fn new(frame: CallFrame) -> Self {
         Self {
-            chunk,
-            ip: 0,
+            frames: vec![frame],
             stack: vec![],
+            globals: HashMap::new(),
         }
     }
 
@@ -35,9 +29,25 @@ impl VM {
             let instr = self.read_instr();
             log::trace!("Instr: {:?}", instr);
             log::trace!("Stack: {:?}", self.stack);
-            log::trace!("IP: {}", self.ip);
             // log::trace!("Chunk: {:?}", self.chunk);
             match instr {
+                OpCode::Pop => {
+                    self.pop();
+                }
+                OpCode::DefineGlobal => {
+                    let name = self.read_string();
+                    let value = self.pop();
+                    log::trace!("defining global: {} = {}", name, value);
+                    self.globals.insert(name, value);
+                    log::trace!("Globals: {:?}", self.globals);
+                    break;
+                }
+                OpCode::GetGlobal => {
+                    let name = self.read_string();
+                    log::trace!("getting global: {}", name);
+                    let value = self.globals.get(&name).unwrap().clone();
+                    self.push(value);
+                }
                 OpCode::Const => {
                     let constant = self.read_constant();
                     self.push(constant);
@@ -121,6 +131,20 @@ impl VM {
                         }
                     }
                 }
+                OpCode::Jif => {
+                    let offset = self.read_instr() as usize;
+                    let cond = self.pop();
+                    match cond {
+                        Value::Bool(true) => {}
+                        Value::Bool(false) => self.frame().ip += offset,
+                        _ => {
+                            return Err(RuntimeError(format!(
+                                "Cannot jump if non-boolean `{:?}`",
+                                cond
+                            )))
+                        }
+                    }
+                }
                 OpCode::Return => {
                     let val = self.pop();
                     // println!("{}", val);
@@ -129,25 +153,37 @@ impl VM {
                 _ => return Err(RuntimeError::new("Unknown opcode")),
             }
         }
+        Ok(Value::Unit)
+    }
+
+    fn frame<'a>(&'a mut self) -> &'a mut CallFrame {
+        self.frames.last_mut().expect("No frames")
     }
 
     fn read_instr(&mut self) -> OpCode {
-        log::trace!("ip instr: {}", self.ip);
-        let instr = self.chunk.code[self.ip];
-        self.ip += 1;
+        let ip = self.frame().ip;
+        log::trace!("ip instr: {}", ip);
+        let instr = self.frame().fun.chunk.code[ip];
+        self.frame().ip += 1;
         OpCode::from(instr)
     }
 
     fn read_constant(&mut self) -> Value {
-        log::trace!("ip const: {}", self.ip);
+        let frame = self.frames.last_mut().expect("No frames");
+        log::trace!("ip const: {}", frame.ip);
         let op = self.read_instr();
-        self.chunk.constants[op as usize].clone()
+        self.frame().fun.chunk.constants[op as usize].clone()
+    }
+
+    fn read_string(&mut self) -> InternedString {
+        log::trace!("ip string: {}", self.frame().ip);
+        match self.read_constant() {
+            Value::String(s) => s,
+            _ => panic!("Expected string"),
+        }
     }
 
     fn push(&mut self, value: Value) {
-        if self.stack.len() >= Self::STACK_MAX {
-            panic!("Stack overflow");
-        }
         self.stack.push(value);
     }
 

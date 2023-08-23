@@ -1,6 +1,5 @@
+use lust_util::intern::InternedString;
 use std::fmt::Display;
-
-use crate::intern::InternedString;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ParserError(pub InternedString);
