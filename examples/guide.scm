@@ -9,13 +9,14 @@
     a
     (gcd b (% a b)))))
 
-;; `fn` is a macro that expands to bind a lambda to a symbol
-(fn gcd (a b)
+;; `let` can also bind application forms
+(let (gcd a b)
   (if (= b 0)
       a
       (gcd b (% a b))))
 
-(fn gcd (a b)
+;; you can use `match` to pattern match
+(let (gcd a b)
   (match b
     (0 a)
     (_ (gcd b (% a b)))))
