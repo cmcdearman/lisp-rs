@@ -1,12 +1,12 @@
 use super::token::Token;
-use lust_util::span::{Span, Spanned};
+use lust_util::span::Span;
 use std::fmt::Display;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum ReaderError {
     LexerError,
     UnmatchedParen(Span),
-    UnexpectedToken(Spanned<Token>),
+    UnexpectedToken(Token),
 }
 
 impl Display for ReaderError {
@@ -14,7 +14,9 @@ impl Display for ReaderError {
         match self {
             ReaderError::LexerError => write!(f, "Lexer error"),
             ReaderError::UnmatchedParen(s) => write!(f, "Unmatched paren at {}", s),
-            ReaderError::UnexpectedToken((t, s)) => write!(f, "Unexpected token {:?} at {}", t, s),
+            ReaderError::UnexpectedToken(t) => {
+                write!(f, "Unexpected token {:?} at {}", t.value, t.span)
+            }
         }
     }
 }

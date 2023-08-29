@@ -3,6 +3,11 @@ use num_rational::Rational64;
 use std::fmt::Debug;
 
 #[derive(Clone, PartialEq)]
+pub struct Root {
+    pub sexprs: Vec<Spanned<Sexpr>>,
+}
+
+#[derive(Clone, PartialEq)]
 pub enum Sexpr {
     Atom(Atom),
     Cons(List<Spanned<Sexpr>>),
