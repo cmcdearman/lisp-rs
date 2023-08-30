@@ -1,24 +1,27 @@
 use super::token::Token;
-use lust_util::span::Span;
+use lust_util::span::{Span, Spanned};
 use std::fmt::Display;
 
 #[derive(Debug, Clone, PartialEq)]
-pub enum ReaderError {
+pub enum SyntaxError {
     LexerError,
     UnmatchedParen(Span),
     UnexpectedToken(Token),
+    LitParseError(Token),
 }
 
-impl Display for ReaderError {
+impl Display for SyntaxError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            ReaderError::LexerError => write!(f, "Lexer error"),
-            ReaderError::UnmatchedParen(s) => write!(f, "Unmatched paren at {}", s),
-            ReaderError::UnexpectedToken(t) => {
+            SyntaxError::LexerError => write!(f, "Lexer error"),
+            SyntaxError::UnmatchedParen(s) => write!(f, "Unmatched paren at {}", s),
+            SyntaxError::UnexpectedToken(t) => {
                 write!(f, "Unexpected token {:?} at {}", t.value, t.span)
             }
+            SyntaxError::LitParseError(t) => write!(f, "Failed to parse literal at {}", t.span),
         }
     }
 }
 
+pub type ReaderError = Spanned<SyntaxError>;
 pub type ReadResult<T> = std::result::Result<T, ReaderError>;

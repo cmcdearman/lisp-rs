@@ -9,7 +9,7 @@ pub struct Root {
 
 #[derive(Clone, PartialEq)]
 pub enum Sexpr {
-    Atom(Atom),
+    Atom(Spanned<Atom>),
     Cons(List<Spanned<Sexpr>>),
 }
 
@@ -24,8 +24,8 @@ impl Debug for Sexpr {
 
 #[derive(Clone, PartialEq)]
 pub enum Atom {
-    Lit(Lit),
-    Symbol(InternedString),
+    Lit(Spanned<Lit>),
+    Symbol(Spanned<InternedString>),
 }
 
 impl Debug for Atom {
