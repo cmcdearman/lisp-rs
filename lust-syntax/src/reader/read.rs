@@ -6,6 +6,7 @@ use super::{
 use cstree::Syntax;
 use logos::{Lexer, Logos};
 use lust_util::{
+    intern::InternedString,
     list::List,
     span::{Span, Spannable, Spanned},
 };
@@ -14,7 +15,7 @@ pub struct Reader<'src> {
     src: &'src str,
     lexer: Lexer<'src, TokenKind>,
     peek: Option<Token>,
-    errors: Vec<Spanned<ReaderError>>,
+    errors: Vec<ReaderError>,
 }
 
 impl<'src> Reader<'src> {
@@ -33,7 +34,7 @@ impl<'src> Reader<'src> {
             Some((res, s)) => match res {
                 Ok(t) => t.spanned(s.into()),
                 Err(_) => {
-                    self.errors.push(ReaderError::LexerError.spanned(s.into()));
+                    self.errors.push(SyntaxError::LexerError.spanned(s.into()));
                     self.fetch_token()
                 }
             },
@@ -84,15 +85,17 @@ impl<'src> Reader<'src> {
                 Ok(s) => sexprs.push(s),
                 Err(e) => {
                     self.errors.push(e);
-                    self.next();
+                    while !self.at(TokenKind::LParen) {
+                        self.next();
+                    }
                 }
             }
-            (Root { sexprs }, self.errors.clone())
         }
+        (Root { sexprs }, self.errors.clone())
     }
 
     fn sexpr(&mut self) -> ReadResult<Spanned<Sexpr>> {
-        match self.peek().0 {
+        match self.peek().value {
             TokenKind::LParen => self.list(),
             _ => self.atom(),
         }
@@ -101,7 +104,7 @@ impl<'src> Reader<'src> {
     fn list(&mut self) -> ReadResult<Spanned<Sexpr>> {
         let start = self.peek().span;
         if !self.eat(TokenKind::LParen) {
-            return Err(SyntaxError::UnmatchedParen(self.peek().span));
+            return Err(SyntaxError::UnmatchedParen(self.peek().span).spanned(self.peek().span));
         }
         let mut sexprs = vec![];
         while !self.at(TokenKind::RParen) {
@@ -120,30 +123,74 @@ impl<'src> Reader<'src> {
     fn atom(&mut self) -> ReadResult<Spanned<Sexpr>> {
         match self.peek().value {
             TokenKind::Int => {
-                let i = self
-                    .text()
-                    .parse()
-                    .map_err(|e| SyntaxError::LitParseError(self.peek()))?;
+                let i = self.text().parse().map_err(|_| {
+                    SyntaxError::LitParseError(self.peek()).spanned(self.peek().span)
+                })?;
+                let next = self.next();
+                Ok(Sexpr::Atom(Atom::Lit(Lit::Int(i)).spanned(next.span)).spanned(next.span))
+            }
+            TokenKind::Rational => {
+                let r = self.text().parse().map_err(|e| {
+                    SyntaxError::LitParseError(self.peek()).spanned(self.peek().span)
+                })?;
+                let next = self.next();
+                Ok(Sexpr::Atom(Atom::Lit(Lit::Rational(r)).spanned(next.span)).spanned(next.span))
+            }
+            TokenKind::Real => {
+                let r = self.text().parse().map_err(|e| {
+                    SyntaxError::LitParseError(self.peek()).spanned(self.peek().span)
+                })?;
+                let next = self.next();
+                Ok(Sexpr::Atom(Atom::Lit(Lit::Real(r)).spanned(next.span)).spanned(next.span))
+            }
+            TokenKind::Char => {
+                let c =
+                    self.text().chars().nth(1).ok_or_else(|| {
+                        SyntaxError::LitParseError(self.peek()).spanned(self.peek().span)
+                    })?;
+                let next = self.next();
+                Ok(Sexpr::Atom(Atom::Lit(Lit::Char(c)).spanned(next.span)).spanned(next.span))
+            }
+            TokenKind::String => {
+                let s = &self.text()[1..(self.text().len() - 1)];
                 let next = self.next();
                 Ok(
-                    Sexpr::Atom(Atom::Lit(Lit::Int(i).spanned(next.span)).spanned(next.span))
+                    Sexpr::Atom(Atom::Lit(Lit::String(InternedString::from(s))).spanned(next.span))
                         .spanned(next.span),
                 )
             }
-            TokenKind::Rational(r) => Ok((Sexpr::Atom(Atom::Lit(Lit::Rational(r))), self.peek().1)),
-            TokenKind::Real(r) => Ok((Sexpr::Atom(Atom::Lit(Lit::Real(r))), self.peek().1)),
-            TokenKind::Char(c) => Ok((Sexpr::Atom(Atom::Lit(Lit::Char(c))), self.peek().1)),
-            TokenKind::String(s) => Ok((
-                Sexpr::Atom(Atom::Lit(Lit::String(InternedString::from(
-                    &s[1..(s.len() - 1)],
-                )))),
-                self.peek().1,
-            )),
-            TokenKind::Ident(name) => Ok((
-                Sexpr::Atom(Atom::Symbol(InternedString::from(name))),
-                self.peek().1,
-            )),
-            _ => Err(ReaderError::UnexpectedToken(self.peek())),
+            TokenKind::Ident => {
+                let s = InternedString::from(self.text());
+                let next = self.next();
+                Ok(Sexpr::Atom(Atom::Symbol(s).spanned(next.span)).spanned(next.span))
+            }
+            _ => Err(SyntaxError::UnexpectedToken(self.peek()).spanned(self.peek().span)),
         }
+    }
+}
+
+mod tests {
+    use super::Reader;
+
+    #[test]
+    fn read_int() {
+        let src = "42";
+        let mut reader = Reader::new(src);
+        let (root, errs) = reader.parse();
+        if !errs.is_empty() {
+            panic!("{:?}", errs);
+        }
+        insta::assert_debug_snapshot!(root);
+    }
+
+    #[test]
+    fn read_list() {
+        let src = "(1 2 3)";
+        let mut reader = Reader::new(src);
+        let (root, errs) = reader.parse();
+        if !errs.is_empty() {
+            panic!("{:?}", errs);
+        }
+        insta::assert_debug_snapshot!(root);
     }
 }

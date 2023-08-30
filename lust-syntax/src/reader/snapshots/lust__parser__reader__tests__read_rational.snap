@@ -1,5 +1,0 @@
----
-source: src/parser/reader/tests.rs
-expression: sexpr
----
-Ratio { numer: 6, denom: 1 }

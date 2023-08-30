@@ -1,0 +1,9 @@
+---
+source: lust-syntax/src/reader/read.rs
+expression: root
+---
+Root {
+    sexprs: [
+        Atom(Lit(Int(42)) @ 0..2) @ 0..2,
+    ],
+}

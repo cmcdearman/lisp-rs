@@ -1,5 +1,0 @@
----
-source: src/parser/reader/tests.rs
-expression: sexpr
----
-Node(InternedString(+), Node(1, Node(2, Nil)))
