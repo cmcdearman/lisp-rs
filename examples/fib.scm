@@ -1,5 +1,5 @@
-(fn fib (n)
+(let (fib n)
   (if ((<= n 1) n)
   (+ (fib (- n 1)) (fib (- n 2)))))
 
-(display (fib 100000))
+(println (fib 100000))

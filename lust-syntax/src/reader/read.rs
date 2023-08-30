@@ -3,6 +3,7 @@ use super::{
     sexpr::{Atom, Lit, Root, Sexpr},
     token::{Token, TokenKind},
 };
+use cstree::Syntax;
 use logos::{Lexer, Logos};
 use lust_util::{
     list::List,
@@ -81,12 +82,13 @@ impl<'src> Reader<'src> {
         while !self.at(TokenKind::Eof) {
             match self.sexpr() {
                 Ok(s) => sexprs.push(s),
-            Err(e) => {
-                self.errors.push(e);
-                self.next();
+                Err(e) => {
+                    self.errors.push(e);
+                    self.next();
+                }
             }
+            (Root { sexprs }, self.errors.clone())
         }
-        (Root { sexprs }, self.errors.clone())
     }
 
     fn sexpr(&mut self) -> ReadResult<Spanned<Sexpr>> {
@@ -99,7 +101,7 @@ impl<'src> Reader<'src> {
     fn list(&mut self) -> ReadResult<Spanned<Sexpr>> {
         let start = self.peek().span;
         if !self.eat(TokenKind::LParen) {
-            return Err(ReaderError::UnmatchedParen(self.peek().span));
+            return Err(SyntaxError::UnmatchedParen(self.peek().span));
         }
         let mut sexprs = vec![];
         while !self.at(TokenKind::RParen) {
@@ -108,7 +110,7 @@ impl<'src> Reader<'src> {
             self.next();
         }
         if !self.eat(TokenKind::RParen) {
-            return Err(ReaderError::UnmatchedParen(self.peek().span));
+            return Err(SyntaxError::UnmatchedParen(self.peek().span).spanned(self.peek().span));
         }
         let list: List<Spanned<Sexpr>> = sexprs.into_iter().rev().collect();
         let end = self.peek().span;
@@ -121,7 +123,7 @@ impl<'src> Reader<'src> {
                 let i = self
                     .text()
                     .parse()
-                    .map_err(|e| ReaderError::LitParseError(self.peek()))?;
+                    .map_err(|e| SyntaxError::LitParseError(self.peek()))?;
                 let next = self.next();
                 Ok(
                     Sexpr::Atom(Atom::Lit(Lit::Int(i).spanned(next.span)).spanned(next.span))
