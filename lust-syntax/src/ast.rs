@@ -2,6 +2,15 @@ use lust_util::{intern::InternedString, span::Spanned};
 use num_rational::Rational64;
 
 #[derive(Debug, Clone, PartialEq)]
+pub enum Root {
+    Expr(Spanned<Expr>),
+    Def {
+        name: Spanned<InternedString>,
+        value: Box<Spanned<Expr>>,
+    },
+}
+
+#[derive(Debug, Clone, PartialEq)]
 pub enum Expr {
     Symbol(InternedString),
     Lit(Lit),

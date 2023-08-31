@@ -1,14 +1,18 @@
-// use self::{ast::Expr, error::ParseResult, reader::sexpr::Sexpr};
-// use crate::parser::{error::ParserError, reader::sexpr::Atom};
-// use logos::{Lexer, Logos};
-// use num_bigint::BigInt;
-// use num_rational::{BigRational, Rational64};
-// use std::{
-//     fmt,
-//     ops::{Index, Range},
-// };
+use crate::{ast::Expr, error::ParseResult, reader::sexpr::Root};
+use logos::{Lexer, Logos};
+use lust_util::span::Spanned;
+use num_bigint::BigInt;
+use num_rational::{BigRational, Rational64};
+use std::{
+    fmt,
+    ops::{Index, Range},
+};
 
-// // Parser entry point
+pub fn parse(sexprs: &Root) -> ParseResult<Spanned<Expr>> {
+    todo!()
+}
+
+// Parser entry point
 // pub fn expr(sexpr: &Spanned<Sexpr>) -> ParseResult<Spanned<Expr>> {
 //     match sexpr.0.clone() {
 //         Sexpr::Atom(a) => match a.clone() {
