@@ -78,7 +78,7 @@ impl<'src> Reader<'src> {
         &self.src[self.lexer.span()]
     }
 
-    pub fn parse(&mut self) -> (Root, Vec<ReaderError>) {
+    pub fn read(&mut self) -> (Root, Vec<ReaderError>) {
         let mut sexprs = vec![];
         while !self.at(TokenKind::Eof) {
             match self.sexpr() {
@@ -111,7 +111,6 @@ impl<'src> Reader<'src> {
         while !self.at(TokenKind::RParen) {
             let s = self.sexpr()?;
             sexprs.push(s);
-            self.next();
         }
         if !self.eat(TokenKind::RParen) {
             return Err(SyntaxError::UnmatchedParen(self.peek().span).spanned(self.peek().span));
@@ -122,6 +121,7 @@ impl<'src> Reader<'src> {
     }
 
     fn atom(&mut self) -> ReadResult<Spanned<Sexpr>> {
+        log::trace!("enter atom");
         match self.peek().value {
             TokenKind::Int => {
                 let i = self.text().parse().map_err(|_| {
@@ -176,7 +176,7 @@ mod tests {
     fn read_int() {
         let src = "42";
         let mut reader = Reader::new(src);
-        let (root, errs) = reader.parse();
+        let (root, errs) = reader.read();
         if !errs.is_empty() {
             panic!("{:?}", errs);
         }
@@ -187,7 +187,7 @@ mod tests {
     fn read_list() {
         let src = "(1 2 3)";
         let mut reader = Reader::new(src);
-        let (root, errs) = reader.parse();
+        let (root, errs) = reader.read();
         if !errs.is_empty() {
             panic!("{:?}", errs);
         }

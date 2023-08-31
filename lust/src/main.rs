@@ -1,6 +1,11 @@
+use lust_syntax::reader::read::Reader;
+
 fn main() {
     env_logger::init();
-    // let src = "123";
+    let src = "(+ 2 3 (* 4 5))";
+    let mut reader = Reader::new(src);
+    let (root, errs) = reader.read();
+    println!("{}", root);
     // let tokens = TokenStream::new(src).expect("Failed to lex tokens");
     // let mut reader = parser::reader::Reader::new(tokens);
     // let sexpr = reader.sexpr().expect("Failed to read sexpr");
