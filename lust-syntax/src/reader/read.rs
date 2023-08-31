@@ -102,6 +102,7 @@ impl<'src> Reader<'src> {
     }
 
     fn list(&mut self) -> ReadResult<Spanned<Sexpr>> {
+        log::trace!("enter list");
         let start = self.peek().span;
         if !self.eat(TokenKind::LParen) {
             return Err(SyntaxError::UnmatchedParen(self.peek().span).spanned(self.peek().span));
@@ -144,10 +145,9 @@ impl<'src> Reader<'src> {
                 Ok(Sexpr::Atom(Atom::Lit(Lit::Real(r)).spanned(next.span)).spanned(next.span))
             }
             TokenKind::Char => {
-                let c =
-                    self.text().chars().nth(1).ok_or_else(|| {
-                        SyntaxError::LitParseError(self.peek()).spanned(self.peek().span)
-                    })?;
+                let c = self.text().chars().nth(1).ok_or_else(|| {
+                    SyntaxError::LitParseError(self.peek()).spanned(self.peek().span)
+                })?;
                 let next = self.next();
                 Ok(Sexpr::Atom(Atom::Lit(Lit::Char(c)).spanned(next.span)).spanned(next.span))
             }

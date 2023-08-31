@@ -23,7 +23,7 @@
 
 (let ((a 10) 
       (b 5))
-  (gcd a b))
+  (+ a b))
 
 (struct point (x y))
 
