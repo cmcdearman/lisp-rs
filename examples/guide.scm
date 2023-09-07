@@ -48,7 +48,7 @@
 
 (let (map f ()) '())
 (let (map f (x . xs)) (cons (f x) (map f xs)))
-(let (map f (? (map? xs))) )
+(let (map f (? (map? xs))) ...)
 
 (let (fib n)
   (if ((<= n 1) n)
@@ -64,3 +64,9 @@
 ;; `struct` is a macro that defines a struct.
 ;; Under the hood, it's just a map. 
 (struct point (x y))
+
+(let (gcd a b) 
+  (if (= b 0) a
+      (gcd b (% a b)))
+  (gcd 24 18))
+  
