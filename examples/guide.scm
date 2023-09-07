@@ -13,10 +13,6 @@
   (if ((= b 0) a)
       (gcd b (% a b))))
 
-(let (map f xs)
-  (if ((empty? xs) nil)
-      (cons (f (car xs)) (map f (cdr xs)))))
-
 ;; you can use `match` to pattern match or `if` for conditionals
 (let (gcd a b)
   (match b
@@ -34,10 +30,13 @@
       ((= n 0) (ack (- m 1) 1))
       (ack (- m 1) (ack m (- n 1)))))
 
+(let (map f xs)
+  (if (empty? xs) nil
+      (cons (f (car xs)) (map f (cdr xs)))))
+
 ;; or you can match to declare functions
 (let (gcd a 0) a)
 (let (gcd a b) (gcd b (% a b)))
-;; (let (gcd a _) a + 1)
 
 (let (fib 0) 0)
 (let (fib 1) 1)
@@ -46,6 +45,10 @@
 (let (ack 0 n) (+ n 1))
 (let (ack m 0) (ack (- m 1) 1))
 (let (ack m n) (ack (- m 1) (ack m (- n 1))))
+
+(let (map f ()) '())
+(let (map f (x . xs)) (cons (f x) (map f xs)))
+(let (map f (? (map? xs))) )
 
 (let (fib n)
   (if ((<= n 1) n)
@@ -61,4 +64,3 @@
 ;; `struct` is a macro that defines a struct.
 ;; Under the hood, it's just a map. 
 (struct point (x y))
-
