@@ -25,7 +25,7 @@
     (1 1)
     (_ (+ (fib (- n 1)) (fib (- n 2))))))
 
-(fn ack (m n)
+(let ack (m n)
   (if ((= m 0) (+ n 1))
       ((= n 0) (ack (- m 1) 1))
       (ack (- m 1) (ack m (- n 1)))))
