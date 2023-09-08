@@ -54,7 +54,7 @@
   (if ((<= n 1) n)
       (+ (fib (- n 1)) (fib (- n 2)))))
 
-(println (fib 100000))
+(println (fib 45))
 
 ;; Macros
 (lets ((a 10) 
