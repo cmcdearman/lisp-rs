@@ -5,12 +5,14 @@
 
 ;; `let` can bind to lambdas
 (let gcd (lambda (a b)
-  (if (= b 0) a
+  (if (= b 0) 
+      a
       (gcd b (% a b)))))
 
 ;; `let` can also bind application forms
 (let (gcd a b)
-  (if (= b 0) a
+  (if (= b 0) 
+      a
       (gcd b (% a b))))
 
 ;; you can use `match` to pattern match or `if` for conditionals
@@ -51,7 +53,8 @@
 (let (map f (? (map? xs))) ...)
 
 (let (fib n)
-  (if ((<= n 1) n)
+  (if (<= n 1) 
+      n
       (+ (fib (- n 1)) (fib (- n 2)))))
 
 (println (fib 45))
