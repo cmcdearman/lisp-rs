@@ -5,12 +5,12 @@
 
 ;; `let` can bind to lambdas
 (let gcd (lambda (a b)
-  (if ((= b 0) a)
-    (gcd b (% a b)))))
+  (if (= b 0) a
+      (gcd b (% a b)))))
 
 ;; `let` can also bind application forms
 (let (gcd a b)
-  (if ((= b 0) a)
+  (if (= b 0) a
       (gcd b (% a b))))
 
 ;; you can use `match` to pattern match or `if` for conditionals
@@ -26,9 +26,9 @@
     (_ (+ (fib (- n 1)) (fib (- n 2))))))
 
 (let ack (m n)
-  (if ((= m 0) (+ n 1))
-      ((= n 0) (ack (- m 1) 1))
-      (ack (- m 1) (ack m (- n 1)))))
+  (cond ((= m 0) (+ n 1))
+        ((= n 0) (ack (- m 1) 1))
+        (ack (- m 1) (ack m (- n 1)))))
 
 (let (map f xs)
   (if (empty? xs) nil
