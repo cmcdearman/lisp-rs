@@ -1,9 +1,8 @@
 use logos::Logos;
-use lust_util::span::Spanned;
 use std::fmt::{Debug, Display};
 
 #[derive(Logos, Debug, Clone, Default, PartialEq)]
-pub enum TokenKind {
+pub enum Token {
     #[default]
     Eof,
     #[regex(r"[ \t\r\n\f]+", logos::skip)]
@@ -49,36 +48,34 @@ pub enum TokenKind {
     Backquote,
 }
 
-impl Display for TokenKind {
+impl Display for Token {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
             "{}",
             match self {
-                TokenKind::Eof => "<EOF>",
-                TokenKind::Whitespace => "Whitespace",
-                TokenKind::Comment => "Comment",
-                TokenKind::Ident => "Ident",
-                TokenKind::Int => "Int",
-                TokenKind::Rational => "Rational",
-                TokenKind::Real => "Real",
-                TokenKind::Char => "Char",
-                TokenKind::String => "String",
-                TokenKind::LParen => "(",
-                TokenKind::RParen => ")",
-                TokenKind::LBrack => "[",
-                TokenKind::RBrack => "]",
-                TokenKind::LBrace => "{",
-                TokenKind::RBrace => "}",
-                TokenKind::Colon => ":",
-                TokenKind::Period => ".",
-                TokenKind::Comma => ",",
-                TokenKind::Hash => "#",
-                TokenKind::Quote => "'",
-                TokenKind::Backquote => "`",
+                Token::Eof => "<EOF>",
+                Token::Whitespace => "Whitespace",
+                Token::Comment => "Comment",
+                Token::Ident => "Ident",
+                Token::Int => "Int",
+                Token::Rational => "Rational",
+                Token::Real => "Real",
+                Token::Char => "Char",
+                Token::String => "String",
+                Token::LParen => "(",
+                Token::RParen => ")",
+                Token::LBrack => "[",
+                Token::RBrack => "]",
+                Token::LBrace => "{",
+                Token::RBrace => "}",
+                Token::Colon => ":",
+                Token::Period => ".",
+                Token::Comma => ",",
+                Token::Hash => "#",
+                Token::Quote => "'",
+                Token::Backquote => "`",
             }
         )
     }
 }
-
-pub type Token = Spanned<TokenKind>;
