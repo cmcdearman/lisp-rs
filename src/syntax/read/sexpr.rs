@@ -1,16 +1,17 @@
-use lust_util::{intern::InternedString, list::List, span::Spanned};
 use num_rational::Rational64;
+
+use crate::util::{intern::InternedString, list::List, node::SrcNode};
 use std::fmt::{Debug, Display};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Root {
-    pub sexprs: Vec<Spanned<Sexpr>>,
+    pub sexprs: Vec<SrcNode<Sexpr>>,
 }
 
 impl Display for Root {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         for s in self.clone().sexprs {
-            writeln!(f, "{}", s.value)?;
+            writeln!(f, "{}", s.inner())?;
         }
         Ok(())
     }
@@ -18,21 +19,21 @@ impl Display for Root {
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Sexpr {
-    Atom(Spanned<Atom>),
-    Cons(List<Spanned<Sexpr>>),
+    Atom(SrcNode<Atom>),
+    Cons(List<SrcNode<Sexpr>>),
 }
 
 impl Display for Sexpr {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self.clone() {
-            Sexpr::Atom(a) => write!(f, "{}", a.value),
+            Sexpr::Atom(a) => write!(f, "{}", a.inner()),
             Sexpr::Cons(l) => {
                 write!(f, "(")?;
                 for (i, s) in l.enumerate() {
                     if i > 0 {
                         write!(f, " ")?;
                     }
-                    write!(f, "{}", s.value)?;
+                    write!(f, "{}", s.inner())?;
                 }
                 write!(f, ")")
             }
@@ -57,20 +58,14 @@ impl Display for Atom {
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Lit {
-    Int(i64),
-    Rational(Rational64),
-    Real(f64),
-    Char(char),
+    Number(Rational64),
     String(InternedString),
 }
 
 impl Display for Lit {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Lit::Int(i) => write!(f, "{}", i),
-            Lit::Rational(r) => write!(f, "{}", r),
-            Lit::Real(r) => write!(f, "{}", r),
-            Lit::Char(c) => write!(f, "#\\{}", c),
+            Lit::Number(n) => write!(f, "{}", n),
             Lit::String(s) => write!(f, "{:?}", s),
         }
     }

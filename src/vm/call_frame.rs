@@ -1,4 +1,3 @@
-use crate::object::Function;
 use std::fmt::Display;
 
 #[derive(Debug, Clone, PartialEq)]
