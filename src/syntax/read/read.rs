@@ -1,12 +1,49 @@
-use super::token::Token;
-use crate::util::{intern::InternedString, span::Span};
-use chumsky::{extra, input::ValueInput, prelude::Rich, select, Parser};
+use super::{
+    sexpr::{Atom, Root},
+    token::Token,
+};
+use crate::util::{intern::InternedString, node::SrcNode, span::Span};
+use chumsky::{
+    extra,
+    input::{Stream, ValueInput},
+    prelude::{Input, Rich},
+    select, IterParser, Parser,
+};
+use logos::Logos;
 
-fn ident_parser<'a, I: ValueInput<'a, Token = Token, Span = Span>>(
+pub type ReadError<'a> = extra::Err<Rich<'a, Token, Span>>;
+
+fn ident_reader<'a, I: ValueInput<'a, Token = Token, Span = Span>>(
 ) -> impl Parser<'a, I, InternedString, extra::Err<Rich<'a, Token, Span>>> {
     select! {
         Token::Symbol(name) => InternedString::from(name),
     }
+}
+
+fn atom_reader<'a, I: ValueInput<'a, Token = Token, Span = Span>>(
+) -> impl Parser<'a, I, SrcNode<Atom>, extra::Err<Rich<'a, Token, Span>>> {
+    select! {
+        Token::Symbol(name) => Atom::Symbol(InternedString::from(name)),
+        Token::Number(n) => Atom::Number(n),
+        Token::String(s) => Atom::String(s),
+    }
+}
+
+fn reader<'a, I: ValueInput<'a, Token = Token, Span = Span>>(
+) -> impl Parser<'a, I, SrcNode<Root>, extra::Err<Rich<'a, Token, Span>>> {
+    atom_reader()
+        .repeated()
+        .collect()
+        .map(|sexprs| Root { sexprs })
+}
+
+pub fn read<'src>(src: &'src str) -> (Option<Root>, Vec<ReadError<'src>>) {
+    let tokens = Token::lexer(&src).spanned().map(|(tok, span)| match tok {
+        Ok(tok) => (tok, Span::from(span)),
+        Err(err) => panic!("lex error: {:?}", err),
+    });
+    let tok_stream = Stream::from_iter(tokens).spanned(Span::from(src.len()..src.len()));
+    reader().parse(tok_stream).into_output_errors()
 }
 
 mod tests {

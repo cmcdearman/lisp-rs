@@ -43,30 +43,17 @@ impl Display for Sexpr {
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Atom {
-    Lit(Lit),
     Symbol(InternedString),
+    Number(Rational64),
+    String(InternedString),
 }
 
 impl Display for Atom {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Atom::Lit(l) => write!(f, "{}", l),
             Atom::Symbol(s) => write!(f, "{}", s),
-        }
-    }
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub enum Lit {
-    Number(Rational64),
-    String(InternedString),
-}
-
-impl Display for Lit {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Lit::Number(n) => write!(f, "{}", n),
-            Lit::String(s) => write!(f, "{:?}", s),
+            Atom::Number(n) => write!(f, "{}", n),
+            Atom::String(s) => write!(f, "{:?}", s),
         }
     }
 }
