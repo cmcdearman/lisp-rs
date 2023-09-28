@@ -18,14 +18,14 @@
 ;; you can use `match` to pattern match or `if` for conditionals
 (let (gcd a b)
   (match b
-    (0 a)
-    (_ (gcd b (% a b)))))
+    ((0) a)
+    ((_) (gcd b (% a b)))))
 
 (let (fib n)
   (match n
-    (0 0)
-    (1 1)
-    (_ (+ (fib (- n 1)) (fib (- n 2))))))
+    ((0) 0)
+    ((1) 1)
+    ((_) (+ (fib (- n 1)) (fib (- n 2))))))
 
 (let ack (m n)
   (cond ((= m 0) (+ n 1))
@@ -73,3 +73,14 @@
       (gcd b (% a b)))
   (gcd 24 18))
   
+;; class Ord <: Eq + PartialOrd = 
+;;   let cmp self other = raise :NotImplementedError
+;; end
+
+(class Eq ()
+  (define (eq self other)
+    (raise :NotImplementedError)))
+
+(class Ord (Eq PartialOrd)
+  (define (cmp self other)
+    (raise :NotImplementedError)))
