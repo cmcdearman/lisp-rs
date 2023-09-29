@@ -1,10 +1,12 @@
+use chumsky::container::Container;
 use itertools::join;
 use std::fmt::Display;
 
 /// A singly-linked list with owned nodes.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Default, PartialEq)]
 pub enum List<T> {
     Node(Box<(T, List<T>)>),
+    #[default]
     Nil,
 }
 
@@ -50,5 +52,34 @@ impl<T> FromIterator<T> for List<T> {
     fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> Self {
         iter.into_iter()
             .fold(Self::Nil, |list, data| Self::Node(Box::new((data, list))))
+    }
+}
+
+
+impl<T: Clone> DoubleEndedIterator for List<T> {
+    fn next_back(&mut self) -> Option<Self::Item> {
+        match self {
+            List::Node(n) => {
+                let (data, next) = n.as_ref();
+                let data = data.clone();
+                *self = next.clone();
+                Some(data)
+            }
+            List::Nil => None,
+        }
+    }
+}
+
+impl<T: Clone + Default> Container<T> for List<T> {
+    fn push(&mut self, item: T) {
+        *self = Self::Node(Box::new((item, self.clone())));
+    }
+
+    fn with_capacity(n: usize) -> Self {
+        let mut list = Self::Nil;
+        for _ in 0..n {
+            list = Self::Node(Box::new((Default::default(), list)));
+        }
+        list
     }
 }

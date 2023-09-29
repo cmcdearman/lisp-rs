@@ -6,7 +6,7 @@ use std::{
 
 use super::span::Span;
 
-#[derive(Clone)]
+#[derive(Clone, Default)]
 pub struct Node<T, M = ()> {
     inner: Box<T>, // TODO: Replace with smallbox or similar optimisation?
     meta: M,

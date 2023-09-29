@@ -1,3 +1,4 @@
+pub mod format;
 pub mod intern;
 pub mod list;
 pub mod node;
