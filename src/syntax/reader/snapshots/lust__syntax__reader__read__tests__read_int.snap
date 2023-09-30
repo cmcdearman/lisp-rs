@@ -1,7 +1,0 @@
----
-source: src/syntax/reader/read.rs
-expression: root.unwrap()
----
-Root @ 0..2
-  Atom @ 0..2
-    Number(42) @ 0..2

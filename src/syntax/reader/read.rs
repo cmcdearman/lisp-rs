@@ -26,62 +26,70 @@ fn sexpr_reader<'a, I: ValueInput<'a, Token = Token, Span = Span>>(
         .map_with_span(SrcNode::new)
         .map(Sexpr::Atom);
 
-        let quote = just(Token::Quote)
-            .map_with_span(SrcNode::new)
-            .then(sexpr.clone())
-            .map(|(q, sexpr)| {
-                let quote = Sexpr::Atom(SrcNode::new(
-                    Atom::Symbol(InternedString::from("quote")),
-                    q.span(),
-                ));
-                vec![SrcNode::new(quote, q.span()), sexpr]
-                    .into_iter()
-                    .rev()
-                    .collect::<List<_>>()
-            })
-            .map(Sexpr::Cons);
+        // let quote = just(Token::Quote)
+        //     .map_with_span(SrcNode::new)
+        //     .then(sexpr.clone())
+        //     .map(|(q, sexpr)| {
+        //         let quote = Sexpr::Atom(SrcNode::new(
+        //             Atom::Symbol(InternedString::from("quote")),
+        //             q.span(),
+        //         ));
+        //         vec![SrcNode::new(quote, q.span()), sexpr]
+        //             .into_iter()
+        //             .rev()
+        //             .collect::<List<_>>()
+        //     })
+        //     .map(Sexpr::Cons);
 
-        let quasiquote = just(Token::Backquote)
-            .map_with_span(SrcNode::new)
-            .then(sexpr.clone())
-            .map(|(q, sexpr)| {
-                let quote = Sexpr::Atom(SrcNode::new(
-                    Atom::Symbol(InternedString::from("quasiquote")),
-                    q.span(),
-                ));
-                vec![SrcNode::new(quote, q.span()), sexpr]
-                    .into_iter()
-                    .rev()
-                    .collect::<List<_>>()
-            })
-            .map(Sexpr::Cons);
+        // let quasiquote = just(Token::Backquote)
+        //     .map_with_span(SrcNode::new)
+        //     .then(sexpr.clone())
+        //     .map(|(q, sexpr)| {
+        //         let quote = Sexpr::Atom(SrcNode::new(
+        //             Atom::Symbol(InternedString::from("quasiquote")),
+        //             q.span(),
+        //         ));
+        //         vec![SrcNode::new(quote, q.span()), sexpr]
+        //             .into_iter()
+        //             .rev()
+        //             .collect::<List<_>>()
+        //     })
+        //     .map(Sexpr::Cons);
 
-        let unquote = just(Token::Comma)
-            .map_with_span(SrcNode::new)
-            .then(sexpr.clone())
-            .map(|(q, sexpr)| {
-                let quote = Sexpr::Atom(SrcNode::new(
-                    Atom::Symbol(InternedString::from("unquote")),
-                    q.span(),
-                ));
-                vec![SrcNode::new(quote, q.span()), sexpr]
-                    .into_iter()
-                    .rev()
-                    .collect::<List<_>>()
-            })
-            .map(Sexpr::Cons);
+        // let unquote = just(Token::Comma)
+        //     .map_with_span(SrcNode::new)
+        //     .then(sexpr.clone())
+        //     .map(|(q, sexpr)| {
+        //         let quote = Sexpr::Atom(SrcNode::new(
+        //             Atom::Symbol(InternedString::from("unquote")),
+        //             q.span(),
+        //         ));
+        //         vec![SrcNode::new(quote, q.span()), sexpr]
+        //             .into_iter()
+        //             .rev()
+        //             .collect::<List<_>>()
+        //     })
+        //     .map(Sexpr::Cons);
+
+        // let dot = sexpr
+        //     .then_ignore(just(Token::Period))
+        //     .then(sexpr.clone())
+        //     .map(|(car, cdr)| List::Node(Box::new(SrcNode::new(Sexpr::Atom(car), car.span())), ))
+        //     .map(Sexpr::Cons)
+        //     .delimited_by(just(Token::LParen), just(Token::RParen));
 
         let list = sexpr
             .repeated()
-            .collect::<List<_>>()
+            .collect()
             .map(|l| l.rev().collect::<List<_>>())
             .map(Sexpr::Cons)
             .delimited_by(just(Token::LParen), just(Token::RParen));
 
         atom.or(list)
-            .or(quote)
-            .or(quasiquote)
-            .or(unquote)
+            // .or(quote)
+            // .or(quasiquote)
+            // .or(unquote)
+            // .or(dot)
             .map_with_span(SrcNode::new)
     })
 }

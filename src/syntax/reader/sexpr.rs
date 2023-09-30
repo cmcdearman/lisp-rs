@@ -1,7 +1,6 @@
 use crate::util::{
     format::{spaces, Format},
     intern::InternedString,
-    list::List,
     node::SrcNode,
 };
 use num_rational::Rational64;
@@ -35,7 +34,41 @@ impl Debug for SrcNode<Root> {
 #[derive(Debug, Clone, PartialEq)]
 pub enum Sexpr {
     Atom(SrcNode<Atom>),
-    Cons(List<SrcNode<Sexpr>>),
+    Cons(List),
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum List {
+    Cons {
+        car: SrcNode<Sexpr>,
+        cdr: SrcNode<Sexpr>,
+    },
+    Nil,
+}
+
+impl List {
+    pub fn new(car: SrcNode<Sexpr>, cdr: SrcNode<Sexpr>) -> Self {
+        Self::Cons { car, cdr }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct ListIter {
+    pub list: List,
+}
+
+impl Iterator for ListIter {
+    type Item = SrcNode<Sexpr>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        match self.list.clone() {
+            List::Cons { car, cdr } => {
+                self.list = cdr.inner();
+                Some(car)
+            }
+            List::Nil => None,
+        }
+    }
 }
 
 impl Display for Sexpr {
@@ -86,7 +119,7 @@ impl Debug for Format<SrcNode<Sexpr>> {
 
 impl Default for Sexpr {
     fn default() -> Self {
-        Self::Cons(List::Nil)
+        Self::Atom(Atom::Nil)
     }
 }
 
@@ -95,6 +128,7 @@ pub enum Atom {
     Symbol(InternedString),
     Number(Rational64),
     String(InternedString),
+    Nil,
 }
 
 impl Display for Atom {
@@ -103,6 +137,7 @@ impl Display for Atom {
             Atom::Symbol(s) => write!(f, "{}", s),
             Atom::Number(n) => write!(f, "{}", n),
             Atom::String(s) => write!(f, "{}", s),
+            Atom::Nil => write!(f, "nil"),
         }
     }
 }

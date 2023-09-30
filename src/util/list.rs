@@ -6,9 +6,25 @@ use std::fmt::Display;
 #[derive(Debug, Clone, Default, PartialEq)]
 pub enum List<T> {
     Node(Box<(T, List<T>)>),
+    // Node {
+    //     car: Box<T>,
+    //     cdr: Box<List<T>>,
+    // },
     #[default]
     Nil,
 }
+
+impl<T> List<T> {
+    pub fn new(car: T, cdr: List<T>) -> Self {
+        Self::Node(Box::new((car, cdr)))
+    }
+}
+
+// #[derive(Debug, Clone, PartialEq)]
+// pub struct ConsPair<T> {
+//     pub car: T,
+//     pub cdr: ConsPair<T>,
+// }
 
 impl<T> Display for List<T>
 where
@@ -44,7 +60,7 @@ impl<T: Clone> Iterator for List<T> {
 
 impl<T: Clone> ExactSizeIterator for List<T> {
     fn len(&self) -> usize {
-        self.clone().fold(0, |acc, _| acc + 1)
+        self.clone().count()
     }
 }
 
