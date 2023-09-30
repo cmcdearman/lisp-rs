@@ -1,72 +1,94 @@
 ;;;; A file for feature/syntax ideas
 
-;; You can use `let` to bind values to names. Note
+;; You can use `def` to bind values to names. Note
 ;; that we don't call these variables because they
 ;; can't vary. They are immutable.
-(let x 10)
+(def x 10)
 
-;; `let` can bind to lambdas
-(let gcd (lambda (a b)
+;; `def` can bind to lambdas
+(def gcd (lambda (a b)
   (if (= b 0) 
       a
       (gcd b (% a b)))))
 
-;; `let` can also bind application forms
-(let (gcd a b)
+;; `def` can also bind application forms
+(def (gcd a b)
   (if (= b 0) 
       a
       (gcd b (% a b))))
 
 ;; you can use `match` to pattern match or `if` for conditionals
-(let (gcd a b)
+(def (gcd a b)
   (match b
     ((0) a)
     ((_) (gcd b (% a b)))))
 
-(let (fib n)
+(def (fib n)
   (match n
     ((0) 0)
     ((1) 1)
     ((_) (+ (fib (- n 1)) (fib (- n 2))))))
 
-(let ack (m n)
+(def ack (m n)
   (cond ((= m 0) (+ n 1))
         ((= n 0) (ack (- m 1) 1))
         (ack (- m 1) (ack m (- n 1)))))
 
-(let (map f xs)
+(def (map f xs)
   (if (empty? xs) nil
       (cons (f (car xs)) (map f (cdr xs)))))
 
-(let (fib n)
+(def (fib n)
   (if (<= n 1) 
       n
       (+ (fib (- n 1)) (fib (- n 2)))))
 
 (println (fib 45))
 
-;; Macros
-(lets ((a 10) 
+;; `let` expressions are used to bind names to values
+;; in a local scope. The names are immutable.
+(let ((a 10) 
       (b 5))
   (+ a b))
 
-;; `struct` is a macro that defines a struct.
-;; Under the hood, it's just a map. 
-(struct point (x y))
 
-(let (gcd a b) 
-  (if (= b 0) a
-      (gcd b (% a b)))
-  (gcd 24 18))
+;;; ==================================================================
+;;; *                            Macros                              *
+;;; ==================================================================
+
+;; `defmacro` is used to define macros. Macros are
+;; like functions, but they are evaluated at compile
+;; time. They can be used to define new syntax.
+(defmacro (backwards . body)
+  (cons 'begin
+	(reverse body)))
+
+(defmacro (while condition . body)
+  `(let loop ()
+     (cond (,condition
+	    (begin . ,body)
+	    (loop)))))
+
+(defmacro (when test . expr)
+  (list 'if test (cons 'progn expr)))
+
+;; Macro calls are like function calls, but the arguments
+;; are not evaluated. Instead, they are passed to the macro
+;; as unevaluated forms.
+
+(when (= 1 1)
+  (println "1 is equal to 1"))
+
+;;; ==================================================================
+;;; *                         Data Types                             *
+;;; ==================================================================
+
+(data (point x y))
   
-;; class Ord <: Eq + PartialOrd = 
-;;   let cmp self other = raise :NotImplementedError
-;; end
-
 (class Eq ()
-  (define (eq self other)
+  (def (eq self other)
     (raise :NotImplementedError)))
 
 (class Ord (Eq PartialOrd)
-  (define (cmp self other)
+  (def (cmp self other)
     (raise :NotImplementedError)))

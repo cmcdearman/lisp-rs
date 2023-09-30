@@ -1,2 +1,3 @@
-# lisp-rs
-My first attempt at a basic interpreter in Rust.
+# lust
+A Lisp interpreter written in Rust. Lisp + Rust = Lust.
+
