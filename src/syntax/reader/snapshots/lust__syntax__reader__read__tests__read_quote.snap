@@ -1,0 +1,15 @@
+---
+source: src/syntax/reader/read.rs
+expression: root.unwrap()
+---
+Root @ 0..8
+  List @ 0..8
+    Atom @ 0..1
+      Symbol("quote") @ 0..1,
+    List @ 1..8
+      Atom @ 2..3
+        Number(1) @ 2..3,
+      Atom @ 4..5
+        Number(2) @ 4..5,
+      Atom @ 6..7
+        Number(3) @ 6..7

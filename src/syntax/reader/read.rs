@@ -26,14 +26,29 @@ fn sexpr_reader<'a, I: ValueInput<'a, Token = Token, Span = Span>>(
         .map_with_span(SrcNode::new)
         .map(Sexpr::Atom);
 
+        let quote = just(Token::Quote)
+            .map_with_span(SrcNode::new)
+            .then(sexpr.clone())
+            .map(|(q, sexpr)| {
+                let quote = Sexpr::Atom(SrcNode::new(
+                    Atom::Symbol(InternedString::from("quote")),
+                    q.span(),
+                ));
+                vec![SrcNode::new(quote, q.span()), sexpr]
+                    .into_iter()
+                    .rev()
+                    .collect::<List<_>>()
+            })
+            .map(Sexpr::Cons);
+
         let list = sexpr
             .repeated()
-            .collect()
-            .map(List::from)
+            .collect::<List<_>>()
+            .map(|l| l.rev().collect::<List<_>>())
             .map(Sexpr::Cons)
             .delimited_by(just(Token::LParen), just(Token::RParen));
 
-        atom.or(list).map_with_span(SrcNode::new)
+        atom.or(list).or(quote).map_with_span(SrcNode::new)
     })
 }
 
@@ -71,6 +86,16 @@ mod tests {
     #[test]
     fn read_list() {
         let src = "(1 2 3)";
+        let (root, errs) = read(src);
+        if !errs.is_empty() {
+            panic!("{:?}", errs);
+        }
+        insta::assert_debug_snapshot!(root.unwrap());
+    }
+
+    #[test]
+    fn read_quote() {
+        let src = "'(1 2 3)";
         let (root, errs) = read(src);
         if !errs.is_empty() {
             panic!("{:?}", errs);

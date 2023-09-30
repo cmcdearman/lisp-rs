@@ -55,7 +55,6 @@ impl<T> FromIterator<T> for List<T> {
     }
 }
 
-
 impl<T: Clone> DoubleEndedIterator for List<T> {
     fn next_back(&mut self) -> Option<Self::Item> {
         match self {
