@@ -6,7 +6,7 @@ use crate::util::{
 use num_rational::Rational64;
 use std::fmt::{Debug, Display};
 
-#[derive(Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Root {
     pub sexprs: Vec<SrcNode<Sexpr>>,
 }
@@ -14,27 +14,27 @@ pub struct Root {
 impl Display for Root {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         for s in self.clone().sexprs {
-            writeln!(f, "{}", s.inner())?;
+            writeln!(f, "{}", s)?;
         }
         Ok(())
     }
 }
 
-impl Debug for SrcNode<Root> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        // Pretty print with indents and spans
-        write!(f, "Root @ {}\n", self.span())?;
-        for sexpr in self.sexprs.clone() {
-            write!(f, "{:?}", Format::new(2, sexpr))?;
-        }
-        Ok(())
-    }
-}
+// impl Debug for SrcNode<Root> {
+//     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+//         // Pretty print with indents and spans
+//         write!(f, "Root @ {}\n", self.span())?;
+//         for sexpr in self.sexprs.clone() {
+//             write!(f, "{:?}", Format::new(2, sexpr))?;
+//         }
+//         Ok(())
+//     }
+// }
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Sexpr {
     Atom(SrcNode<Atom>),
-    Cons(Cons),
+    Cons(SrcNode<Cons>),
 }
 
 impl Sexpr {
@@ -44,6 +44,13 @@ impl Sexpr {
                 Atom::Symbol(s) => &*s == "nil",
                 _ => false,
             },
+            _ => false,
+        }
+    }
+
+    pub fn is_atom(&self) -> bool {
+        match self {
+            Sexpr::Atom(_) => true,
             _ => false,
         }
     }
@@ -61,37 +68,96 @@ impl Cons {
     }
 }
 
+// impl FromIterator<SrcNode<Sexpr>> for Cons {
+//     fn from_iter<T: IntoIterator<Item = SrcNode<Sexpr>>>(iter: T) -> Self {
+//         let mut iter = iter.into_iter();
+//         match iter.next() {
+//             Some(car) => Self::from_iter_with_car(car, iter),
+//             None => Self::from_iter_with_car(
+//                 SrcNode::new(Sexpr::Atom(SrcNode::new(
+//                     Atom::Symbol(InternedString::from("nil")),
+//                     Span::default(),
+//                 ))),
+//                 iter,
+//             ),
+//         }
+//         // let cdr = iter.next().unwrap();
+//         // Self { car, cdr }
+//     }
+// }
+
+impl IntoIterator for SrcNode<Sexpr> {
+    type Item = SrcNode<Sexpr>;
+    type IntoIter = ConsIter;
+
+    fn into_iter(self) -> Self::IntoIter {
+        ConsIter {
+            next: Some(self.clone()),
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct ConsIter {
-    pub cons: Cons,
+    next: Option<SrcNode<Sexpr>>,
 }
+
+// '(1 . 2)
 
 impl Iterator for ConsIter {
     type Item = SrcNode<Sexpr>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.cons.cdr.is_nil() {
-            None
-        } else {
-            let car = self.cons.car.clone();
-            let cdr = self.cons.cdr.clone();
-            self.cons = cdr.inner().clone().into_cons().unwrap();
-            Some(car)
+        match self.next.take() {
+            Some(sexpr) => match sexpr.inner() {
+                Sexpr::Cons(c) => {
+                    self.next = Some(c.cdr.clone());
+                    Some(c.car.clone())
+                }
+                _ => None,
+            },
+            None => None,
         }
     }
 }
 
-impl Display for Sexpr {
+impl DoubleEndedIterator for ConsIter {
+    fn next_back(&mut self) -> Option<Self::Item> {
+        match self.next.take() {
+            Some(sexpr) => match sexpr.inner() {
+                Sexpr::Cons(c) => {
+                    self.next = Some(c.car.clone());
+                    Some(c.cdr.clone())
+                }
+                _ => None,
+            },
+            None => None,
+        }
+    }
+}
+
+impl ExactSizeIterator for ConsIter {
+    fn len(&self) -> usize {
+        let mut len = 0;
+        let mut iter = self.clone();
+        while iter.next().is_some() {
+            len += 1;
+        }
+        len
+    }
+}
+
+impl Display for SrcNode<Sexpr> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self.clone() {
+        match self.inner().clone() {
             Sexpr::Atom(a) => write!(f, "{}", a.inner()),
-            Sexpr::Cons(l) => {
+            Sexpr::Cons(c) => {
                 write!(f, "(")?;
-                for (i, s) in l.enumerate() {
+                for (i, s) in self.clone().into_iter().enumerate() {
                     if i > 0 {
                         write!(f, " ")?;
                     }
-                    write!(f, "{}", s.inner())?;
+                    write!(f, "{}", s)?;
                 }
                 write!(f, ")")
             }
@@ -102,7 +168,7 @@ impl Display for Sexpr {
 impl Debug for Format<SrcNode<Sexpr>> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         // Pretty print with indents and spans
-        match &self.value.inner() {
+        match self.value.inner().clone() {
             Sexpr::Atom(a) => {
                 let fmt = Format::new(self.indent + 2, a.clone());
                 write!(
@@ -113,11 +179,11 @@ impl Debug for Format<SrcNode<Sexpr>> {
                     fmt,
                 )
             }
-            Sexpr::Cons(list) => {
+            Sexpr::Cons(cons) => {
                 write!(f, "{}List @ {}", spaces(self.indent), self.value.span())?;
-                for (i, sexpr) in list.clone().into_iter().rev().enumerate() {
+                for (i, sexpr) in self.value.clone().into_iter().rev().enumerate() {
                     write!(f, "\n{:?}", Format::new(self.indent + 2, sexpr))?;
-                    if i != list.len() - 1 {
+                    if i != self.value.clone().into_iter().len() - 1 {
                         write!(f, ",")?;
                     }
                 }
@@ -127,18 +193,11 @@ impl Debug for Format<SrcNode<Sexpr>> {
     }
 }
 
-impl Default for Sexpr {
-    fn default() -> Self {
-        Self::Atom(Atom::Nil)
-    }
-}
-
 #[derive(Debug, Clone, PartialEq)]
 pub enum Atom {
     Symbol(InternedString),
     Number(Rational64),
     String(InternedString),
-    Nil,
 }
 
 impl Display for Atom {
@@ -147,7 +206,6 @@ impl Display for Atom {
             Atom::Symbol(s) => write!(f, "{}", s),
             Atom::Number(n) => write!(f, "{}", n),
             Atom::String(s) => write!(f, "{}", s),
-            Atom::Nil => write!(f, "nil"),
         }
     }
 }
@@ -155,7 +213,7 @@ impl Display for Atom {
 impl Debug for Format<SrcNode<Atom>> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         // Pretty print with indents and spans
-        match &self.value.inner() {
+        match self.value.inner() {
             Atom::Symbol(name) => {
                 write!(
                     f,

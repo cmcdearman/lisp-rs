@@ -1,5 +1,5 @@
 use super::{
-    sexpr::{Atom, Root, Sexpr},
+    sexpr::{Atom, Cons, Root, Sexpr},
     token::Token,
 };
 use crate::util::{intern::InternedString, list::List, node::SrcNode, span::Span};
@@ -79,9 +79,12 @@ fn sexpr_reader<'a, I: ValueInput<'a, Token = Token, Span = Span>>(
         //     .delimited_by(just(Token::LParen), just(Token::RParen));
 
         let list = sexpr
-            .repeated()
-            .collect()
-            .map(|l| l.rev().collect::<List<_>>())
+            .foldl(sexpr.repeated(), |car, cdr| {
+                let car = SrcNode::new(Sexpr::Atom(car), car.span());
+                let cdr = cdr.map(|cdr| SrcNode::new(Sexpr::Atom(cdr), cdr.span()));
+                let cons = Cons::new(car, cdr);
+                SrcNode::new(cons, car.span())
+            })
             .map(Sexpr::Cons)
             .delimited_by(just(Token::LParen), just(Token::RParen));
 
