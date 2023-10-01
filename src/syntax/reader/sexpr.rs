@@ -34,39 +34,49 @@ impl Debug for SrcNode<Root> {
 #[derive(Debug, Clone, PartialEq)]
 pub enum Sexpr {
     Atom(SrcNode<Atom>),
-    Cons(List),
+    Cons(Cons),
 }
 
-#[derive(Debug, Clone, PartialEq)]
-pub enum List {
-    Cons {
-        car: SrcNode<Sexpr>,
-        cdr: SrcNode<Sexpr>,
-    },
-    Nil,
-}
-
-impl List {
-    pub fn new(car: SrcNode<Sexpr>, cdr: SrcNode<Sexpr>) -> Self {
-        Self::Cons { car, cdr }
+impl Sexpr {
+    pub fn is_nil(&self) -> bool {
+        match self.clone() {
+            Sexpr::Atom(a) => match a.inner().clone() {
+                Atom::Symbol(s) => &*s == "nil",
+                _ => false,
+            },
+            _ => false,
+        }
     }
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct ListIter {
-    pub list: List,
+pub struct Cons {
+    car: SrcNode<Sexpr>,
+    cdr: SrcNode<Sexpr>,
 }
 
-impl Iterator for ListIter {
+impl Cons {
+    pub fn new(car: SrcNode<Sexpr>, cdr: SrcNode<Sexpr>) -> Self {
+        Self { car, cdr }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct ConsIter {
+    pub cons: Cons,
+}
+
+impl Iterator for ConsIter {
     type Item = SrcNode<Sexpr>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        match self.list.clone() {
-            List::Cons { car, cdr } => {
-                self.list = cdr.inner();
-                Some(car)
-            }
-            List::Nil => None,
+        if self.cons.cdr.is_nil() {
+            None
+        } else {
+            let car = self.cons.car.clone();
+            let cdr = self.cons.cdr.clone();
+            self.cons = cdr.inner().clone().into_cons().unwrap();
+            Some(car)
         }
     }
 }
