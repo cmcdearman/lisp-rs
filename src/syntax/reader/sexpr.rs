@@ -68,23 +68,19 @@ impl Cons {
     }
 }
 
-// impl FromIterator<SrcNode<Sexpr>> for Cons {
-//     fn from_iter<T: IntoIterator<Item = SrcNode<Sexpr>>>(iter: T) -> Self {
-//         let mut iter = iter.into_iter();
-//         match iter.next() {
-//             Some(car) => Self::from_iter_with_car(car, iter),
-//             None => Self::from_iter_with_car(
-//                 SrcNode::new(Sexpr::Atom(SrcNode::new(
-//                     Atom::Symbol(InternedString::from("nil")),
-//                     Span::default(),
-//                 ))),
-//                 iter,
-//             ),
-//         }
-//         // let cdr = iter.next().unwrap();
-//         // Self { car, cdr }
+// impl<T> FromIterator<T> for List<T> {
+//     fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> Self {
+//         iter.into_iter()
+//             .fold(Self::Nil, |list, data| Self::Node(Box::new((data, list))))
 //     }
 // }
+
+impl FromIterator<SrcNode<Sexpr>> for Cons {
+    fn from_iter<T: IntoIterator<Item = SrcNode<Sexpr>>>(iter: T) -> Self {
+        iter.into_iter()
+            .fold(Self::Nil, |list, data| Self::Node(Box::new((data, list))))
+    }
+}
 
 impl IntoIterator for SrcNode<Sexpr> {
     type Item = SrcNode<Sexpr>;
@@ -103,6 +99,15 @@ pub struct ConsIter {
 }
 
 // '(1 . 2)
+
+// impl FromIterator<SrcNode<Sexpr>> for ConsIter {
+//     fn from_iter<T: IntoIterator<Item = SrcNode<Sexpr>>>(iter: T) -> Self {
+//         let mut iter = iter.into_iter();
+//         Self {
+//             next: iter.next(),
+//         }
+//     }
+// }
 
 impl Iterator for ConsIter {
     type Item = SrcNode<Sexpr>;

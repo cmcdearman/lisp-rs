@@ -29,7 +29,7 @@
     ((1) 1)
     ((_) (+ (fib (- n 1)) (fib (- n 2))))))
 
-(def ack (m n)
+(def (ack m n)
   (cond ((= m 0) (+ n 1))
         ((= n 0) (ack (- m 1) 1))
         (ack (- m 1) (ack m (- n 1)))))
@@ -83,8 +83,12 @@
 ;;; *                         Data Types                             *
 ;;; ==================================================================
 
+;; Records with `data` are immutable product types with named fields.
 (data (point x y))
-  
+
+;; Instantiating a record is just like calling a function.
+(def p (point 1 2)) 
+
 (class Eq ()
   (def (eq self other)
     (raise :NotImplementedError)))
@@ -92,3 +96,21 @@
 (class Ord (Eq PartialOrd)
   (def (cmp self other)
     (raise :NotImplementedError)))
+
+(class Stack ()
+  (def (push self x)
+    (raise :NotImplementedError))
+  (def (pop self)
+    (raise :NotImplementedError))
+  (def (peek self)
+    (raise :NotImplementedError))
+  (def (empty? self)
+    (raise :NotImplementedError)))
+
+(class )
+
+;; instantiate a class
+(def s (Stack))
+
+;; method calls are done with `send`
+(send s push 1)
