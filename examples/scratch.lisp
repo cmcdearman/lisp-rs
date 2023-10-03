@@ -12,22 +12,10 @@
       (gcd b (% a b)))))
 
 ;; `def` can also bind application forms
-(def (gcd a b)
+(let (gcd a b)
   (if (= b 0) 
       a
       (gcd b (% a b))))
-
-;; you can use `match` to pattern match or `if` for conditionals
-(def (gcd a b)
-  (match b
-    ((0) a)
-    ((_) (gcd b (% a b)))))
-
-(def (fib n)
-  (match n
-    ((0) 0)
-    ((1) 1)
-    ((_) (+ (fib (- n 1)) (fib (- n 2))))))
 
 (def (ack m n)
   (cond ((= m 0) (+ n 1))
@@ -45,12 +33,15 @@
 
 (println (fib 45))
 
-;; `let` expressions are used to bind names to values
-;; in a local scope. The names are immutable.
-(let ((a 10) 
+(let (gcd a b)
+  (if (= b 0) 
+      a
+      (gcd b (% a b)))
+  (gcd 10 5))
+
+(lets ((a 10) 
       (b 5))
   (+ a b))
-
 
 ;;; ==================================================================
 ;;; *                            Macros                              *
@@ -71,6 +62,18 @@
 
 (defmacro (when test . expr)
   (list 'if test (cons 'progn expr)))
+
+;; you can use `match` built-in macro to pattern match or `if` for conditionals
+(def (gcd a b)
+  (match b
+    ((0) a)
+    ((_) (gcd b (% a b)))))
+
+(def (fib n)
+  (match n
+    ((0) 0)
+    ((1) 1)
+    ((_) (+ (fib (- n 1)) (fib (- n 2))))))
 
 ;; Macro calls are like function calls, but the arguments
 ;; are not evaluated. Instead, they are passed to the macro
