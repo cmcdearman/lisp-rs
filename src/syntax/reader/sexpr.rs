@@ -3,6 +3,7 @@ use crate::util::{
     intern::InternedString,
     node::SrcNode,
 };
+use chumsky::container::Container;
 use num_rational::Rational64;
 use std::fmt::{Debug, Display};
 
@@ -68,20 +69,6 @@ impl Cons {
     }
 }
 
-// impl<T> FromIterator<T> for List<T> {
-//     fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> Self {
-//         iter.into_iter()
-//             .fold(Self::Nil, |list, data| Self::Node(Box::new((data, list))))
-//     }
-// }
-
-impl FromIterator<SrcNode<Sexpr>> for Cons {
-    fn from_iter<T: IntoIterator<Item = SrcNode<Sexpr>>>(iter: T) -> Self {
-        iter.into_iter()
-            .fold(Self::Nil, |list, data| Self::Node(Box::new((data, list))))
-    }
-}
-
 impl IntoIterator for SrcNode<Sexpr> {
     type Item = SrcNode<Sexpr>;
     type IntoIter = ConsIter;
@@ -103,9 +90,7 @@ pub struct ConsIter {
 // impl FromIterator<SrcNode<Sexpr>> for ConsIter {
 //     fn from_iter<T: IntoIterator<Item = SrcNode<Sexpr>>>(iter: T) -> Self {
 //         let mut iter = iter.into_iter();
-//         Self {
-//             next: iter.next(),
-//         }
+//         Self { next: iter.next() }
 //     }
 // }
 
@@ -149,6 +134,14 @@ impl ExactSizeIterator for ConsIter {
             len += 1;
         }
         len
+    }
+}
+
+impl Container<SrcNode<Sexpr>> for ConsIter {
+    type Item = SrcNode<Sexpr>;
+
+    fn is_empty(&self) -> bool {
+        self.next.is_none()
     }
 }
 

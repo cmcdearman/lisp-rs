@@ -81,13 +81,11 @@ fn sexpr_reader<'a, I: ValueInput<'a, Token = Token, Span = Span>>(
         let list = sexpr
             .foldl(
                 sexpr.repeated(),
-                |car: SrcNode<Sexpr>, cdr: SrcNode<Sexpr>| {
-                    match cdr.inner() {
-                        Sexpr::Cons(cons) => {
-                            todo!()
-                        }
-                        _ => car.inner().clone(),
+                |car: SrcNode<Sexpr>, cdr: SrcNode<Sexpr>| match cdr.inner() {
+                    Sexpr::Cons(cons) => {
+                        todo!()
                     }
+                    _ => car.inner().clone(),
                 },
             )
             .map(Sexpr::Cons)
