@@ -23,7 +23,6 @@ fn sexpr_reader<'a, I: ValueInput<'a, Token = Token, Span = Span>>(
             Token::Number(n) => Atom::Number(n),
             Token::String(s) => Atom::String(s),
         }
-        .map_with_span(SrcNode::new)
         .map(Sexpr::Atom);
 
         // let quote = just(Token::Quote)

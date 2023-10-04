@@ -1,5 +1,15 @@
 ;;;; A file for feature/syntax ideas
 
+;;; ==================================================================
+;;; *                         Special Forms                          *
+;;; ==================================================================
+
+;; `let`
+;; `if`
+;; `lambda`
+;; `quote`
+;; `macro`
+
 ;; You can use `let` to bind values to names. Note
 ;; that we don't call these variables because they
 ;; can't vary. They are immutable.
@@ -137,8 +147,6 @@
     (raise :NotImplementedError))
   (let (empty? self)
     (raise :NotImplementedError)))
-
-(class )
 
 ;; instantiate a class
 (let s (Stack))

@@ -5,7 +5,11 @@ use crate::util::{
 };
 use chumsky::container::Container;
 use num_rational::Rational64;
-use std::fmt::{Debug, Display};
+use std::{
+    cell::RefCell,
+    fmt::{Debug, Display},
+    rc::Rc,
+};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Root {
@@ -34,56 +38,58 @@ impl Display for Root {
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Sexpr {
-    Atom(SrcNode<Atom>),
-    Cons(SrcNode<Cons>),
-}
-
-impl Sexpr {
-    pub fn is_nil(&self) -> bool {
-        match self.clone() {
-            Sexpr::Atom(a) => match a.inner().clone() {
-                Atom::Symbol(s) => &*s == "nil",
-                _ => false,
-            },
-            _ => false,
-        }
-    }
-
-    pub fn is_atom(&self) -> bool {
-        match self {
-            Sexpr::Atom(_) => true,
-            _ => false,
-        }
-    }
+    Atom(Atom),
+    Cons(Cons),
+    Nil,
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Cons {
-    car: SrcNode<Sexpr>,
-    cdr: SrcNode<Sexpr>,
+    head: SrcNode<Rc<RefCell<Sexpr>>>,
+    tail: SrcNode<Rc<RefCell<Sexpr>>>,
 }
 
 impl Cons {
-    pub fn new(car: SrcNode<Sexpr>, cdr: SrcNode<Sexpr>) -> Self {
-        Self { car, cdr }
-    }
-}
-
-impl IntoIterator for SrcNode<Sexpr> {
-    type Item = SrcNode<Sexpr>;
-    type IntoIter = ConsIter;
-
-    fn into_iter(self) -> Self::IntoIter {
-        ConsIter {
-            next: Some(self.clone()),
+    pub fn new(head: SrcNode<Sexpr>, tail: SrcNode<Sexpr>) -> Self {
+        Self {
+            head: SrcNode::new(Rc::new(RefCell::new(head.inner().clone())), head.span()),
+            tail: SrcNode::new(Rc::new(RefCell::new(tail.inner().clone())), tail.span()),
         }
     }
+
+    pub fn head(&self) -> SrcNode<Sexpr> {
+        SrcNode::new(self.head.inner().borrow().clone(), self.head.span())
+    }
+
+    pub fn tail(&self) -> SrcNode<Sexpr> {
+        SrcNode::new(self.tail.inner().borrow().clone(), self.tail.span())
+    }
 }
 
+// impl IntoIterator for SrcNode<Cons> {
+//     type Item = SrcNode<Sexpr>;
+//     type IntoIter = ConsIter;
+
+//     fn into_iter(self) -> Self::IntoIter {
+//         ConsIter {
+//             next: Some(self.clone()),
+//         }
+//     }
+// }
+
+// impl IntoIterator for SrcNode<Sexpr> {
+//     type Item = SrcNode<Sexpr>;
+//     type IntoIter = ConsIter;
+
+//     fn into_iter(self) -> Self::IntoIter {
+//         ConsIter {
+//             next: Some(self.clone()),
+//         }
+//     }
+// }
+
 #[derive(Debug, Clone, PartialEq)]
-pub struct ConsIter {
-    next: Option<SrcNode<Sexpr>>,
-}
+pub struct ConsIter(Cons);
 
 // '(1 . 2)
 
@@ -98,33 +104,24 @@ impl Iterator for ConsIter {
     type Item = SrcNode<Sexpr>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        match self.next.take() {
-            Some(sexpr) => match sexpr.inner() {
-                Sexpr::Cons(c) => {
-                    self.next = Some(c.cdr.clone());
-                    Some(c.car.clone())
-                }
-                _ => None,
-            },
-            None => None,
-        }
+        todo!()
     }
 }
 
-impl DoubleEndedIterator for ConsIter {
-    fn next_back(&mut self) -> Option<Self::Item> {
-        match self.next.take() {
-            Some(sexpr) => match sexpr.inner() {
-                Sexpr::Cons(c) => {
-                    self.next = Some(c.car.clone());
-                    Some(c.cdr.clone())
-                }
-                _ => None,
-            },
-            None => None,
-        }
-    }
-}
+// impl DoubleEndedIterator for ConsIter {
+//     fn next_back(&mut self) -> Option<Self::Item> {
+//         match self.next.take() {
+//             Some(sexpr) => match sexpr.inner() {
+//                 Sexpr::Cons(c) => {
+//                     self.next = Some(c.car.clone());
+//                     Some(c.cdr.clone())
+//                 }
+//                 _ => None,
+//             },
+//             None => None,
+//         }
+//     }
+// }
 
 impl ExactSizeIterator for ConsIter {
     fn len(&self) -> usize {
@@ -137,13 +134,13 @@ impl ExactSizeIterator for ConsIter {
     }
 }
 
-impl Container<SrcNode<Sexpr>> for ConsIter {
-    type Item = SrcNode<Sexpr>;
+// impl Container<SrcNode<Sexpr>> for ConsIter {
+//     type Item = SrcNode<Sexpr>;
 
-    fn is_empty(&self) -> bool {
-        self.next.is_none()
-    }
-}
+//     fn is_empty(&self) -> bool {
+//         self.next.is_none()
+//     }
+// }
 
 impl Display for SrcNode<Sexpr> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
