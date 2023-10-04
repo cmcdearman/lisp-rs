@@ -26,17 +26,13 @@
       n
       (+ (fib (- n 1)) (fib (- n 2)))))
 
-(println (fib 45))
+(display (fib 45))
 
 (let (gcd a b)
   (if (= b 0) 
       a
       (gcd b (% a b)))
   (gcd 10 5))
-
-(lets ((a 10) 
-      (b 5))
-  (+ a b))
 
 ;;; ==================================================================
 ;;; *                            Macros                              *
@@ -45,6 +41,34 @@
 ;; `macro` is used to letine macros. Macros are
 ;; like functions, but they are evaluated at compile
 ;; time. They can be used to letine new syntax.
+
+;; `begin`
+(macro (begin . body)
+  (if (null? body)
+      nil
+      (if (null? (tail body))
+          (head body)
+          `(let ((result ,(head body)))
+             (if (null? result)
+                 (begin . ,(tail body))
+                 result
+                 (begin . ,body))))))
+
+;; `loop` is a macro that expands into a `let` that
+;; binds a name to a lambda that calls itself.
+(macro (loop . body)
+  `(let loop ()
+     (begin . ,body)
+     (loop)))
+
+;; `for` is a macro that expands into a `loop` that
+;; binds a name to a range of numbers.
+(macro (for i from to . body)
+  `(loop (let i from)
+     (if (<= i to)
+         (begin . ,body)
+         (inc i))))
+
 (macro (backwards . body)
   (cons 'begin
 	(reverse body)))
@@ -74,6 +98,10 @@
   (cond ((= m 0) (+ n 1))
         ((= n 0) (ack (- m 1) 1))
         (ack (- m 1) (ack m (- n 1)))))
+
+(lets ((a 10) 
+      (b 5))
+  (+ a b))
 
 ;; Macro calls are like function calls, but the arguments
 ;; are not evaluated. Instead, they are passed to the macro
