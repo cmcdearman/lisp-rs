@@ -46,14 +46,17 @@ pub enum Sexpr {
 #[derive(Debug, Clone, PartialEq)]
 pub struct Cons {
     head: SrcNode<Rc<RefCell<Sexpr>>>,
-    tail: SrcNode<Rc<RefCell<Sexpr>>>,
+    tail: Option<SrcNode<Rc<RefCell<Sexpr>>>>,
 }
 
 impl Cons {
     pub fn new(head: SrcNode<Sexpr>, tail: SrcNode<Sexpr>) -> Self {
         Self {
             head: SrcNode::new(Rc::new(RefCell::new(head.inner().clone())), head.span()),
-            tail: SrcNode::new(Rc::new(RefCell::new(tail.inner().clone())), tail.span()),
+            tail: Some(SrcNode::new(
+                Rc::new(RefCell::new(tail.inner().clone())),
+                tail.span(),
+            )),
         }
     }
 
@@ -61,8 +64,15 @@ impl Cons {
         SrcNode::new(self.head.inner().borrow().clone(), self.head.span())
     }
 
-    pub fn tail(&self) -> SrcNode<Sexpr> {
-        SrcNode::new(self.tail.inner().borrow().clone(), self.tail.span())
+    pub fn tail(&self) -> Option<SrcNode<Sexpr>> {
+        if let Some(tail) = self.tail {
+            Some(SrcNode::new(
+                tail.inner().borrow().clone(),
+                self.tail.span(),
+            ))
+        } else {
+            None
+        }
     }
 }
 
@@ -75,7 +85,7 @@ impl IntoIterator for Cons {
     }
 }
 
-#[derive(Default, Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct ConsIter(Cons);
 
 // '(1 . 2)
@@ -105,11 +115,11 @@ impl ExactSizeIterator for ConsIter {
     }
 }
 
-impl Container<SrcNode<Sexpr>> for ConsIter {
-    fn push(&mut self, item: SrcNode<Sexpr>) {
-        todo!()
-    }
-}
+// impl Container<SrcNode<Sexpr>> for ConsIter {
+//     fn push(&mut self, item: SrcNode<Sexpr>) {
+//         todo!()
+//     }
+// }
 
 impl Display for SrcNode<Sexpr> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
