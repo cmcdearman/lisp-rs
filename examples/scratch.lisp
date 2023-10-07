@@ -19,13 +19,13 @@
 (let gcd (lambda (a b)
   (if (= b 0) 
       a
-      (gcd b (% a b)))))
+      (gcd b (mod a b)))))
 
 ;; `let` can also bind application forms
 (let (gcd a b)
   (if (= b 0) 
       a
-      (gcd b (% a b))))
+      (gcd b (mod a b))))
 
 (let (map f xs)
   (if (empty? xs) nil
@@ -41,7 +41,7 @@
 (let (gcd a b)
   (if (= b 0) 
       a
-      (gcd b (% a b)))
+      (gcd b (mod a b)))
   (gcd 10 5))
 
 ;;; ==================================================================
@@ -96,7 +96,7 @@
 (let (gcd a b)
   (match b
     ((0) a)
-    ((_) (gcd b (% a b)))))
+    ((_) (gcd b (mod a b)))))
 
 (let (fib n)
   (match n

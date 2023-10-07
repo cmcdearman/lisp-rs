@@ -3,7 +3,6 @@ use crate::util::{
     intern::InternedString,
     node::SrcNode,
 };
-use chumsky::{container::Container, primitive::todo, Parser};
 use num_rational::Rational64;
 use std::{
     cell::RefCell,
@@ -39,81 +38,109 @@ impl Display for Root {
 #[derive(Debug, Clone, PartialEq)]
 pub enum Sexpr {
     Atom(Atom),
-    Cons(Cons),
+    List(List),
+}
+
+// #[derive(Debug, Clone, PartialEq)]
+// pub enum Cons {
+
+// }
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum List {
+    Pair {
+        head: Rc<RefCell<SrcNode<Sexpr>>>,
+        tail: Option<Rc<RefCell<SrcNode<Sexpr>>>>,
+    },
     Nil,
 }
 
-#[derive(Debug, Clone, PartialEq)]
-pub struct Cons {
-    head: SrcNode<Rc<RefCell<Sexpr>>>,
-    tail: Option<SrcNode<Rc<RefCell<Sexpr>>>>,
-}
+// impl Cons {
+//     pub fn new(head: SrcNode<Sexpr>, tail: SrcNode<Sexpr>) -> Self {
+//         Self {
+//             head: Rc::new(RefCell::new(head.clone())),
+//             tail: Some(Rc::new(RefCell::new(tail.clone()))),
+//         }
+//     }
 
-impl Cons {
-    pub fn new(head: SrcNode<Sexpr>, tail: SrcNode<Sexpr>) -> Self {
-        Self {
-            head: SrcNode::new(Rc::new(RefCell::new(head.inner().clone())), head.span()),
-            tail: Some(SrcNode::new(
-                Rc::new(RefCell::new(tail.inner().clone())),
-                tail.span(),
-            )),
-        }
-    }
+//     pub fn head(&self) -> SrcNode<Sexpr> {
+//         self.head.borrow().clone()
+//     }
 
-    pub fn head(&self) -> SrcNode<Sexpr> {
-        SrcNode::new(self.head.inner().borrow().clone(), self.head.span())
-    }
+//     pub fn tail(&self) -> Option<SrcNode<Sexpr>> {
+//         if let Some(tail) = self.tail {
+//             Some(tail.borrow().clone())
+//         } else {
+//             None
+//         }
+//     }
 
-    pub fn tail(&self) -> Option<SrcNode<Sexpr>> {
-        if let Some(tail) = self.tail {
-            Some(SrcNode::new(
-                tail.inner().borrow().clone(),
-                self.tail.span(),
-            ))
-        } else {
-            None
-        }
-    }
-}
+//     pub fn set_head(&mut self) {}
+// }
 
-impl IntoIterator for Cons {
-    type Item = SrcNode<Sexpr>;
-    type IntoIter = ConsIter;
+// impl IntoIterator for Cons {
+//     type Item = SrcNode<Sexpr>;
+//     type IntoIter = ConsIter;
 
-    fn into_iter(self) -> Self::IntoIter {
-        ConsIter(self.clone())
-    }
-}
+//     fn into_iter(self) -> Self::IntoIter {
+//         ConsIter(Some(self.clone()))
+//     }
+// }
 
-#[derive(Debug, Clone, PartialEq)]
-pub struct ConsIter(Cons);
+// #[derive(Debug, Clone, PartialEq)]
+// pub struct ConsIter(Option<Cons>);
 
-// '(1 . 2)
+// // '(1 . 2)
 
-impl Iterator for ConsIter {
-    type Item = SrcNode<Sexpr>;
+// impl FromIterator<SrcNode<Sexpr>> for ConsIter {
+//     fn from_iter<T: IntoIterator<Item = SrcNode<Sexpr>>>(iter: T) -> Self {
+//         ConsIter(iter.into_iter().fold(None, |acc, next| {
+//             Some(Cons {
+//                 head: Rc::new(RefCell::new(next)),
+//                 tail: {
+//                     if let Some(last) = acc {
+//                         Some(Rc::new(RefCell::new(SrcNode::new(
+//                             Sexpr::Cons(last),
+//                             next.span(),
+//                         ))))
+//                     } else {
+//                         None
+//                     }
+//                 },
+//             })
+//         }))
+//     }
+// }
 
-    fn next(&mut self) -> Option<Self::Item> {
-        todo!()
-    }
-}
+// impl Iterator for ConsIter {
+//     type Item = SrcNode<Sexpr>;
 
-impl DoubleEndedIterator for ConsIter {
-    fn next_back(&mut self) -> Option<Self::Item> {
-        todo!()
-    }
-}
+//     fn next(&mut self) -> Option<Self::Item> {
+//         if let Some(tail) = self.0 {
+//             self.0 = SrcNode::new(Rc::new(RefCell::new(tail.inner().clone())), tail.span());
+//             Some(self.0.head())
+//         } else {
+//             None
+//         }
+//     }
+// }
 
-impl ExactSizeIterator for ConsIter {
-    fn len(&self) -> usize {
-        let mut len = 0;
-        let mut iter = self.clone();
-        while iter.next().is_some() {
-            len += 1;
-        }
-        len
-    }
-}
+// impl DoubleEndedIterator for ConsIter {
+//     fn next_back(&mut self) -> Option<Self::Item> {
+//         todo!()
+//     }
+// }
+
+// impl ExactSizeIterator for ConsIter {
+//     fn len(&self) -> usize {
+//         let mut len = 0;
+//         let mut iter = self.clone();
+//         while iter.next().is_some() {
+//             len += 1;
+//         }
+//         len
+//     }
+// }
 
 // impl Container<SrcNode<Sexpr>> for ConsIter {
 //     fn push(&mut self, item: SrcNode<Sexpr>) {
@@ -124,10 +151,10 @@ impl ExactSizeIterator for ConsIter {
 impl Display for SrcNode<Sexpr> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self.inner().clone() {
-            Sexpr::Atom(a) => write!(f, "{}", a.inner()),
+            Sexpr::Atom(a) => write!(f, "{}", a.clone()),
             Sexpr::Cons(c) => {
                 write!(f, "(")?;
-                for (i, s) in self.clone().into_iter().enumerate() {
+                for (i, s) in c.clone().into_iter().enumerate() {
                     if i > 0 {
                         write!(f, " ")?;
                     }
@@ -147,17 +174,19 @@ impl Debug for Format<SrcNode<Sexpr>> {
                 let fmt = Format::new(self.indent + 2, a.clone());
                 write!(
                     f,
-                    "{}Atom @ {}\n{:?}",
+                    "{}Atom @ {}\n{:?} @ {}",
                     spaces(self.indent),
                     self.value.span(),
                     fmt,
+                    self.value.span()
                 )
             }
             Sexpr::Cons(cons) => {
-                write!(f, "{}List @ {}", spaces(self.indent), self.value.span())?;
-                for (i, sexpr) in self.value.clone().into_iter().rev().enumerate() {
+                write!(f, "{}Cons @ {}", spaces(self.indent), self.value.span())?;
+                let iter = cons.clone().into_iter();
+                for (i, sexpr) in iter.clone().enumerate() {
                     write!(f, "\n{:?}", Format::new(self.indent + 2, sexpr))?;
-                    if i != self.value.clone().into_iter().len() - 1 {
+                    if i != iter.len() - 1 {
                         write!(f, ",")?;
                     }
                 }
@@ -184,36 +213,18 @@ impl Display for Atom {
     }
 }
 
-impl Debug for Format<SrcNode<Atom>> {
+impl Debug for Format<Atom> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         // Pretty print with indents and spans
-        match self.value.inner() {
+        match self.value {
             Atom::Symbol(name) => {
-                write!(
-                    f,
-                    "{}Symbol({}) @ {}",
-                    spaces(self.indent),
-                    name,
-                    self.value.span()
-                )
+                write!(f, "{}Symbol({})", spaces(self.indent), name,)
             }
             Atom::Number(n) => {
-                write!(
-                    f,
-                    "{}Number({}) @ {}",
-                    spaces(self.indent),
-                    n,
-                    self.value.span()
-                )
+                write!(f, "{}Number({})", spaces(self.indent), n,)
             }
             Atom::String(s) => {
-                write!(
-                    f,
-                    "{}String({}) @ {}",
-                    spaces(self.indent),
-                    s,
-                    self.value.span()
-                )
+                write!(f, "{}String({})", spaces(self.indent), s,)
             }
         }
     }
