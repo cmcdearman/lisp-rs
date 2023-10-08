@@ -29,7 +29,7 @@
 
 (let (map f xs)
   (if (empty? xs) nil
-      (cons (f (head xs)) (map f (tail xs)))))
+      (pair (f (head xs)) (map f (tail xs)))))
 
 (let (fib n)
   (if (<= n 1) 
@@ -83,6 +83,14 @@
   (cons 'begin
 	(reverse body)))
 
+(macro (cond . clauses)
+  (if (null? clauses)
+      nil
+      (let (clause (head clauses))
+  `(if ,(head clause)
+       (begin . ,(tail clause))
+       (cond . ,(tail clauses))))))
+
 (macro (while condition . body)
   `(let loop ()
      (cond (,condition
@@ -91,6 +99,10 @@
 
 (macro (when test . expr)
   (list 'if test (cons 'progn expr)))
+
+;; Macro calls are like function calls, but the arguments
+;; are not evaluated. Instead, they are passed to the macro
+;; as unevaluated forms.
 
 ;; you can use `match` built-in macro to pattern match or `if` for conditionals
 (let (gcd a b)
@@ -112,10 +124,6 @@
 (lets ((a 10) 
       (b 5))
   (+ a b))
-
-;; Macro calls are like function calls, but the arguments
-;; are not evaluated. Instead, they are passed to the macro
-;; as unevaluated forms.
 
 (when (= 1 1)
   (println "1 is equal to 1"))
