@@ -1,8 +1,8 @@
 use super::{
-    sexpr::{Atom, Cons, Root, Sexpr},
+    sexpr::{Atom, Root, Sexpr},
     token::Token,
 };
-use crate::util::{intern::InternedString, list::List, node::SrcNode, span::Span};
+use crate::util::{intern::InternedString, node::SrcNode, span::Span};
 use chumsky::{
     extra,
     input::{Stream, ValueInput},
@@ -16,29 +16,26 @@ use logos::Logos;
 pub type ReadError<'a> = Rich<'a, Token, Span>;
 
 fn sexpr_reader<'a, I: ValueInput<'a, Token = Token, Span = Span>>(
-) -> impl Parser<'a, I, SrcNode<Sexpr>, extra::Err<Rich<'a, Token, Span>>> {
+) -> impl Parser<'a, I, Sexpr, extra::Err<Rich<'a, Token, Span>>> {
     recursive(|sexpr| {
         let atom = select! {
             Token::Symbol(name) => Atom::Symbol(InternedString::from(name)),
             Token::Number(n) => Atom::Number(n),
             Token::String(s) => Atom::String(s),
         }
+        .map_with_span(SrcNode::new)
         .map(Sexpr::Atom);
 
-        // let quote = just(Token::Quote)
-        //     .map_with_span(SrcNode::new)
-        //     .then(sexpr.clone())
-        //     .map(|(q, sexpr)| {
-        //         let quote = Sexpr::Atom(SrcNode::new(
-        //             Atom::Symbol(InternedString::from("quote")),
-        //             q.span(),
-        //         ));
-        //         vec![SrcNode::new(quote, q.span()), sexpr]
-        //             .into_iter()
-        //             .rev()
-        //             .collect::<List<_>>()
-        //     })
-        //     .map(Sexpr::Cons);
+        let quote = just(Token::Quote)
+            .map_with_span(SrcNode::new)
+            .then(sexpr.clone())
+            .map(|(q, sexpr)| {
+                let quote = Sexpr::Atom(SrcNode::new(
+                    Atom::Symbol(InternedString::from("quote")),
+                    q.span(),
+                ));
+                Sexpr::from_iter(vec![quote, sexpr].into_iter().rev())
+            });
 
         // let quasiquote = just(Token::Backquote)
         //     .map_with_span(SrcNode::new)
@@ -80,15 +77,13 @@ fn sexpr_reader<'a, I: ValueInput<'a, Token = Token, Span = Span>>(
         let list = sexpr
             .repeated()
             .collect::<Vec<_>>()
-            .map(Sexpr::Cons)
+            .map(|sexprs| Sexpr::from_iter(sexprs.into_iter().rev()))
             .delimited_by(just(Token::LParen), just(Token::RParen));
 
-        atom.or(list)
-            // .or(quote)
-            // .or(quasiquote)
-            // .or(unquote)
-            // .or(dot)
-            .map_with_span(SrcNode::new)
+        atom.or(list).or(quote)
+        // .or(quasiquote)
+        // .or(unquote)
+        // .or(dot)
     })
 }
 
@@ -97,7 +92,7 @@ fn reader<'a, I: ValueInput<'a, Token = Token, Span = Span>>(
     sexpr_reader()
         .repeated()
         .collect()
-        .map(|sexprs| Root { sexprs })
+        .map(Root)
         .map_with_span(SrcNode::new)
 }
 

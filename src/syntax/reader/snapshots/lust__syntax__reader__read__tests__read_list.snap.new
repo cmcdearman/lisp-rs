@@ -1,29 +1,46 @@
 ---
 source: src/syntax/reader/read.rs
-assertion_line: 137
+assertion_line: 128
 expression: root.unwrap()
 ---
-Root {
-    sexprs: [
-        Cons(
-            Cons {
-                car: Atom(
+Root(
+    [
+        Pair(
+            Pair {
+                head: Atom(
                     Number(
                         Ratio {
                             numer: 1,
                             denom: 1,
                         },
                     ) @ 1..2,
-                ) @ 1..2,
-                cdr: Atom(
-                    Number(
-                        Ratio {
-                            numer: 2,
-                            denom: 1,
-                        },
-                    ) @ 3..4,
-                ) @ 3..4,
-            } @ 1..6,
-        ) @ 0..7,
+                ),
+                tail: Pair(
+                    Pair {
+                        head: Atom(
+                            Number(
+                                Ratio {
+                                    numer: 2,
+                                    denom: 1,
+                                },
+                            ) @ 3..4,
+                        ),
+                        tail: Pair(
+                            Pair {
+                                head: Atom(
+                                    Number(
+                                        Ratio {
+                                            numer: 3,
+                                            denom: 1,
+                                        },
+                                    ) @ 5..6,
+                                ),
+                                tail: Nil,
+                            } @ 0..6,
+                        ),
+                    } @ 0..6,
+                ),
+            } @ 0..6,
+        ),
     ],
-} @ 0..7
+) @ 0..7

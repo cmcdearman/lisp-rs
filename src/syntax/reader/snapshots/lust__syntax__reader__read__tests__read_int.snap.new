@@ -1,10 +1,10 @@
 ---
 source: src/syntax/reader/read.rs
-assertion_line: 127
+assertion_line: 118
 expression: root.unwrap()
 ---
-Root {
-    sexprs: [
+Root(
+    [
         Atom(
             Number(
                 Ratio {
@@ -12,6 +12,6 @@ Root {
                     denom: 1,
                 },
             ) @ 0..2,
-        ) @ 0..2,
+        ),
     ],
-} @ 0..2
+) @ 0..2

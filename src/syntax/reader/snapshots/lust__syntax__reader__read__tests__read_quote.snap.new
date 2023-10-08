@@ -1,0 +1,60 @@
+---
+source: src/syntax/reader/read.rs
+assertion_line: 138
+expression: root.unwrap()
+---
+Root(
+    [
+        Pair(
+            Pair {
+                head: Atom(
+                    Symbol(
+                        InternedString(quote),
+                    ) @ 0..1,
+                ),
+                tail: Pair(
+                    Pair {
+                        head: Pair(
+                            Pair {
+                                head: Atom(
+                                    Number(
+                                        Ratio {
+                                            numer: 1,
+                                            denom: 1,
+                                        },
+                                    ) @ 2..3,
+                                ),
+                                tail: Pair(
+                                    Pair {
+                                        head: Atom(
+                                            Number(
+                                                Ratio {
+                                                    numer: 2,
+                                                    denom: 1,
+                                                },
+                                            ) @ 4..5,
+                                        ),
+                                        tail: Pair(
+                                            Pair {
+                                                head: Atom(
+                                                    Number(
+                                                        Ratio {
+                                                            numer: 3,
+                                                            denom: 1,
+                                                        },
+                                                    ) @ 6..7,
+                                                ),
+                                                tail: Nil,
+                                            } @ 0..7,
+                                        ),
+                                    } @ 0..7,
+                                ),
+                            } @ 0..7,
+                        ),
+                        tail: Nil,
+                    } @ 0..7,
+                ),
+            } @ 0..7,
+        ),
+    ],
+) @ 0..8
