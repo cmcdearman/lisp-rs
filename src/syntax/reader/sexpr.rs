@@ -1,8 +1,13 @@
-use crate::util::{format::Format, intern::InternedString, node::SrcNode, span::Span};
+use crate::util::{
+    format::{spaces, Format},
+    intern::InternedString,
+    node::SrcNode,
+    span::Span,
+};
 use num_rational::Rational64;
 use std::fmt::{Debug, Display};
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Clone, PartialEq)]
 pub struct Root(pub Vec<Sexpr>);
 
 impl Display for Root {
@@ -18,7 +23,7 @@ impl Debug for SrcNode<Root> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         // Pretty print with indents and spans
         write!(f, "Root @ {}\n", self.span())?;
-        for sexpr in self.sexprs.clone() {
+        for sexpr in self.0.clone() {
             write!(f, "{:?}", Format::new(2, sexpr))?;
         }
         Ok(())
@@ -41,16 +46,6 @@ impl Sexpr {
         }
     }
 }
-
-// impl Display for Sexpr {
-//     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-//         match self {
-//             Sexpr::Atom(a) => write!(f, "{}", a),
-//             Sexpr::Pair(p) => write!(f, "{}", p),
-//             Sexpr::Nil => write!(f, "()"),
-//         }
-//     }
-// }
 
 impl Display for Sexpr {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -91,25 +86,12 @@ impl Pair {
     }
 }
 
-// impl Display for Pair {
-//     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-//         write!(f, "(")?;
-//         for (i, s) in self.clone().into_iter().enumerate() {
-//             if i > 0 {
-//                 write!(f, " ")?;
-//             }
-//             write!(f, "{}", s)?;
-//         }
-//         write!(f, ")")
-//     }
-// }
-
 impl FromIterator<Sexpr> for Sexpr {
     fn from_iter<T: IntoIterator<Item = Sexpr>>(iter: T) -> Self {
         iter.into_iter().fold(Sexpr::Nil, |acc, sexpr| {
             Sexpr::Pair(SrcNode::new(
                 Pair::new(sexpr.clone(), acc.clone()),
-                sexpr.span().extend(acc.span()),
+                acc.span().extend(sexpr.span()),
             ))
         })
     }
@@ -145,35 +127,46 @@ impl Iterator for PairIter {
     }
 }
 
-// impl Debug for Format<Sexpr> {
-//     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-//         // Pretty print with indents and spans
-//         match self.value.inner().clone() {
-//             Sexpr::Atom(a) => {
-//                 let fmt = Format::new(self.indent + 2, a.clone());
-//                 write!(
-//                     f,
-//                     "{}Atom @ {}\n{:?} @ {}",
-//                     spaces(self.indent),
-//                     self.value.span(),
-//                     fmt,
-//                     self.value.span()
-//                 )
-//             }
-//             Sexpr::Cons(cons) => {
-//                 write!(f, "{}Cons @ {}", spaces(self.indent), self.value.span())?;
-//                 let iter = cons.clone().into_iter();
-//                 for (i, sexpr) in iter.clone().enumerate() {
-//                     write!(f, "\n{:?}", Format::new(self.indent + 2, sexpr))?;
-//                     if i != iter.len() - 1 {
-//                         write!(f, ",")?;
-//                     }
-//                 }
-//                 Ok(())
-//             }
-//         }
-//     }
-// }
+impl ExactSizeIterator for PairIter {
+    fn len(&self) -> usize {
+        self.clone().fold(0, |acc, _| acc + 1)
+    }
+}
+
+impl Debug for Format<Sexpr> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        // Pretty print with indents and spans
+        match self.value.clone() {
+            Sexpr::Atom(a) => {
+                let fmt = Format::new(self.indent + 2, a.inner().clone());
+                write!(
+                    f,
+                    "{}Atom @ {}\n{:?}",
+                    spaces(self.indent),
+                    self.value.span(),
+                    fmt,
+                )
+            }
+            Sexpr::Pair(p) => {
+                write!(f, "{}Pair @ {}", spaces(self.indent), p.span())?;
+                write!(
+                    f,
+                    "\n{}head:\n{:?}",
+                    spaces(self.indent + 2),
+                    Format::new(self.indent + 4, p.head())
+                )?;
+                write!(
+                    f,
+                    "\n{}tail:\n{:?}",
+                    spaces(self.indent + 2),
+                    Format::new(self.indent + 4, p.tail())
+                )?;
+                Ok(())
+            }
+            Sexpr::Nil => write!(f, "{}Nil", spaces(self.indent)),
+        }
+    }
+}
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Atom {
@@ -192,35 +185,32 @@ impl Display for Atom {
     }
 }
 
-// impl Debug for Format<Atom> {
-//     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-//         // Pretty print with indents and spans
-//         match self.value {
-//             Atom::Symbol(name) => {
-//                 write!(f, "{}Symbol({})", spaces(self.indent), name,)
-//             }
-//             Atom::Number(n) => {
-//                 write!(f, "{}Number({})", spaces(self.indent), n,)
-//             }
-//             Atom::String(s) => {
-//                 write!(f, "{}String({})", spaces(self.indent), s,)
-//             }
-//         }
-//     }
-// }
+impl Debug for Format<Atom> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        // Pretty print with indents and spans
+        match self.value.clone() {
+            Atom::Symbol(name) => {
+                write!(f, "{}Symbol({})", spaces(self.indent), name,)
+            }
+            Atom::Number(n) => {
+                write!(f, "{}Number({})", spaces(self.indent), n,)
+            }
+            Atom::String(s) => {
+                write!(f, "{}String({})", spaces(self.indent), s,)
+            }
+        }
+    }
+}
 
-// Sexpr format derive
 // (+ 1 2)
 // Root 0..7
-//   Cons 0..7
-//     Atom 0..1
-//       Symbol 0..1
-//         "+"
-//     Atom 2..3
-//       Lit 2..3
-//         Int 2..3
-//           1
-//     Atom 4..5
-//       Lit 4..5
-//         Int 4..5
-//           2
+//   Pair 0..7
+//     head: Atom 0..1
+//       Symbol(+)
+//     tail: Pair 2..7
+//      head: Atom 2..3
+//        Number(1)
+//      tail: Pair 4..7
+//        head: Atom 4..5
+//          Number(2)
+//        tail: Nil

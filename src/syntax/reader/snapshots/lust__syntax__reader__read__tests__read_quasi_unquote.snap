@@ -1,0 +1,23 @@
+---
+source: src/syntax/reader/read.rs
+expression: root.unwrap()
+---
+Root @ 0..15
+  Pair @ 0..14
+    Atom @ 0..1
+      Symbol("quasiquote"),
+    Pair @ 0..14
+      Atom @ 2..3
+        Number(1),
+      Pair @ 0..11
+        Atom @ 4..5
+          Symbol("unquote"),
+        Pair @ 0..11
+          Atom @ 6..7
+            Symbol("+"),
+          Atom @ 8..9
+            Number(1),
+          Atom @ 10..11
+            Number(1),
+      Atom @ 13..14
+        Number(3)

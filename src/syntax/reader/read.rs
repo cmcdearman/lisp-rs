@@ -1,5 +1,5 @@
 use super::{
-    sexpr::{Atom, Root, Sexpr},
+    sexpr::{Atom, Pair, Root, Sexpr},
     token::Token,
 };
 use crate::util::{intern::InternedString, node::SrcNode, span::Span};
@@ -37,42 +37,43 @@ fn sexpr_reader<'a, I: ValueInput<'a, Token = Token, Span = Span>>(
                 Sexpr::from_iter(vec![quote, sexpr].into_iter().rev())
             });
 
-        // let quasiquote = just(Token::Backquote)
-        //     .map_with_span(SrcNode::new)
-        //     .then(sexpr.clone())
-        //     .map(|(q, sexpr)| {
-        //         let quote = Sexpr::Atom(SrcNode::new(
-        //             Atom::Symbol(InternedString::from("quasiquote")),
-        //             q.span(),
-        //         ));
-        //         vec![SrcNode::new(quote, q.span()), sexpr]
-        //             .into_iter()
-        //             .rev()
-        //             .collect::<List<_>>()
-        //     })
-        //     .map(Sexpr::Cons);
+        let quasiquote = just(Token::Backquote)
+            .map_with_span(SrcNode::new)
+            .then(sexpr.clone())
+            .map(|(q, sexpr)| {
+                let quote = Sexpr::Atom(SrcNode::new(
+                    Atom::Symbol(InternedString::from("quasiquote")),
+                    q.span(),
+                ));
+                Sexpr::from_iter(vec![quote, sexpr].into_iter().rev())
+            });
 
-        // let unquote = just(Token::Comma)
-        //     .map_with_span(SrcNode::new)
-        //     .then(sexpr.clone())
-        //     .map(|(q, sexpr)| {
-        //         let quote = Sexpr::Atom(SrcNode::new(
-        //             Atom::Symbol(InternedString::from("unquote")),
-        //             q.span(),
-        //         ));
-        //         vec![SrcNode::new(quote, q.span()), sexpr]
-        //             .into_iter()
-        //             .rev()
-        //             .collect::<List<_>>()
-        //     })
-        //     .map(Sexpr::Cons);
+        let unquote = just(Token::Comma)
+            .map_with_span(SrcNode::new)
+            .then(sexpr.clone())
+            .map(|(q, sexpr)| {
+                let quote = Sexpr::Atom(SrcNode::new(
+                    Atom::Symbol(InternedString::from("unquote")),
+                    q.span(),
+                ));
+                Sexpr::from_iter(vec![quote, sexpr].into_iter().rev())
+            });
 
-        // let dot = sexpr
-        //     .then_ignore(just(Token::Period))
-        //     .then(sexpr.clone())
-        //     .map(|(car, cdr)| List::Node(Box::new(SrcNode::new(Sexpr::Atom(car), car.span())), ))
-        //     .map(Sexpr::Cons)
-        //     .delimited_by(just(Token::LParen), just(Token::RParen));
+        let dot = sexpr
+            .clone()
+            .repeated()
+            .collect::<Vec<_>>()
+            .then_ignore(just(Token::Period))
+            .then(sexpr.clone())
+            .map(|(list, tail)| {
+                list.into_iter().rev().fold(tail, |acc, next| {
+                    Sexpr::Pair(SrcNode::new(
+                        Pair::new(next.clone(), acc.clone()),
+                        acc.span(),
+                    ))
+                })
+            })
+            .delimited_by(just(Token::LParen), just(Token::RParen));
 
         let list = sexpr
             .repeated()
@@ -80,10 +81,7 @@ fn sexpr_reader<'a, I: ValueInput<'a, Token = Token, Span = Span>>(
             .map(|sexprs| Sexpr::from_iter(sexprs.into_iter().rev()))
             .delimited_by(just(Token::LParen), just(Token::RParen));
 
-        atom.or(list).or(quote)
-        // .or(quasiquote)
-        // .or(unquote)
-        // .or(dot)
+        atom.or(list).or(quote).or(quasiquote).or(unquote).or(dot)
     })
 }
 
@@ -121,6 +119,7 @@ mod tests {
     #[test]
     fn read_list() {
         let src = "(1 2 3)";
+        // (1 . (2 . (3 . ())))
         let (root, errs) = read(src);
         if !errs.is_empty() {
             panic!("{:?}", errs);
@@ -161,6 +160,26 @@ mod tests {
     #[test]
     fn read_quasi_unquote() {
         let src = "`(1 ,(+ 1 1) 3)";
+        let (root, errs) = read(src);
+        if !errs.is_empty() {
+            panic!("{:?}", errs);
+        }
+        insta::assert_debug_snapshot!(root.unwrap());
+    }
+
+    #[test]
+    fn read_dot() {
+        let src = "(1 . 2)";
+        let (root, errs) = read(src);
+        if !errs.is_empty() {
+            panic!("{:?}", errs);
+        }
+        insta::assert_debug_snapshot!(root.unwrap());
+    }
+
+    #[test]
+    fn read_list_dot() {
+        let src = "(1 2 . 3)";
         let (root, errs) = read(src);
         if !errs.is_empty() {
             panic!("{:?}", errs);

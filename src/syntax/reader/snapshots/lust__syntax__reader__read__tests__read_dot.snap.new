@@ -1,0 +1,13 @@
+---
+source: src/syntax/reader/read.rs
+assertion_line: 176
+expression: root.unwrap()
+---
+Root @ 0..7
+  Pair @ 5..6
+    head:
+      Atom @ 1..2
+        Number(1)
+    tail:
+      Atom @ 5..6
+        Number(2)
