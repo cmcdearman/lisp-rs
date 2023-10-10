@@ -79,6 +79,12 @@
          (begin . ,body)
          (inc i))))
 
+(macro (for-each x in . body)
+  `(loop (let x in)
+     (if (not (empty? x))
+         (begin . ,body)
+         (for-each . ,body))))
+
 (macro (backwards . body)
   (cons 'begin
 	(reverse body)))
