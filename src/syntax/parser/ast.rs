@@ -9,7 +9,7 @@ pub struct Root {
 #[derive(Debug, Clone, PartialEq)]
 pub struct Decl {
     pub name: SrcNode<Symbol>,
-    pub value: Box<SrcNode<Expr>>,
+    pub value: SrcNode<Expr>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -19,24 +19,24 @@ pub enum Expr {
     List(Vec<SrcNode<Self>>),
     Lambda {
         params: Vec<SrcNode<Self>>,
-        body: Box<SrcNode<Self>>,
+        body: SrcNode<Self>,
     },
     Apply {
-        fun: Box<SrcNode<Self>>,
+        fun: SrcNode<Self>,
         args: Vec<SrcNode<Self>>,
     },
     Let {
         name: SrcNode<Symbol>,
-        value: Box<SrcNode<Self>>,
-        body: Box<SrcNode<Self>>,
+        value: SrcNode<Self>,
+        body: SrcNode<Self>,
     },
-    Quote(Box<SrcNode<Self>>),
-    Quasiquote(Box<SrcNode<Self>>),
-    Unquote(Box<SrcNode<Self>>),
+    Quote(SrcNode<Self>),
+    Quasiquote(SrcNode<Self>),
+    Unquote(SrcNode<Self>),
     If {
-        cond: Box<SrcNode<Self>>,
-        then: Box<SrcNode<Self>>,
-        else_: Box<SrcNode<Self>>,
+        cond: SrcNode<Self>,
+        then: SrcNode<Self>,
+        else_: SrcNode<Self>,
     },
     Nil,
 }
