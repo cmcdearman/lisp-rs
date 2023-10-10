@@ -5,7 +5,10 @@ use crate::util::{
     span::Span,
 };
 use num_rational::Rational64;
-use std::fmt::{Debug, Display};
+use std::{
+    cmp::max,
+    fmt::{Debug, Display},
+};
 
 #[derive(Clone, PartialEq)]
 pub struct Root(pub Vec<Sexpr>);
@@ -91,7 +94,8 @@ impl FromIterator<Sexpr> for Sexpr {
         iter.into_iter().fold(Sexpr::Nil, |acc, sexpr| {
             Sexpr::Pair(SrcNode::new(
                 Pair::new(sexpr.clone(), acc.clone()),
-                acc.span().extend(sexpr.span()),
+                // acc.span().extend(sexpr.span()),
+                Span::new(sexpr.span().start, max(acc.span().end, sexpr.span().end)),
             ))
         })
     }

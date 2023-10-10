@@ -4,12 +4,27 @@ expression: root.unwrap()
 ---
 Root @ 0..8
   Pair @ 0..7
-    Atom @ 0..1
-      Symbol("quasiquote"),
-    Pair @ 0..7
-      Atom @ 2..3
-        Number(1),
-      Atom @ 4..5
-        Number(2),
-      Atom @ 6..7
-        Number(3)
+    head:
+      Atom @ 0..1
+        Symbol("quasiquote")
+    tail:
+      Pair @ 2..7
+        head:
+          Pair @ 2..7
+            head:
+              Atom @ 2..3
+                Number(1)
+            tail:
+              Pair @ 4..7
+                head:
+                  Atom @ 4..5
+                    Number(2)
+                tail:
+                  Pair @ 6..7
+                    head:
+                      Atom @ 6..7
+                        Number(3)
+                    tail:
+                      Nil
+        tail:
+          Nil
