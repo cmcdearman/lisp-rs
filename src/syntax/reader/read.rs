@@ -1,3 +1,5 @@
+use std::cmp::max;
+
 use super::{
     sexpr::{Atom, Pair, Root, Sexpr},
     token::Token,
@@ -69,7 +71,7 @@ fn sexpr_reader<'a, I: ValueInput<'a, Token = Token, Span = Span>>(
                 list.into_iter().rev().fold(tail, |acc, next| {
                     Sexpr::Pair(SrcNode::new(
                         Pair::new(next.clone(), acc.clone()),
-                        acc.span(),
+                        Span::new(next.span().start, max(acc.span().end, next.span().end)),
                     ))
                 })
             })

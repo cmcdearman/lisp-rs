@@ -91,11 +91,11 @@ impl Pair {
 
 impl FromIterator<Sexpr> for Sexpr {
     fn from_iter<T: IntoIterator<Item = Sexpr>>(iter: T) -> Self {
-        iter.into_iter().fold(Sexpr::Nil, |acc, sexpr| {
+        iter.into_iter().fold(Sexpr::Nil, |acc, next| {
             Sexpr::Pair(SrcNode::new(
-                Pair::new(sexpr.clone(), acc.clone()),
+                Pair::new(next.clone(), acc.clone()),
                 // acc.span().extend(sexpr.span()),
-                Span::new(sexpr.span().start, max(acc.span().end, sexpr.span().end)),
+                Span::new(next.span().start, max(acc.span().end, next.span().end)),
             ))
         })
     }
