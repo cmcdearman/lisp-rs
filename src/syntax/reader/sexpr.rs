@@ -205,16 +205,3 @@ impl Debug for Format<Atom> {
         }
     }
 }
-
-// (+ 1 2)
-// Root 0..7
-//   Pair 0..7
-//     head: Atom 0..1
-//       Symbol(+)
-//     tail: Pair 2..7
-//      head: Atom 2..3
-//        Number(1)
-//      tail: Pair 4..7
-//        head: Atom 4..5
-//          Number(2)
-//        tail: Nil

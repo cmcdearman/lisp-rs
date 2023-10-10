@@ -1,4 +1,4 @@
-use lust_util::{intern::InternedString, span::Spanned};
+use crate::util::{intern::InternedString, node::SrcNode};
 use std::fmt::Display;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -22,5 +22,5 @@ impl From<String> for SyntaxError {
     }
 }
 
-pub type ParserError = Spanned<SyntaxError>;
+pub type ParserError = SrcNode<SyntaxError>;
 pub type ParseResult<T> = std::result::Result<T, ParserError>;

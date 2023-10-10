@@ -1,62 +1,58 @@
-use crate::{ast::Expr, error::ParseResult, reader::sexpr::Root};
-use logos::{Lexer, Logos};
-use lust_util::span::Spanned;
-use num_bigint::BigInt;
-use num_rational::{BigRational, Rational64};
-use std::{
-    fmt,
-    ops::{Index, Range},
+use super::ast::{Decl, Lit, Root, Symbol};
+use crate::{
+    syntax::{
+        parser::ast::Expr,
+        reader::{
+            sexpr::{Atom, Sexpr},
+            token::Token,
+        },
+    },
+    util::{node::SrcNode, span::Span},
 };
+use chumsky::{extra, input::ValueInput, prelude::*, recursive::recursive, select, Parser};
+pub type ParseError<'a> = Rich<'a, Token, Span>;
 
-pub fn parse(sexprs: &Root) -> ParseResult<Spanned<Expr>> {
-    todo!()
+fn lit_parser<'a, I: ValueInput<'a, Token = Atom, Span = Span>>(
+) -> impl Parser<'a, I, Lit, extra::Err<Rich<'a, Atom, Span>>> {
+    select! {
+        Atom::Number(n) => Lit::Number(n),
+        Atom::String(s) => Lit::String(s),
+    }
 }
 
-// Parser entry point
-// pub fn expr(sexpr: &Spanned<Sexpr>) -> ParseResult<Spanned<Expr>> {
-//     match sexpr.0.clone() {
-//         Sexpr::Atom(a) => match a.clone() {
-//             Atom::Lit(l) => match l.clone() {
-//                 reader::sexpr::Lit::Int(n) => Ok((Expr::Lit(ast::Lit::Int(n)), sexpr.1)),
-//                 reader::sexpr::Lit::Rational(r) => Ok((Expr::Lit(ast::Lit::Rational(r)), sexpr.1)),
-//                 reader::sexpr::Lit::Real(f) => Ok((Expr::Lit(ast::Lit::Real(f)), sexpr.1)),
-//                 reader::sexpr::Lit::Char(c) => Ok((Expr::Lit(ast::Lit::Char(c)), sexpr.1)),
-//                 reader::sexpr::Lit::String(s) => Ok((Expr::Lit(ast::Lit::String(s)), sexpr.1)),
-//             },
-//             Atom::Symbol(s) => Ok((Expr::Symbol(s), sexpr.1)),
-//         },
-//         Sexpr::Cons(c) => {
-//             todo!()
-//             // let mut iter = c.clone().into_iter();
-//             // if let Some(first) = iter.next() {
-//             //     let lam = match first {
-//             //         Sexpr::Atom(a) => match a {
-//             //             Atom::Symbol(s) => match &*s.to_string() {
-//             //                 "lambda" => lambda(&mut iter),
-//             //                 "let" => parse_let(&mut iter),
-//             //                 "if" => parse_if(&mut iter),
-//             //                 _ => parse_apply(&mut iter),
-//             //             },
-//             //             _ => Err(Error::new("cannot apply non-lambda")),
-//             //         },
-//             //         Sexpr::Cons(_) => parse_apply(&mut iter),
-//             //     }?;
-//             // } else {
-//             //     Ok(Expr::Unit)
-//             // }
+fn symbol_parser<'a, I: ValueInput<'a, Token = Atom, Span = Span>>(
+) -> impl Parser<'a, I, Symbol, extra::Err<Rich<'a, Atom, Span>>> {
+    select! {
+        Atom::Symbol(s) => Symbol(s),
+    }
+}
+
+fn expr_parser<'a, I: ValueInput<'a, Token = Sexpr, Span = Span>>(
+) -> impl Parser<'a, I, SrcNode<Expr>, extra::Err<Rich<'a, Sexpr, Span>>> {
+    let ident = symbol_parser().map(Expr::Symbol);
+    let lit = lit_parser().map(Expr::Lit);
+
+    recursive(|expr| {
+        let list = expr
+            .nested_in(select_ref! {
+                Sexpr::Pair(pair) => pair.span(),
+            })
+            .map(|pair| {});
+        ident.or(lit)
+    })
+}
+
+// pub fn parse(root: &sexpr::Root) -> ParseResult<SrcNode<Root>> {
+//     let mut decls = vec![];
+//     for sexpr in root.iter() {
+//         match sexpr {
+//             sexpr::Sexpr::Atom(_) => todo!(),
+//             sexpr::Sexpr::Cons(_) => todo!(),
 //         }
 //     }
+//     Ok(SrcNode::new(Root { decls }))
+// }
 
-//     // fn lambda(list_iter: &mut ConsIter) -> ParseResult<Expr> {
-//     //     let params = list_iter
-//     //         .next()
-//     //         .ok_or(ParserError::new("lambda missing parameter list"))?;
-//     //     let body = list_iter
-//     //         .next()
-//     //         .ok_or(ParserError::new("lambda missing body"))?;
-//     //     Ok(Expr::Lambda {
-//     //         param: params,
-//     //         body: Box::new(expr(body)?),
-//     //     })
-//     // }
+// fn parse_decl() -> ParseResult<SrcNode<Decl>> {
+//     todo!()
 // }

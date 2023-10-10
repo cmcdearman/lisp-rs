@@ -1,56 +1,55 @@
-use lust_util::{intern::InternedString, span::Spanned};
+use crate::util::{intern::InternedString, node::SrcNode};
 use num_rational::Rational64;
 
 #[derive(Debug, Clone, PartialEq)]
-pub enum Root {
-    Expr(Spanned<Expr>),
-    Def {
-        name: Spanned<InternedString>,
-        value: Box<Spanned<Expr>>,
-    },
+pub struct Root {
+    decls: Vec<SrcNode<Decl>>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct Decl {
+    pub name: SrcNode<Symbol>,
+    pub value: Box<SrcNode<Expr>>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Expr {
-    Symbol(InternedString),
+    Symbol(Symbol),
     Lit(Lit),
-    List(Vec<Spanned<Self>>),
-    BinaryOp {
-        op: BinaryOp,
-        lhs: Box<Spanned<Self>>,
-        rhs: Box<Spanned<Self>>,
-    },
-    UnaryOp {
-        op: UnaryOp,
-        expr: Box<Spanned<Self>>,
-    },
+    List(Vec<SrcNode<Self>>),
     Lambda {
-        params: Vec<Spanned<Self>>,
-        body: Box<Spanned<Self>>,
+        params: Vec<SrcNode<Self>>,
+        body: Box<SrcNode<Self>>,
     },
     Apply {
-        func: Box<Spanned<Self>>,
-        args: Vec<Spanned<Self>>,
+        fun: Box<SrcNode<Self>>,
+        args: Vec<SrcNode<Self>>,
     },
     Let {
-        name: Spanned<InternedString>,
-        value: Box<Spanned<Self>>,
-        body: Box<Spanned<Self>>,
+        name: SrcNode<Symbol>,
+        value: Box<SrcNode<Self>>,
+        body: Box<SrcNode<Self>>,
     },
+    Quote(Box<SrcNode<Self>>),
+    Quasiquote(Box<SrcNode<Self>>),
+    Unquote(Box<SrcNode<Self>>),
     If {
-        cond: Box<Spanned<Self>>,
-        then: Box<Spanned<Self>>,
-        else_: Box<Spanned<Self>>,
+        cond: Box<SrcNode<Self>>,
+        then: Box<SrcNode<Self>>,
+        else_: Box<SrcNode<Self>>,
     },
     Nil,
 }
 
 #[derive(Debug, Clone, PartialEq)]
+pub struct Symbol(pub InternedString);
+
+#[derive(Debug, Clone, PartialEq)]
 pub enum Lit {
-    Int(i64),
-    Rational(Rational64),
-    Real(f64),
-    Char(char),
+    // Int(i64),
+    Number(Rational64),
+    // Real(f64),
+    // Char(char),
     String(InternedString),
 }
 

@@ -1,5 +1,3 @@
-use std::cmp::max;
-
 use super::{
     sexpr::{Atom, Pair, Root, Sexpr},
     token::Token,
@@ -14,6 +12,7 @@ use chumsky::{
     select, IterParser, Parser,
 };
 use logos::Logos;
+use std::cmp::max;
 
 pub type ReadError<'a> = Rich<'a, Token, Span>;
 
