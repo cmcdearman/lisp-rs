@@ -187,4 +187,18 @@ mod tests {
         }
         insta::assert_debug_snapshot!(root.unwrap());
     }
+
+    #[test]
+    fn read_advanced() {
+        let src = "(macro (for-each x in . body)\n
+        `(loop (let x in)\n
+           (if (not (empty? x))\n
+               (begin . ,body)\n
+               (for-each . ,body))))";
+        let (root, errs) = read(src);
+        if !errs.is_empty() {
+            panic!("{:?}", errs);
+        }
+        insta::assert_debug_snapshot!(root.unwrap());
+    }
 }

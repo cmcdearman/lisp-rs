@@ -77,7 +77,7 @@
   `(loop (let i from)
      (if (<= i to)
          (begin . ,body)
-         (inc i))))
+         (inc! i))))
 
 (macro (for-each x in . body)
   `(loop (let x in)

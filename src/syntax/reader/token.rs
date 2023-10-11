@@ -4,7 +4,7 @@ use std::fmt::{Debug, Display};
 
 use crate::util::intern::InternedString;
 
-#[derive(Logos, Debug, Clone, Default, PartialEq)]
+#[derive(Logos, Debug, Copy, Clone, Default, PartialEq)]
 pub enum Token {
     #[default]
     Eof,
