@@ -86,7 +86,7 @@
          (for-each . ,body))))
 
 (macro (backwards . body)
-  (cons 'begin
+  (pair 'begin
 	(reverse body)))
 
 (macro (cond . clauses)
@@ -104,7 +104,7 @@
 	    (loop)))))
 
 (macro (when test . expr)
-  (list 'if test (cons 'progn expr)))
+  (list 'if test (pair 'progn expr)))
 
 ;; Macro calls are like function calls, but the arguments
 ;; are not evaluated. Instead, they are passed to the macro
