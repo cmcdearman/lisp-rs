@@ -1,12 +1,13 @@
-use chumsky::primitive::todo;
-
 use super::{
-    ast::{Decl, Lit, Root, Symbol},
+    ast::{Decl, Item, Lit, Root, Symbol},
     error::ParseResult,
 };
 use crate::{
     syntax::{
-        parser::ast::Expr,
+        parser::{
+            ast::Expr,
+            error::{ParserError, SyntaxError},
+        },
         reader::{
             sexpr::{self, Atom, Sexpr},
             token::Token,
@@ -16,16 +17,13 @@ use crate::{
 };
 
 pub fn parse<'src>(src: &'src str, root: &sexpr::Root) -> ParseResult<SrcNode<Root>> {
-    // let mut decls = vec![];
-    // for sexpr in root.0 {
-    //     match sexpr {
-    //         Sexpr::Atom(_) => todo!(),
-    //         Sexpr::Pair(_) => todo!(),
-    //         Sexpr::Nil => todo!(),
-    //     }
-    // }
+    let items = vec![];
+    
+    Ok(SrcNode::new(Root { items }, Span::new(0, src.len() as u32)))
+}
+
+fn parse_item<'src>(src: &'src str, sexpr: &sexpr::Sexpr) -> ParseResult<SrcNode<Item>> {
     todo!()
-    // Ok(SrcNode::new(Root { decls }))
 }
 
 fn parse_decl<'src>(src: &'src str, sexpr: &sexpr::Sexpr) -> ParseResult<SrcNode<Decl>> {
@@ -46,35 +44,39 @@ fn parse_expr<'src>(src: &'src str, sexpr: &sexpr::Sexpr) -> ParseResult<SrcNode
             Sexpr::Atom(a) => match a.inner().clone() {
                 Atom::Symbol(sym) => match sym.as_ref() {
                     "if" => {
-                        let mut iter = p.inner().tail().unwrap().into_iter();
-                        let cond = parse_expr(src, &iter.next().unwrap())?;
-                        let then = parse_expr(src, &iter.next().unwrap())?;
-                        let else_ = parse_expr(src, &iter.next().unwrap())?;
-                        Ok(SrcNode::new(Expr::If { cond, then, else_ }, p.span()))
+                        let cond = parse_expr(
+                            src,
+                            &sexpr.clone().into_iter().nth(1).ok_or(SrcNode::new(
+                                SyntaxError::new("`if` expression needs cond"),
+                                sexpr.span(),
+                            ))?,
+                        )?;
+                        let then = parse_expr(
+                            src,
+                            &sexpr.clone().into_iter().nth(2).ok_or(SrcNode::new(
+                                SyntaxError::new("`if` expression needs then"),
+                                sexpr.span(),
+                            ))?,
+                        )?;
+                        let else_ = parse_expr(
+                            src,
+                            &sexpr.clone().into_iter().nth(3).ok_or(SrcNode::new(
+                                SyntaxError::new("`if` expression needs else"),
+                                sexpr.span(),
+                            ))?,
+                        )?;
+                        Ok(SrcNode::new(Expr::If { cond, then, else_ }, sexpr.span()))
                     }
                     "quote" => {
-                        let mut iter = p.inner().tail().into_iter();
-                        let sexpr = iter.next().unwrap();
-                        Ok(SrcNode::new(
-                            Expr::Quote(parse_expr(src, &sexpr)?),
-                            p.span(),
-                        ))
+                        todo!()
                     }
                     "unquote" => {
-                        let mut iter = p.inner().tail().unwrap().into_iter();
-                        let sexpr = iter.next().unwrap();
-                        Ok(SrcNode::new(
-                            Expr::Unquote(parse_expr(src, &sexpr)?),
-                            p.span(),
-                        ))
+                        todo!()
+                    }
+                    "unquote-splice" => {
+                        todo!()
                     }
                     _ => {
-                        // let mut iter = p.inner().into_iter();
-                        // let head = parse_expr(src, &iter.next().unwrap())?;
-                        // let args = iter
-                        //     .map(|s| parse_expr(src, &s))
-                        //     .collect::<ParseResult<_>>()?;
-                        // Ok(SrcNode::new(Expr::Apply { fun: , args: () }, p.span()))
                         todo!()
                     }
                 },
@@ -82,6 +84,6 @@ fn parse_expr<'src>(src: &'src str, sexpr: &sexpr::Sexpr) -> ParseResult<SrcNode
             },
             _ => todo!(),
         },
-        s @ Sexpr::Nil => Ok(SrcNode::new(Expr::Nil, s.span())),
+        Sexpr::Nil => Ok(SrcNode::new(Expr::Nil, sexpr.span())),
     }
 }

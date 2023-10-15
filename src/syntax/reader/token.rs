@@ -41,6 +41,8 @@ pub enum Token {
     Period,
     #[token(",")]
     Comma,
+    #[token(",@")]
+    CommaAt,
     #[token("#")]
     Hash,
     #[token("'")]
@@ -67,6 +69,7 @@ impl Display for Token {
             Token::Colon => write!(f, ":"),
             Token::Period => write!(f, "."),
             Token::Comma => write!(f, ","),
+            Token::CommaAt => write!(f, ",@"),
             Token::Hash => write!(f, "#"),
             Token::Quote => write!(f, "'"),
             Token::Backquote => write!(f, "`"),

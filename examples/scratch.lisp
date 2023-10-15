@@ -66,8 +66,8 @@
 
 ;; `loop` is a macro that expands into a `let` that
 ;; binds a name to a lambda that calls itself.
-(macro (loop . body)
-  '(let loop ()
+(macro (loop ())
+  '(let (loop . x)
      (begin . ,body)
      (loop)))
 

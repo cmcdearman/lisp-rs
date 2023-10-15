@@ -60,6 +60,17 @@ fn sexpr_reader<'a, I: ValueInput<'a, Token = Token, Span = Span>>(
                 Sexpr::from_iter(vec![quote, sexpr].into_iter().rev())
             });
 
+        let unquote_splice = just(Token::CommaAt)
+            .map_with_span(SrcNode::new)
+            .then(sexpr.clone())
+            .map(|(q, sexpr)| {
+                let quote = Sexpr::Atom(SrcNode::new(
+                    Atom::Symbol(InternedString::from("unquote-splice")),
+                    q.span(),
+                ));
+                Sexpr::from_iter(vec![quote, sexpr].into_iter().rev())
+            });
+
         let dot = sexpr
             .clone()
             .repeated()
@@ -82,7 +93,12 @@ fn sexpr_reader<'a, I: ValueInput<'a, Token = Token, Span = Span>>(
             .map(|sexprs| Sexpr::from_iter(sexprs.into_iter().rev()))
             .delimited_by(just(Token::LParen), just(Token::RParen));
 
-        atom.or(list).or(quote).or(unquote).or(dot)
+        atom.or(list)
+            .or(quote)
+            .or(unquote)
+            .or(unquote_splice)
+            .or(dot)
+            .boxed()
     })
 }
 

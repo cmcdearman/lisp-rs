@@ -3,7 +3,13 @@ use num_rational::Rational64;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Root {
-    decls: Vec<SrcNode<Decl>>,
+    pub items: Vec<SrcNode<Item>>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum Item {
+    Decl(Decl),
+    Expr(Expr),
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -31,8 +37,8 @@ pub enum Expr {
         body: SrcNode<Self>,
     },
     Quote(SrcNode<Self>),
-    Quasiquote(SrcNode<Self>),
     Unquote(SrcNode<Self>),
+    UnquoteSplice(SrcNode<Self>),
     If {
         cond: SrcNode<Self>,
         then: SrcNode<Self>,
