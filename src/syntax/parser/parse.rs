@@ -60,14 +60,6 @@ fn parse_expr<'src>(src: &'src str, sexpr: &sexpr::Sexpr) -> ParseResult<SrcNode
                             p.span(),
                         ))
                     }
-                    "quasiquote" => {
-                        let mut iter = p.inner().tail().unwrap().into_iter();
-                        let sexpr = iter.next().unwrap();
-                        Ok(SrcNode::new(
-                            Expr::Quasiquote(parse_expr(src, &sexpr)?),
-                            p.span(),
-                        ))
-                    }
                     "unquote" => {
                         let mut iter = p.inner().tail().unwrap().into_iter();
                         let sexpr = iter.next().unwrap();

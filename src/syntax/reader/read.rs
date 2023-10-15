@@ -38,16 +38,16 @@ fn sexpr_reader<'a, I: ValueInput<'a, Token = Token, Span = Span>>(
                 Sexpr::from_iter(vec![quote, sexpr].into_iter().rev())
             });
 
-        let quasiquote = just(Token::Backquote)
-            .map_with_span(SrcNode::new)
-            .then(sexpr.clone())
-            .map(|(q, sexpr)| {
-                let quote = Sexpr::Atom(SrcNode::new(
-                    Atom::Symbol(InternedString::from("quasiquote")),
-                    q.span(),
-                ));
-                Sexpr::from_iter(vec![quote, sexpr].into_iter().rev())
-            });
+        // let quasiquote = just(Token::Backquote)
+        //     .map_with_span(SrcNode::new)
+        //     .then(sexpr.clone())
+        //     .map(|(q, sexpr)| {
+        //         let quote = Sexpr::Atom(SrcNode::new(
+        //             Atom::Symbol(InternedString::from("quasiquote")),
+        //             q.span(),
+        //         ));
+        //         Sexpr::from_iter(vec![quote, sexpr].into_iter().rev())
+        //     });
 
         let unquote = just(Token::Comma)
             .map_with_span(SrcNode::new)
@@ -82,7 +82,7 @@ fn sexpr_reader<'a, I: ValueInput<'a, Token = Token, Span = Span>>(
             .map(|sexprs| Sexpr::from_iter(sexprs.into_iter().rev()))
             .delimited_by(just(Token::LParen), just(Token::RParen));
 
-        atom.or(list).or(quote).or(quasiquote).or(unquote).or(dot)
+        atom.or(list).or(quote).or(unquote).or(dot)
     })
 }
 
@@ -138,15 +138,15 @@ mod tests {
         insta::assert_debug_snapshot!(root.unwrap());
     }
 
-    #[test]
-    fn read_quasiquote() {
-        let src = "`(1 2 3)";
-        let (root, errs) = read(src);
-        if !errs.is_empty() {
-            panic!("{:?}", errs);
-        }
-        insta::assert_debug_snapshot!(root.unwrap());
-    }
+    // #[test]
+    // fn read_quasiquote() {
+    //     let src = "`(1 2 3)";
+    //     let (root, errs) = read(src);
+    //     if !errs.is_empty() {
+    //         panic!("{:?}", errs);
+    //     }
+    //     insta::assert_debug_snapshot!(root.unwrap());
+    // }
 
     #[test]
     fn read_unquote() {
@@ -159,8 +159,8 @@ mod tests {
     }
 
     #[test]
-    fn read_quasi_unquote() {
-        let src = "`(1 ,(+ 1 1) 3)";
+    fn read_quote_unquote() {
+        let src = "'(1 ,(+ 1 1) 3)";
         let (root, errs) = read(src);
         if !errs.is_empty() {
             panic!("{:?}", errs);

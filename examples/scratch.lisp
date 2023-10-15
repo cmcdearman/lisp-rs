@@ -58,7 +58,7 @@
       nil
       (if (null? (tail body))
           (head body)
-          `(let ((result ,(head body)))
+          '(let ((result ,(head body)))
              (if (null? result)
                  (begin . ,(tail body))
                  result
@@ -67,20 +67,20 @@
 ;; `loop` is a macro that expands into a `let` that
 ;; binds a name to a lambda that calls itself.
 (macro (loop . body)
-  `(let loop ()
+  '(let loop ()
      (begin . ,body)
      (loop)))
 
 ;; `for` is a macro that expands into a `loop` that
 ;; binds a name to a range of numbers.
 (macro (for i from to . body)
-  `(loop (let i from)
+  '(loop (let i from)
      (if (<= i to)
          (begin . ,body)
          (inc! i))))
 
 (macro (for-each x in . body)
-  `(loop (let x in)
+  '(loop (let x in)
      (if (not (empty? x))
          (begin . ,body)
          (for-each . ,body))))
@@ -93,12 +93,12 @@
   (if (null? clauses)
       nil
       (let (clause (head clauses))
-  `(if ,(head clause)
+  '(if ,(head clause)
        (begin . ,(tail clause))
        (cond . ,(tail clauses))))))
 
 (macro (while condition . body)
-  `(let loop ()
+  '(let loop ()
      (cond (,condition
 	    (begin . ,body)
 	    (loop)))))
