@@ -33,109 +33,116 @@ impl Debug for SrcNode<Root> {
     }
 }
 
+impl IntoIterator for Root {
+    type Item = Sexpr;
+    type IntoIter = std::vec::IntoIter<Sexpr>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.0.into_iter()
+    }
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum Sexpr {
-    Atom(SrcNode<Atom>),
-    Pair(SrcNode<Pair>),
-    Nil,
+    Atom(Atom),
+    Pair(),
+    List(Vec<SrcNode<Sexpr>>),
 }
 
-impl Sexpr {
-    pub fn span(&self) -> Span {
-        match self {
-            Sexpr::Atom(a) => a.span(),
-            Sexpr::Pair(p) => p.span(),
-            Sexpr::Nil => Span::default(),
-        }
-    }
-}
+// impl Display for Sexpr {
+//     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+//         match self.clone() {
+//             Sexpr::Atom(a) => write!(f, "{}", a.inner().clone()),
+//             Sexpr::Pair(_) => {
+//                 write!(f, "(")?;
+//                 for (i, s) in self.clone().into_iter().enumerate() {
+//                     if i > 0 {
+//                         write!(f, " ")?;
+//                     }
+//                     write!(f, "{}", s)?;
+//                 }
+//                 write!(f, ")")
+//             }
+//             Sexpr::Nil => write!(f, "()"),
+//         }
+//     }
+// }
 
-impl Display for Sexpr {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self.clone() {
-            Sexpr::Atom(a) => write!(f, "{}", a.inner().clone()),
-            Sexpr::Pair(_) => {
-                write!(f, "(")?;
-                for (i, s) in self.clone().into_iter().enumerate() {
-                    if i > 0 {
-                        write!(f, " ")?;
-                    }
-                    write!(f, "{}", s)?;
-                }
-                write!(f, ")")
-            }
-            Sexpr::Nil => write!(f, "()"),
-        }
-    }
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub struct Pair {
-    head: Sexpr,
-    tail: Sexpr,
-}
-
-impl Pair {
-    pub fn new(head: Sexpr, tail: Sexpr) -> Self {
-        Self { head, tail }
-    }
-
-    pub fn head(&self) -> Sexpr {
-        self.head.clone()
-    }
-
-    pub fn tail(&self) -> Sexpr {
-        self.tail.clone()
-    }
-}
-
-impl FromIterator<Sexpr> for Sexpr {
-    fn from_iter<T: IntoIterator<Item = Sexpr>>(iter: T) -> Self {
-        iter.into_iter().fold(Sexpr::Nil, |acc, next| {
-            Sexpr::Pair(SrcNode::new(
-                Pair::new(next.clone(), acc.clone()),
-                // acc.span().extend(sexpr.span()),
+impl FromIterator<SrcNode<Sexpr>> for List {
+    fn from_iter<T: IntoIterator<Item = SrcNode<Sexpr>>>(iter: T) -> Self {
+        iter.into_iter().fold(List::Nil, |acc, next| {
+            SrcNode::new(
+                Sexpr::Pair(Pair::new(next.clone(), acc.clone())),
                 Span::new(next.span().start, max(acc.span().end, next.span().end)),
-            ))
+            )
         })
     }
 }
 
-impl IntoIterator for Sexpr {
-    type Item = Sexpr;
-    type IntoIter = PairIter;
-
-    fn into_iter(self) -> Self::IntoIter {
-        PairIter(self.clone())
-    }
+#[derive(Debug, Clone, PartialEq)]
+pub enum List {
+    Proper {
+        head: SrcNode<Sexpr>,
+        tail: SrcNode<List>,
+    },
+    Nil,
 }
+
+// impl IntoIterator for Sexpr {
+//     type Item = Sexpr;
+//     type IntoIter = PairIter;
+
+//     fn into_iter(self) -> Self::IntoIter {
+//         PairIter(self.clone())
+//     }
+// }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct PairIter(Sexpr);
+pub struct Pair {
+    head: SrcNode<Sexpr>,
+    tail: SrcNode<Sexpr>,
+}
 
-impl Iterator for PairIter {
-    type Item = Sexpr;
+impl Pair {
+    pub fn new(head: SrcNode<Sexpr>, tail: SrcNode<Sexpr>) -> Self {
+        Self { head, tail }
+    }
 
-    fn next(&mut self) -> Option<Self::Item> {
-        match self.0.clone() {
-            Sexpr::Pair(pair) => {
-                self.0 = pair.tail();
-                Some(pair.head())
-            }
-            Sexpr::Nil => None,
-            sexpr => {
-                self.0 = Sexpr::Nil;
-                Some(sexpr)
-            }
-        }
+    pub fn head(&self) -> SrcNode<Sexpr> {
+        self.head.clone()
+    }
+
+    pub fn tail(&self) -> SrcNode<Sexpr> {
+        self.tail.clone()
     }
 }
 
-impl ExactSizeIterator for PairIter {
-    fn len(&self) -> usize {
-        self.clone().fold(0, |acc, _| acc + 1)
-    }
-}
+// #[derive(Debug, Clone, PartialEq)]
+// pub struct PairIter(Sexpr);
+
+// impl Iterator for PairIter {
+//     type Item = Sexpr;
+
+//     fn next(&mut self) -> Option<Self::Item> {
+//         match self.0.clone() {
+//             Sexpr::Pair(pair) => {
+//                 self.0 = pair.tail();
+//                 Some(pair.head())
+//             }
+//             Sexpr::Nil => None,
+//             sexpr => {
+//                 self.0 = Sexpr::Nil;
+//                 Some(sexpr)
+//             }
+//         }
+//     }
+// }
+
+// impl ExactSizeIterator for PairIter {
+//     fn len(&self) -> usize {
+//         self.clone().fold(0, |acc, _| acc + 1)
+//     }
+// }
 
 impl Debug for Format<Sexpr> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

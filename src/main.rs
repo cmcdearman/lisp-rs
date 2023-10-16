@@ -12,8 +12,8 @@ fn main() {
         panic!("{:?}", errs);
     }
     println!("sexprs: {:?}", root.clone().unwrap());
-    match syntax::parser::parse::parse(src, &root.unwrap()) {
-        Ok(ast) => println!("ast: {:?}", ast),
-        Err(e) => panic!("{:?}", e),
-    }
+    // match syntax::parser::parse::parse(src, &root.unwrap()) {
+    //     Ok(ast) => println!("ast: {:?}", ast),
+    //     Err(e) => panic!("{:?}", e),
+    // }
 }
