@@ -2,25 +2,21 @@ use crate::util::{
     format::{spaces, Format},
     intern::InternedString,
     node::SrcNode,
-    span::Span,
 };
 use num_rational::Rational64;
-use std::{
-    cmp::max,
-    fmt::{Debug, Display},
-};
+use std::fmt::{Debug, Display};
 
 #[derive(Clone, PartialEq)]
-pub struct Root(pub Vec<Sexpr>);
+pub struct Root(pub Vec<SrcNode<Sexpr>>);
 
-impl Display for Root {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        for s in self.clone().0 {
-            writeln!(f, "{}", s)?;
-        }
-        Ok(())
-    }
-}
+// impl Display for Root {
+//     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+//         for s in self.clone().0 {
+//             writeln!(f, "{}", s)?;
+//         }
+//         Ok(())
+//     }
+// }
 
 impl Debug for SrcNode<Root> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -34,8 +30,8 @@ impl Debug for SrcNode<Root> {
 }
 
 impl IntoIterator for Root {
-    type Item = Sexpr;
-    type IntoIter = std::vec::IntoIter<Sexpr>;
+    type Item = SrcNode<Sexpr>;
+    type IntoIter = std::vec::IntoIter<SrcNode<Sexpr>>;
 
     fn into_iter(self) -> Self::IntoIter {
         self.0.into_iter()
@@ -45,7 +41,7 @@ impl IntoIterator for Root {
 #[derive(Debug, Clone, PartialEq)]
 pub enum Sexpr {
     Atom(Atom),
-    Pair(),
+    Pair(SrcNode<Sexpr>, SrcNode<Sexpr>),
     List(Vec<SrcNode<Sexpr>>),
 }
 
@@ -68,114 +64,52 @@ pub enum Sexpr {
 //     }
 // }
 
-impl FromIterator<SrcNode<Sexpr>> for List {
-    fn from_iter<T: IntoIterator<Item = SrcNode<Sexpr>>>(iter: T) -> Self {
-        iter.into_iter().fold(List::Nil, |acc, next| {
-            SrcNode::new(
-                Sexpr::Pair(Pair::new(next.clone(), acc.clone())),
-                Span::new(next.span().start, max(acc.span().end, next.span().end)),
-            )
-        })
-    }
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub enum List {
-    Proper {
-        head: SrcNode<Sexpr>,
-        tail: SrcNode<List>,
-    },
-    Nil,
-}
-
-// impl IntoIterator for Sexpr {
-//     type Item = Sexpr;
-//     type IntoIter = PairIter;
-
-//     fn into_iter(self) -> Self::IntoIter {
-//         PairIter(self.clone())
-//     }
-// }
-
-#[derive(Debug, Clone, PartialEq)]
-pub struct Pair {
-    head: SrcNode<Sexpr>,
-    tail: SrcNode<Sexpr>,
-}
-
-impl Pair {
-    pub fn new(head: SrcNode<Sexpr>, tail: SrcNode<Sexpr>) -> Self {
-        Self { head, tail }
-    }
-
-    pub fn head(&self) -> SrcNode<Sexpr> {
-        self.head.clone()
-    }
-
-    pub fn tail(&self) -> SrcNode<Sexpr> {
-        self.tail.clone()
-    }
-}
-
-// #[derive(Debug, Clone, PartialEq)]
-// pub struct PairIter(Sexpr);
-
-// impl Iterator for PairIter {
-//     type Item = Sexpr;
-
-//     fn next(&mut self) -> Option<Self::Item> {
-//         match self.0.clone() {
-//             Sexpr::Pair(pair) => {
-//                 self.0 = pair.tail();
-//                 Some(pair.head())
-//             }
-//             Sexpr::Nil => None,
-//             sexpr => {
-//                 self.0 = Sexpr::Nil;
-//                 Some(sexpr)
-//             }
-//         }
-//     }
-// }
-
-// impl ExactSizeIterator for PairIter {
-//     fn len(&self) -> usize {
-//         self.clone().fold(0, |acc, _| acc + 1)
-//     }
-// }
-
-impl Debug for Format<Sexpr> {
+impl Debug for Format<SrcNode<Sexpr>> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         // Pretty print with indents and spans
-        match self.value.clone() {
+        match self.value.inner().clone() {
             Sexpr::Atom(a) => {
-                let fmt = Format::new(self.indent + 2, a.inner().clone());
+                let fmt = Format::new(self.indent + 2, a.clone());
                 write!(
                     f,
-                    "{}Atom @ {}\n{:?}",
+                    "{}Atom @ {}\n{:?}\n",
                     spaces(self.indent),
                     self.value.span(),
                     fmt,
                 )
             }
-            Sexpr::Pair(p) => {
-                write!(f, "{}Pair @ {}", spaces(self.indent), p.span())?;
+            Sexpr::Pair(head, tail) => {
                 write!(
                     f,
-                    "\n{}head:\n{:?}",
-                    spaces(self.indent + 2),
-                    Format::new(self.indent + 4, p.head())
-                )?;
-                write!(
-                    f,
-                    "\n{}tail:\n{:?}",
-                    spaces(self.indent + 2),
-                    Format::new(self.indent + 4, p.tail())
-                )?;
-                Ok(())
+                    "{}Pair @ {}\n{:?}\n{:?}",
+                    spaces(self.indent),
+                    self.value.span(),
+                    Format::new(self.indent + 2, head.clone()),
+                    Format::new(self.indent + 2, tail.clone()),
+                )
             }
-            Sexpr::Nil => write!(f, "{}Nil", spaces(self.indent)),
+            Sexpr::List(l) => {
+                let fmt = Format::new(self.indent + 4, l.clone());
+                write!(
+                    f,
+                    "{}List @ {}\n{:?}\n",
+                    spaces(self.indent),
+                    self.value.span(),
+                    fmt,
+                )
+            }
         }
+    }
+}
+
+impl Debug for Format<Vec<SrcNode<Sexpr>>> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        // Pretty print with indents and spans
+        // write!(f, "{}List @ {}\n", spaces(self.indent), self.value.span())?;
+        for sexpr in self.value.clone() {
+            write!(f, "{:?}", Format::new(self.indent, sexpr))?;
+        }
+        Ok(())
     }
 }
 
