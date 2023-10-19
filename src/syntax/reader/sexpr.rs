@@ -1,13 +1,17 @@
 use crate::util::{
     format::{spaces, Format},
     intern::InternedString,
-    node::SrcNode,
+    meta::Meta,
+    span::Span,
 };
 use num_rational::Rational64;
 use std::fmt::{Debug, Display};
 
 #[derive(Clone, PartialEq)]
-pub struct Root(pub Vec<SrcNode<Sexpr>>);
+pub struct Root {
+    pub sexprs: Vec<Sexpr>,
+    pub meta: Meta,
+}
 
 // impl Display for Root {
 //     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -18,11 +22,11 @@ pub struct Root(pub Vec<SrcNode<Sexpr>>);
 //     }
 // }
 
-impl Debug for SrcNode<Root> {
+impl Debug for Root {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         // Pretty print with indents and spans
-        write!(f, "Root @ {}\n", self.span())?;
-        for sexpr in self.0.clone() {
+        write!(f, "Root @ {}\n", self.meta.span)?;
+        for sexpr in self.sexprs.clone() {
             write!(f, "{:?}", Format::new(2, sexpr))?;
         }
         Ok(())
@@ -30,19 +34,49 @@ impl Debug for SrcNode<Root> {
 }
 
 impl IntoIterator for Root {
-    type Item = SrcNode<Sexpr>;
-    type IntoIter = std::vec::IntoIter<SrcNode<Sexpr>>;
+    type Item = Sexpr;
+    type IntoIter = std::vec::IntoIter<Sexpr>;
 
     fn into_iter(self) -> Self::IntoIter {
-        self.0.into_iter()
+        self.sexprs.into_iter()
     }
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Sexpr {
-    Atom(Atom),
-    Pair(SrcNode<Sexpr>, SrcNode<Sexpr>),
-    List(Vec<SrcNode<Sexpr>>),
+    Atom {
+        value: Atom,
+        meta: Meta,
+    },
+    Pair {
+        head: Box<Self>,
+        tail: Box<Self>,
+        meta: Meta,
+    },
+    List {
+        values: Vec<Self>,
+        meta: Meta,
+    },
+    Vector {
+        values: Vec<Self>,
+        meta: Meta,
+    },
+    ByteVector {
+        values: Vec<u8>,
+        meta: Meta,
+    },
+}
+
+impl Sexpr {
+    pub fn span(&self) -> Span {
+        match self {
+            Sexpr::Atom { meta, .. } => meta.span,
+            Sexpr::Pair { meta, .. } => meta.span,
+            Sexpr::List { meta, .. } => meta.span,
+            Sexpr::Vector { values, meta } => meta.span,
+            Sexpr::ByteVector { values, meta } => meta.span,
+        }
+    }
 }
 
 // impl Display for Sexpr {
@@ -64,37 +98,57 @@ pub enum Sexpr {
 //     }
 // }
 
-impl Debug for Format<SrcNode<Sexpr>> {
+impl Debug for Format<Sexpr> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         // Pretty print with indents and spans
-        match self.value.inner().clone() {
-            Sexpr::Atom(a) => {
-                let fmt = Format::new(self.indent + 2, a.clone());
+        match self.value.clone() {
+            Sexpr::Atom { value, meta } => {
+                let fmt = Format::new(self.indent + 2, value.clone());
                 write!(
                     f,
                     "{}Atom @ {}\n{:?}\n",
                     spaces(self.indent),
-                    self.value.span(),
+                    meta.span,
                     fmt,
                 )
             }
-            Sexpr::Pair(head, tail) => {
+            Sexpr::Pair { head, tail, meta } => {
                 write!(
                     f,
                     "{}Pair @ {}\n{:?}\n{:?}",
                     spaces(self.indent),
-                    self.value.span(),
-                    Format::new(self.indent + 2, head.clone()),
-                    Format::new(self.indent + 2, tail.clone()),
+                    meta.span,
+                    Format::new(self.indent + 2, *head.clone()),
+                    Format::new(self.indent + 2, *tail.clone()),
                 )
             }
-            Sexpr::List(l) => {
-                let fmt = Format::new(self.indent + 4, l.clone());
+            Sexpr::List { values, meta } => {
+                let fmt = Format::new(self.indent + 4, values.clone());
                 write!(
                     f,
                     "{}List @ {}\n{:?}\n",
                     spaces(self.indent),
-                    self.value.span(),
+                    meta.span,
+                    fmt,
+                )
+            }
+            Sexpr::Vector { values, meta } => {
+                let fmt = Format::new(self.indent + 4, values.clone());
+                write!(
+                    f,
+                    "{}Vector @ {}\n{:?}\n",
+                    spaces(self.indent),
+                    meta.span,
+                    fmt,
+                )
+            }
+            Sexpr::ByteVector { values, meta } => {
+                let fmt = Format::new(self.indent + 4, values.clone());
+                write!(
+                    f,
+                    "{}ByteVector @ {}\n{:?}\n",
+                    spaces(self.indent),
+                    meta.span,
                     fmt,
                 )
             }
@@ -102,12 +156,21 @@ impl Debug for Format<SrcNode<Sexpr>> {
     }
 }
 
-impl Debug for Format<Vec<SrcNode<Sexpr>>> {
+impl Debug for Format<Vec<Sexpr>> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         // Pretty print with indents and spans
-        // write!(f, "{}List @ {}\n", spaces(self.indent), self.value.span())?;
         for sexpr in self.value.clone() {
             write!(f, "{:?}", Format::new(self.indent, sexpr))?;
+        }
+        Ok(())
+    }
+}
+
+impl Debug for Format<Vec<u8>> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        // Pretty print with indents and spans
+        for byte in self.value.clone() {
+            write!(f, "{:?}", byte)?;
         }
         Ok(())
     }

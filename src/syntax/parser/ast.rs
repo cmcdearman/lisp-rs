@@ -1,9 +1,10 @@
-use crate::util::{intern::InternedString, node::SrcNode};
+use crate::util::{intern::InternedString, meta::Meta};
 use num_rational::Rational64;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Root {
-    pub items: Vec<SrcNode<Item>>,
+    pub items: Vec<Item>,
+    pub meta: Meta,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -14,35 +15,57 @@ pub enum Item {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Decl {
-    pub name: SrcNode<Symbol>,
-    pub value: SrcNode<Expr>,
+    pub name: InternedString,
+    pub value: Expr,
+    pub meta: Meta,
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Expr {
-    Symbol(Symbol),
-    Lit(Lit),
-    List(Vec<SrcNode<Self>>),
+    Symbol {
+        name: InternedString,
+        meta: Meta,
+    },
+    Lit {
+        value: Lit,
+        meta: Meta,
+    },
+    List {
+        values: Vec<Self>,
+        meta: Meta,
+    },
     Lambda {
-        params: Vec<SrcNode<Self>>,
-        body: SrcNode<Self>,
+        params: Vec<Self>,
+        body: Box<Self>,
+        meta: Meta,
     },
     Apply {
-        fun: SrcNode<Self>,
-        args: Vec<SrcNode<Self>>,
+        fun: Box<Self>,
+        args: Vec<Self>,
+        meta: Meta,
     },
     Let {
-        name: SrcNode<Symbol>,
-        value: SrcNode<Self>,
-        body: SrcNode<Self>,
+        name: InternedString,
+        value: Box<Self>,
+        body: Box<Self>,
+        meta: Meta,
     },
-    Quote(SrcNode<Self>),
-    Unquote(SrcNode<Self>),
-    UnquoteSplice(SrcNode<Self>),
+    Quote {
+        value: Box<Self>,
+        meta: Meta,
+    },
+    Unquote {
+        value: Box<Self>,
+        meta: Meta,
+    },
+    UnquoteSplice {
+        value: Box<Self>,
+        meta: Meta,
+    },
     If {
-        cond: SrcNode<Self>,
-        then: SrcNode<Self>,
-        else_: SrcNode<Self>,
+        cond: Box<Self>,
+        then: Box<Self>,
+        else_: Box<Self>,
     },
     Nil,
 }
