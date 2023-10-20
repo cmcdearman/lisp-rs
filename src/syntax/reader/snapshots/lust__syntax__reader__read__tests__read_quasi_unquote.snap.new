@@ -1,29 +1,25 @@
 ---
 source: src/syntax/reader/read.rs
-assertion_line: 191
+assertion_line: 242
 expression: root.unwrap()
 ---
 Root @ 0..15
-  List @ 0..15
-      Atom @ 0..1
-        Symbol("quasiquote")
-      List @ 1..15
-          Atom @ 2..3
+  List @ 0..14
+    Atom @ 0..1
+      Symbol("quasiquote")
+    List @ 2..14
+      Atom @ 2..3
+        Number(1)
+      List @ 4..11
+        Atom @ 4..5
+          Symbol("unquote")
+        List @ 6..11
+          Atom @ 6..7
+            Symbol("+")
+          Atom @ 8..9
             Number(1)
-          List @ 4..12
-              Atom @ 4..5
-                Symbol("unquote")
-              List @ 5..12
-                  Atom @ 6..7
-                    Symbol("+")
-                  Atom @ 8..9
-                    Number(1)
-                  Atom @ 10..11
-                    Number(1)
-
-
-          Atom @ 13..14
-            Number(3)
-
-
+          Atom @ 10..11
+            Number(1)
+      Atom @ 13..14
+        Number(3)
 

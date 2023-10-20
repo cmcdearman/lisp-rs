@@ -115,7 +115,7 @@ impl Debug for Format<Sexpr> {
             Sexpr::Pair { head, tail, meta } => {
                 write!(
                     f,
-                    "{}Pair @ {}\n{:?}\n{:?}",
+                    "{}Pair @ {}\n{:?}{:?}",
                     spaces(self.indent),
                     meta.span,
                     Format::new(self.indent + 2, *head.clone()),
@@ -123,30 +123,24 @@ impl Debug for Format<Sexpr> {
                 )
             }
             Sexpr::List { values, meta } => {
-                let fmt = Format::new(self.indent + 4, values.clone());
-                write!(
-                    f,
-                    "{}List @ {}\n{:?}\n",
-                    spaces(self.indent),
-                    meta.span,
-                    fmt,
-                )
+                let fmt = Format::new(self.indent + 2, values.clone());
+                write!(f, "{}List @ {}\n{:?}", spaces(self.indent), meta.span, fmt,)
             }
             Sexpr::Vector { values, meta } => {
-                let fmt = Format::new(self.indent + 4, values.clone());
+                let fmt = Format::new(self.indent + 2, values.clone());
                 write!(
                     f,
-                    "{}Vector @ {}\n{:?}\n",
+                    "{}Vector @ {}\n{:?}",
                     spaces(self.indent),
                     meta.span,
                     fmt,
                 )
             }
             Sexpr::ByteVector { values, meta } => {
-                let fmt = Format::new(self.indent + 4, values.clone());
+                let fmt = Format::new(self.indent + 2, values.clone());
                 write!(
                     f,
-                    "{}ByteVector @ {}\n{:?}\n",
+                    "{}ByteVector @ {}\n{:?}",
                     spaces(self.indent),
                     meta.span,
                     fmt,

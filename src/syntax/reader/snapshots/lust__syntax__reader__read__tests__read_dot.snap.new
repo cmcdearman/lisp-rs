@@ -1,13 +1,12 @@
 ---
 source: src/syntax/reader/read.rs
-assertion_line: 201
+assertion_line: 252
 expression: root.unwrap()
 ---
 Root @ 0..7
-  Pair @ 0..7
+  Pair @ 1..6
     Atom @ 1..2
       Number(1)
-
     Atom @ 5..6
       Number(2)
 
