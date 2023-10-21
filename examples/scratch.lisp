@@ -4,53 +4,63 @@
 ;;; *                         Special Forms                          *
 ;;; ==================================================================
 
+;; `def`
 ;; `let`
 ;; `if`
 ;; `lambda`
 ;; `quote`
+;; `quasiquote`
+;; `unquote`
+;; `unquote-splice`
 ;; `macro`
 
-;; You can use `let` to bind values to names. Note
+;; You can use `def` to bind values to names. Note
 ;; that we don't call these variables because they
 ;; can't vary. They are immutable.
-(let x 10)
+(def x 10)
 
-;; `let` can bind to lambdas
-(let gcd (lambda (a b)
+;; `def` can bind to lambdas
+(def gcd (lambda (a b)
   (if (= b 0) 
       a
       (gcd b (mod a b)))))
 
-;; `let` can also bind application forms
-(let (gcd a b)
+;; `def` can also bind application forms
+(def (gcd a b)
   (if (= b 0) 
       a
       (gcd b (mod a b))))
 
-(let (map f xs)
+(def (map f xs)
   (if (empty? xs) nil
       (pair (f (head xs)) (map f (tail xs)))))
 
-(let (fib n)
+(def (fib n)
   (if (<= n 1) 
       n
       (+ (fib (- n 1)) (fib (- n 2)))))
 
 (display (fib 45))
 
-(let (gcd a b)
+;; `let` can bind multiple names at once
+(let ((a 10)
+      (b 5))
+  (+ a b))
+
+;; `let` can also bind functions
+(let ((gcd a b)
   (if (= b 0) 
       a
-      (gcd b (mod a b)))
+      (gcd b (mod a b))))
   (gcd 10 5))
 
 ;;; ==================================================================
 ;;; *                            Macros                              *
 ;;; ==================================================================
 
-;; `macro` is used to letine macros. Macros are
+;; `macro` is used to define macros. Macros are
 ;; like functions, but they are evaluated at compile
-;; time. They can be used to letine new syntax.
+;; time. They can be used to define new syntax.
 
 ;; `begin`
 (macro (begin . body)
@@ -58,29 +68,29 @@
       nil
       (if (null? (tail body))
           (head body)
-          `(let ((result ,(head body)))
+          `(def ((result ,(head body)))
              (if (null? result)
                  (begin . ,(tail body))
                  result
                  (begin . ,body))))))
 
-;; `loop` is a macro that expands into a `let` that
+;; `loop` is a macro that expands into a `def` that
 ;; binds a name to a lambda that calls itself.
 (macro (loop ())
-  '(let (loop . x)
+  '(def (loop . x)
      (begin . ,body)
      (loop)))
 
 ;; `for` is a macro that expands into a `loop` that
 ;; binds a name to a range of numbers.
 (macro (for i from to . body)
-  `(loop (let i from)
+  `(loop (def i from)
      (if (<= i to)
          (begin . ,body)
          (inc! i))))
 
 (macro (for-each x in . body)
-  `(loop (let x in)
+  `(loop (def x in)
      (if (not (empty? x))
          (begin . ,body)
          (for-each . ,body))))
@@ -92,13 +102,13 @@
 (macro (cond . clauses)
   (if (null? clauses)
       nil
-      (let (clause (head clauses))
+      (def (clause (head clauses))
   `(if ,(head clause)
        (begin . ,(tail clause))
        (cond . ,(tail clauses))))))
 
 (macro (while condition . body)
-  `(let loop ()
+  `(def loop ()
      (cond (,condition
 	    (begin . ,body)
 	    (loop)))))
@@ -111,34 +121,36 @@
 ;; as unevaluated forms.
 
 ;; you can use `match` built-in macro to pattern match or `if` for conditionals
-(let (gcd a b)
+(def (gcd a b)
   (match b
     ((0) a)
     ((_) (gcd b (mod a b)))))
 
-(let (fib n)
+(def (fib n)
   (match n
     ((0) 0)
     ((1) 1)
     ((_) (+ (fib (- n 1)) (fib (- n 2))))))
 
 ;; Here's a match with guards
-(let (fib n)
+(def (fib n)
   (match n
     ((guard _) (<= n 1) n)
     ((_) (+ (fib (- n 1)) (fib (- n 2)))))) 
 
-(let (ack m n)
+(def (ack m n)
   (cond ((= m 0) (+ n 1))
         ((= n 0) (ack (- m 1) 1))
         (ack (- m 1) (ack m (- n 1)))))
 
-(lets ((a 10) 
-      (b 5))
-  (+ a b))
-
 (when (= 1 1)
   (println "1 is equal to 1"))
+
+;; `begin` is a special form that evaluates each of its
+;; arguments in order and returns the value of the last
+(begin (println "Hello, World!")
+       (println "Goodbye, World!")
+       10)
 
 ;;; ==================================================================
 ;;; *                         Data Types                             *
@@ -148,28 +160,28 @@
 (data (point x y))
 
 ;; Instantiating a record is just like calling a function.
-(let p (point 1 2)) 
+(def p (point 1 2)) 
 
 (class Eq ()
-  (let (eq self other)
+  (def (eq self other)
     (raise :NotImplementedError)))
 
 (class Ord (Eq PartialOrd)
-  (let (cmp self other)
+  (def (cmp self other)
     (raise :NotImplementedError)))
 
 (class Stack ()
-  (let (push self x)
+  (def (push self x)
     (raise :NotImplementedError))
-  (let (pop self)
+  (def (pop self)
     (raise :NotImplementedError))
-  (let (peek self)
+  (def (peek self)
     (raise :NotImplementedError))
-  (let (empty? self)
+  (def (empty? self)
     (raise :NotImplementedError)))
 
 ;; instantiate a class
-(let s (Stack))
+(def s (Stack))
 
 ;; method calls are done with `send`
 (send s push 1)
