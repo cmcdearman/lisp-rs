@@ -21,3 +21,9 @@
 (if (= 1 2) 
     (print "1 is equal to 2")
     (print "1 is not equal to 2"))
+
+'(1 2 3)
+'(1 . 2)
+'(1 2 . 3)
+`(1 2 ,(1 + 2))
+`(1 2 ,@(list 3 4))
