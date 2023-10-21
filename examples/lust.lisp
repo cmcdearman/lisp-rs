@@ -18,7 +18,7 @@
           (letter? (peek src pos) (lex-ident src pos))
           (else (lex-symbol lex-tok src pos))))
 
-(let (lex-rules)
+(let lex-rules 
 ;; Reader
 
 
