@@ -13,6 +13,12 @@
 (let (lex src pos tokens) 
     (cond ))
 
+(let (lex-tok src pos)
+    (cond (digit? (peek src pos) (lex-number src pos))
+          (letter? (peek src pos) (lex-ident src pos))
+          (else (lex-symbol lex-tok src pos))))
+
+(let (lex-rules)
 ;; Reader
 
 

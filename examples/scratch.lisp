@@ -122,6 +122,12 @@
     ((1) 1)
     ((_) (+ (fib (- n 1)) (fib (- n 2))))))
 
+;; Here's a match with guards
+(let (fib n)
+  (match n
+    ((guard _) (<= n 1) n)
+    ((_) (+ (fib (- n 1)) (fib (- n 2)))))) 
+
 (let (ack m n)
   (cond ((= m 0) (+ n 1))
         ((= n 0) (ack (- m 1) 1))
