@@ -73,8 +73,8 @@ impl Sexpr {
             Sexpr::Atom { meta, .. } => meta.span,
             Sexpr::Pair { meta, .. } => meta.span,
             Sexpr::List { meta, .. } => meta.span,
-            Sexpr::Vector { values, meta } => meta.span,
-            Sexpr::ByteVector { values, meta } => meta.span,
+            Sexpr::Vector { meta, .. } => meta.span,
+            Sexpr::ByteVector { meta, .. } => meta.span,
         }
     }
 }

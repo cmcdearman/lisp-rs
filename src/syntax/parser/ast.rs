@@ -9,12 +9,12 @@ pub struct Root {
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Item {
-    Decl(Decl),
+    Def(Def),
     Expr(Expr),
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct Decl {
+pub struct Def {
     pub name: InternedString,
     pub value: Expr,
     pub meta: Meta,
@@ -66,8 +66,27 @@ pub enum Expr {
         cond: Box<Self>,
         then: Box<Self>,
         else_: Box<Self>,
+        meta: Meta,
     },
-    Nil,
+    Nil(Meta),
+}
+
+impl Expr {
+    pub fn meta(&self) -> &Meta {
+        match self {
+            Expr::Symbol { meta, .. } => meta,
+            Expr::Lit { meta, .. } => meta,
+            Expr::List { meta, .. } => meta,
+            Expr::Lambda { meta, .. } => meta,
+            Expr::Apply { meta, .. } => meta,
+            Expr::Let { meta, .. } => meta,
+            Expr::Quote { meta, .. } => meta,
+            Expr::Unquote { meta, .. } => meta,
+            Expr::UnquoteSplice { meta, .. } => meta,
+            Expr::If { meta, .. } => meta,
+            Expr::Nil(m) => m,
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]
