@@ -1,6 +1,5 @@
 ---
 source: src/syntax/reader/read.rs
-assertion_line: 191
 expression: root.unwrap()
 ---
 Root @ 0..2
