@@ -180,8 +180,27 @@
   (def (empty? self)
     (raise :NotImplementedError)))
 
+;; fields
+(class Point ()
+  (def (x self)
+    (raise :NotImplementedError))
+  (def (y self)
+    (raise :NotImplementedError)))
+
+(subclass object point)
+(field point x)
+(field point y)
+(method point (move dx dy)
+  (point (+ x dx) (+ y dy)))
+
+(def p (point 1 2))
+;; => (point 1 2)
+(move p 3 4)
+;; => (point 4 6)
+
+
 ;; instantiate a class
 (def s (Stack))
 
-;; method calls are done with `send`
-(send s push 1)
+;; method call
+(push s 1)
