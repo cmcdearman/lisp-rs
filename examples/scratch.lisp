@@ -193,6 +193,25 @@
 (method point (move dx dy)
   (point (+ x dx) (+ y dy)))
 
+(method point (scale k)
+  (point (* x k) (* y k)))
+
+(class Point () (x y))
+
+; class LinkedList (I = Nat) V <: List I V
+;   = Empty
+;   | Pair I V (List I V)
+
+;   empty : List I V
+;   find : I -> V
+;   insert : (I, V) -> List I V
+;   delete : I -> List I V
+; (class LinkedList
+
+;; methods return a copy of the object so you can chain them
+(p (move 1 2) 
+   (scale 2))
+
 (def p (point 1 2))
 ;; => (point 1 2)
 (move p 3 4)
