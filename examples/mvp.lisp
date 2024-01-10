@@ -1,5 +1,9 @@
 ;; let binding
+;; bindings are immutable by default
 (let a 1)
+
+;; mutable binding
+(let! a 1)
 
 ;; if expression
 ;; Every if expression must have a then and an else clause.
@@ -37,19 +41,32 @@
         ((= n 0) (ack (- m 1) 1))
         (t (ack (- m 1) (ack m (- n 1))))))
 
+;; lists
 '(1 2 3)
+
+;; quasiquote/unquote
 `(1 2 ,(+ 1 2))
+
+;; quasiquote/unquote-splicing
 `(1 2 ,@(list 3 4))
+
+;; vectors
 [1 2 3]
+
+;; sets
 #{ 1 2 3 }
+
+;; maps
 { :a 1 :b 2 }
 
 ;; macros
-(macro (fn name args body)
-  `(def ,name (lambda ,args) ,@body))
-
 (macro (while test body)
-  `(fn loop ()
+  `(let (loop)
      (if ,test
          (begin ,@body (loop))
          ())))
+
+;; example uses
+(while (< i 10)
+  (println i)
+  (set! i (+ i 1)))
