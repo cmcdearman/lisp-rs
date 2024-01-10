@@ -60,6 +60,17 @@
 { :a 1 :b 2 }
 
 ;; macros
+(macro (cond clauses)
+  (if (empty? clauses)
+      ()
+      (let (clause (head clauses))
+        (if (= (head clause) 'else)
+            (list 'begin (tail clause))
+            (list 'if (head clause) (list 'begin (tail clause)) (cond (tail clauses)))))))
+
+(macro (when test body)
+  `(if ,test (begin ,@body) ()))
+
 (macro (while test body)
   `(let (loop)
      (if ,test
