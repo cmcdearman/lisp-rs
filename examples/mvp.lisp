@@ -1,60 +1,38 @@
-;; immutable binding
-(def x 10)
-
-;; mutable binding
-(def! y 10)
-
-;; functions are first class
-(def gcd (lambda (a b)
-  (if (= b 0) 
-      a
-      (gcd b (mod a b)))))
-
-(def map (lambda (f xs)
-  (if (empty? xs) nil
-      (pair (f (head xs)) (map f (tail xs))))))
-
-;; let expression
-(let ((a 10)
-      (b 5))
-  (+ a b))
+;; let binding
+(let a 1)
 
 ;; if expression
+;; Every if expression must have a then and an else clause.
+;; The types of the then and else clause must be the same.
 (if (= 1 2) 
     (println "1 is equal to 2")
     (println "1 is not equal to 2"))
 
-;; macro
-(macro (fn name args body)
-  `(def ,name (lambda ,args) ,@body))
+;; let binding to function
+(let (fib n)
+  (let (loop n a b)
+    (if (= n 0)
+      a
+      (loop (- n 1) b (+ a b)))
+    (loop n 0 1)))
 
-(macro (while test body)
-  `(fn loop ()
-     (if ,test
-         (begin ,@body (loop))
-         ()
-         )))
-
-(fn gcd (a b)
+;; let binding to function with expression body
+(let (gcd a b)
   (if (= b 0) 
       a
-      (gcd b (mod a b))))
+      (gcd b (mod a b)))
+  (gcd 10 5))
 
-(fn fib (n)
-  (if (< n 2)
-      n
-      (+ (fib (- n 1)) (fib (- n 2)))))
-
-(fn map (f xs)
-  (if (empty? xs) nil
+(let (map f xs)
+  (if (empty? xs) ()
       (pair (f (head xs)) (map f (tail xs)))))
 
-(fn fact (n)
+(let (fact n)
   (if (= n 0)
       1
       (* n (fact (- n 1)))))
 
-(fn ack (m n)
+(let (ack m n)
   (cond ((= m 0) (+ n 1))
         ((= n 0) (ack (- m 1) 1))
         (t (ack (- m 1) (ack m (- n 1))))))
@@ -65,3 +43,13 @@
 [1 2 3]
 #{ 1 2 3 }
 { :a 1 :b 2 }
+
+;; macros
+(macro (fn name args body)
+  `(def ,name (lambda ,args) ,@body))
+
+(macro (while test body)
+  `(fn loop ()
+     (if ,test
+         (begin ,@body (loop))
+         ())))
