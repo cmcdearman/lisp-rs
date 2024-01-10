@@ -50,15 +50,17 @@
 
 ;; lists
 '(1 2 3)
+[1 2 3]
 
 ;; quasiquote/unquote
 `(1 2 ,(+ 1 2))
+[1 2 (+ 1 2)]
 
 ;; quasiquote/unquote-splicing
 `(1 2 ,@(list 3 4))
 
 ;; vectors
-[1 2 3]
+#[1 2 3]
 
 ;; sets
 #{ 1 2 3 }
@@ -94,6 +96,46 @@
 (type (List T
   (Pair (head : T) (tail : (List T)))
   (Empty)))
+
+;; modules
+(module List
+  (type List T
+    (Pair (head : T) (tail : (List T)))
+    (Empty))
+
+  (let empty (Empty))
+
+  (let (empty? xs)
+    (match xs
+      (Empty true)
+      (Pair false)))
+
+  (let (map f xs)
+    (if (empty? xs) ()
+        (pair (f (head xs)) (map f (tail xs)))))
+  
+  (let (foldl f acc xs) 
+    (if (empty? xs)
+        acc
+        (foldl f (f acc (head xs)) (tail xs))))
+  
+  (let (foldr f acc xs)
+    (if (empty? xs)
+        acc
+        (f (head xs) (foldr f acc (tail xs)))))
+
+  (let (filter f xs)
+    (if (empty? xs)
+        ()
+        (if (f (head xs))
+            (pair (head xs) (filter f (tail xs)))
+            (filter f (tail xs)))))
+
+  (let (reverse xs)
+    (foldl (lambda (acc x) (pair x acc)) () xs)))
+
+;; module usage
+(List.map (lambda (x) (* x x)) [1 2 3])
 
 ;; macros
 (macro (cond clauses)
