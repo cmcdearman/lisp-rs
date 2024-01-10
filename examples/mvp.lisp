@@ -27,6 +27,13 @@
       (gcd b (mod a b)))
   (gcd 10 5))
 
+;; type hints
+(let (gcd (a : Int) (b : Int) : Int)
+  (if (= b 0) 
+      a
+      (gcd b (mod a b)))
+  (gcd 10 5))
+
 (let (map f xs)
   (if (empty? xs) ()
       (pair (f (head xs)) (map f (tail xs)))))
@@ -58,6 +65,35 @@
 
 ;; maps
 { :a 1 :b 2 }
+
+;; User defined types
+;; product type
+(type (Point 
+  (x : Int) 
+  (y : Int)))
+
+;; product type with type parameters
+(type (Pair T 
+  (head T) 
+  (tail (Pair T))))
+
+;; sum type
+(type (Shape
+  (Circle (radius : Int))
+  (Rectangle (width : Int) (height : Int))
+  (Triangle (base : Int) (height : Int))))
+
+;; sum type with type parameters
+(type (Option T (Some T) (None)))
+
+(type (Result T E 
+  (Ok T) 
+  (Err E)))
+
+;; sum type with complex type parameters
+(type (List T
+  (Pair (head : T) (tail : (List T)))
+  (Empty)))
 
 ;; macros
 (macro (cond clauses)
