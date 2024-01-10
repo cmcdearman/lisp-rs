@@ -74,8 +74,8 @@
 
 ;; product type with type parameters
 (type (Pair T 
-  (head T) 
-  (tail (Pair T))))
+  (head : T) 
+  (tail : (Pair T))))
 
 ;; sum type
 (type (Shape
