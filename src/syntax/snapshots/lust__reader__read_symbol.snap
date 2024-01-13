@@ -1,5 +1,0 @@
----
-source: src/reader.rs
-expression: sexpr
----
-InternedString(foo)

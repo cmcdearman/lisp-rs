@@ -1,5 +1,0 @@
----
-source: src/reader.rs
-expression: sexpr
----
-Rational(Ratio { numer: 6, denom: 1 })

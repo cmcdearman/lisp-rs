@@ -1,225 +1,161 @@
-;;;; A file for feature/syntax ideas
+;; let binding
+;; bindings are immutable by default
+(let a 1)
 
-;;; ==================================================================
-;;; *                         Special Forms                          *
-;;; ==================================================================
+;; mutable binding
+(let! a 1)
 
-;; `def`
-;; `let`
-;; `if`
-;; `lambda`
-;; `quote`
-;; `quasiquote`
-;; `unquote`
-;; `unquote-splice`
-;; `macro`
+;; if expression
+;; Every if expression must have a then and an else clause.
+;; The types of the then and else clause must be the same.
+(if (= 1 2) 
+    (println "1 is equal to 2")
+    (println "1 is not equal to 2"))
 
-;; You can use `def` to bind values to names. Note
-;; that we don't call these variables because they
-;; can't vary. They are immutable.
-(def x 10)
+;; let binding to function
+(let (fib n)
+  (let (loop n a b)
+    (if (= n 0)
+      a
+      (loop (- n 1) b (+ a b)))
+    (loop n 0 1)))
 
-;; `def` can bind to lambdas
-(def gcd (lambda (a b)
+;; let binding to function with expression body
+(let (gcd a b)
   (if (= b 0) 
       a
-      (gcd b (mod a b)))))
-
-;; `def` can also bind application forms
-(def (gcd a b)
-  (if (= b 0) 
-      a
-      (gcd b (mod a b))))
-
-(def (map f xs)
-  (if (empty? xs) nil
-      (pair (f (head xs)) (map f (tail xs)))))
-
-(def (fib n)
-  (if (<= n 1) 
-      n
-      (+ (fib (- n 1)) (fib (- n 2)))))
-
-(display (fib 45))
-
-;; `let` can bind multiple names at once
-(let ((a 10)
-      (b 5))
-  (+ a b))
-
-;; `let` can also bind functions
-(let ((gcd a b)
-  (if (= b 0) 
-      a
-      (gcd b (mod a b))))
+      (gcd b (mod a b)))
   (gcd 10 5))
 
-;;; ==================================================================
-;;; *                            Macros                              *
-;;; ==================================================================
+;; type hints
+(let (gcd (a : Int) (b : Int) : Int)
+  (if (= b 0) 
+      a
+      (gcd b (mod a b)))
+  (gcd 10 5))
 
-;; `macro` is used to define macros. Macros are
-;; like functions, but they are evaluated at compile
-;; time. They can be used to define new syntax.
+(let (map f xs)
+  (if (empty? xs) ()
+      (pair (f (head xs)) (map f (tail xs)))))
 
-;; `begin`
-(macro (begin . body)
-  (if (null? body)
-      nil
-      (if (null? (tail body))
-          (head body)
-          `(def ((result ,(head body)))
-             (if (null? result)
-                 (begin . ,(tail body))
-                 result
-                 (begin . ,body))))))
+(let (fact n)
+  (if (= n 0)
+      1
+      (* n (fact (- n 1)))))
 
-;; `loop` is a macro that expands into a `def` that
-;; binds a name to a lambda that calls itself.
-(macro (loop ())
-  '(def (loop . x)
-     (begin . ,body)
-     (loop)))
-
-;; `for` is a macro that expands into a `loop` that
-;; binds a name to a range of numbers.
-(macro (for i from to . body)
-  `(loop (def i from)
-     (if (<= i to)
-         (begin . ,body)
-         (inc! i))))
-
-(macro (for-each x in . body)
-  `(loop (def x in)
-     (if (not (empty? x))
-         (begin . ,body)
-         (for-each . ,body))))
-
-(macro (backwards . body)
-  (pair 'begin
-	(reverse body)))
-
-(macro (cond . clauses)
-  (if (null? clauses)
-      nil
-      (def (clause (head clauses))
-  `(if ,(head clause)
-       (begin . ,(tail clause))
-       (cond . ,(tail clauses))))))
-
-(macro (while condition . body)
-  `(def loop ()
-     (cond (,condition
-	    (begin . ,body)
-	    (loop)))))
-
-(macro (when test . expr)
-  (list 'if test (pair 'progn expr)))
-
-;; Macro calls are like function calls, but the arguments
-;; are not evaluated. Instead, they are passed to the macro
-;; as unevaluated forms.
-
-;; you can use `match` built-in macro to pattern match or `if` for conditionals
-(def (gcd a b)
-  (match b
-    ((0) a)
-    ((_) (gcd b (mod a b)))))
-
-(def (fib n)
-  (match n
-    ((0) 0)
-    ((1) 1)
-    ((_) (+ (fib (- n 1)) (fib (- n 2))))))
-
-;; Here's a match with guards
-(def (fib n)
-  (match n
-    ((guard _) (<= n 1) n)
-    ((_) (+ (fib (- n 1)) (fib (- n 2)))))) 
-
-(def (ack m n)
+(let (ack m n)
   (cond ((= m 0) (+ n 1))
         ((= n 0) (ack (- m 1) 1))
-        (ack (- m 1) (ack m (- n 1)))))
+        (t (ack (- m 1) (ack m (- n 1))))))
 
-(when (= 1 1)
-  (println "1 is equal to 1"))
+;; lists
+'(1 2 3)
+[1 2 3]
 
-;; `begin` is a special form that evaluates each of its
-;; arguments in order and returns the value of the last
-(begin (println "Hello, World!")
-       (println "Goodbye, World!")
-       10)
+;; quasiquote/unquote
+`(1 2 ,(+ 1 2))
+[1 2 (+ 1 2)]
 
-;;; ==================================================================
-;;; *                         Data Types                             *
-;;; ==================================================================
+;; quasiquote/unquote-splicing
+`(1 2 ,@(list 3 4))
 
-;; Records with `data` are immutable product types with named fields.
-(data (point x y))
+;; vectors
+#[1 2 3]
 
-;; Instantiating a record is just like calling a function.
-(def p (point 1 2)) 
+;; sets
+#{ 1 2 3 }
 
-(class Eq ()
-  (def (eq self other)
-    (raise :NotImplementedError)))
+;; maps
+{ :a 1 :b 2 }
 
-(class Ord (Eq PartialOrd)
-  (def (cmp self other)
-    (raise :NotImplementedError)))
+;; User defined types
+;; product type
+(type (Point 
+  (x : Int) 
+  (y : Int)))
 
-(class Stack ()
-  (def (push self x)
-    (raise :NotImplementedError))
-  (def (pop self)
-    (raise :NotImplementedError))
-  (def (peek self)
-    (raise :NotImplementedError))
-  (def (empty? self)
-    (raise :NotImplementedError)))
+;; product type with type parameters
+(type (Pair T 
+  (head : T) 
+  (tail : (Pair T))))
 
-;; fields
-(class Point ()
-  (def (x self)
-    (raise :NotImplementedError))
-  (def (y self)
-    (raise :NotImplementedError)))
+;; sum type
+(type (Shape
+  (Circle (radius : Int))
+  (Rectangle (width : Int) (height : Int))
+  (Triangle (base : Int) (height : Int))))
 
-(subclass object point)
-(field point x)
-(field point y)
-(method point (move dx dy)
-  (point (+ x dx) (+ y dy)))
+;; sum type with type parameters
+(type (Option T (Some T) (None)))
 
-(method point (scale k)
-  (point (* x k) (* y k)))
+(type (Result T E 
+  (Ok T) 
+  (Err E)))
 
-(class Point () (x y))
+;; sum type with complex type parameters
+(type (List T
+  (Pair (head : T) (tail : (List T)))
+  (Empty)))
 
-; class LinkedList (I = Nat) V <: List I V
-;   = Empty
-;   | Pair I V (List I V)
+;; modules
+(module List
+  (type List T
+    (Pair (head : T) (tail : (List T)))
+    (Empty))
 
-;   empty : List I V
-;   find : I -> V
-;   insert : (I, V) -> List I V
-;   delete : I -> List I V
-; (class LinkedList
+  (let empty (Empty))
 
-;; methods return a copy of the object so you can chain them
-(p (move 1 2) 
-   (scale 2))
+  (let (empty? xs)
+    (match xs
+      (Empty true)
+      (Pair false)))
 
-(def p (point 1 2))
-;; => (point 1 2)
-(move p 3 4)
-;; => (point 4 6)
+  (let (map f xs)
+    (if (empty? xs) ()
+        (pair (f (head xs)) (map f (tail xs)))))
+  
+  (let (foldl f acc xs) 
+    (if (empty? xs)
+        acc
+        (foldl f (f acc (head xs)) (tail xs))))
+  
+  (let (foldr f acc xs)
+    (if (empty? xs)
+        acc
+        (f (head xs) (foldr f acc (tail xs)))))
 
+  (let (filter f xs)
+    (if (empty? xs)
+        ()
+        (if (f (head xs))
+            (pair (head xs) (filter f (tail xs)))
+            (filter f (tail xs)))))
 
-;; instantiate a class
-(def s (Stack))
+  (let (reverse xs)
+    (foldl (lambda (acc x) (pair x acc)) () xs)))
 
-;; method call
-(push s 1)
+;; module usage
+(List.map (lambda (x) (* x x)) [1 2 3])
+
+;; macros
+(macro (cond clauses)
+  (if (empty? clauses)
+      ()
+      (let (clause (head clauses))
+        (if (= (head clause) 'else)
+            (list 'begin (tail clause))
+            (list 'if (head clause) (list 'begin (tail clause)) (cond (tail clauses)))))))
+
+(macro (when test body)
+  `(if ,test (begin ,@body) ()))
+
+(macro (while test body)
+  `(let (loop)
+     (if ,test
+         (begin ,@body (loop))
+         ())))
+
+;; example uses
+(while (< i 10)
+  (println i)
+  (set! i (+ i 1)))

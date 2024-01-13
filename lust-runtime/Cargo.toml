@@ -1,0 +1,16 @@
+[package]
+name = "lust-runtime"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+insta = "1.28.0"
+itertools = "0.10.5"
+num-bigfloat = "1.6.2"
+num-bigint = "0.4"
+num-complex = "0.4.3"
+num-rational = "0.4.1"
+log = "0.4.18"
+env_logger = "0.10.0"
