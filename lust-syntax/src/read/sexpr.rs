@@ -1,5 +1,9 @@
-use lust_utils::{intern::InternedString, list::List, span::Span};
-use num_rational::Rational64;
+use lust_utils::{
+    intern::InternedString,
+    list::List,
+    num::{BigInt, BigRational, Float},
+    span::Span,
+};
 use std::fmt::Display;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -59,7 +63,8 @@ impl Display for Sexpr {
 #[derive(Debug, Clone, PartialEq)]
 pub enum SexprKind {
     Atom(Atom),
-    List(SexprList),
+    SynList(SexprList),
+    DataList(SexprList),
     Vector(Vec<Sexpr>),
 }
 
@@ -67,7 +72,8 @@ impl Display for SexprKind {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             SexprKind::Atom(a) => write!(f, "{}", a),
-            SexprKind::List(l) => write!(f, "{}", l),
+            SexprKind::SynList(l) => write!(f, "{}", l),
+            SexprKind::DataList(l) => write!(f, "{}", l),
             SexprKind::Vector(v) => {
                 write!(f, "[")?;
                 for (i, s) in v.iter().enumerate() {
@@ -161,7 +167,9 @@ impl Display for AtomKind {
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Lit {
-    Num(Rational64),
+    Int(BigInt),
+    Float(Float),
+    Rational(BigRational),
     Str(InternedString),
     Bool(bool),
     Char(char),
@@ -170,7 +178,9 @@ pub enum Lit {
 impl Display for Lit {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Lit::Num(n) => write!(f, "{}", n),
+            Lit::Int(i) => write!(f, "{}", i),
+            Lit::Float(fl) => write!(f, "{}", fl),
+            Lit::Rational(r) => write!(f, "{}", r),
             Lit::Str(s) => write!(f, "{}", s),
             Lit::Bool(b) => write!(f, "{}", b),
             Lit::Char(c) => write!(f, "{}", c),

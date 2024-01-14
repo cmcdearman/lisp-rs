@@ -1,9 +1,8 @@
 use logos::Logos;
-use lust_utils::{intern::InternedString, num::Rational};
-use num_rational::Rational64;
+use lust_utils::{intern::InternedString, num::{Float, BigInt, BigRational}};
 use std::fmt::{Debug, Display};
 
-#[derive(Logos, Debug, Copy, Clone, Default, PartialEq)]
+#[derive(Logos, Debug, Clone, Default, PartialEq)]
 pub enum Token {
     Eof,
     #[default]
@@ -12,18 +11,26 @@ pub enum Token {
     Whitespace,
     #[regex(r#";[^\n]*"#)]
     Comment,
-    #[regex(r#"[^'\[\]()\s,{};]+"#, |lex| InternedString::from(lex.slice()))]
+    #[regex(r#"[^'\d\[\]()\s,{};][^'\[\]()\s,{};]*"#, |lex| InternedString::from(lex.slice()))]
     Ident(InternedString),
-    #[regex(r#"(0b[0-1]+)|(0o[0-7]+)|(0x[0-9a-fA-F]+)|([1-9]\d*|0)"#, priority = 0, callback = |lex| lex.slice().parse::<i64>().ok())]
-    Int(i64),
-    #[regex(r#"(0b[0-1]+)|(0o[0-7]+)|(0x[0-9a-fA-F]+)|([1-9]\d*|0)(\.\d+)?([eE][+-]?\d+)?"#, priority = 1, callback = |lex| lex.slice().parse::<f64>().ok())]
-    Float(f64),
+    #[regex(
+        r#"(0b[0-1]+)|(0o[0-7]+)|(0x[0-9a-fA-F]+)|([1-9]\d*|0)"#, 
+        priority = 2, 
+        callback = |lex| lex.slice().parse::<BigInt>().ok()
+    )]
+    Int(BigInt),
+    #[regex(
+        r#"([1-9]\d*|0)(\.\d+)?([eE][+-]?\d+)?"#, 
+        priority = 1, 
+        callback = |lex| lex.slice().parse::<Float>().ok()
+    )]
+    Float(Float),
     #[regex(
         r#"((0b[0-1]+)|(0o[0-7]+)|(0x[0-9a-fA-F]+)|([1-9]\d*|0))(/-?((0b[0-1]+)|(0o[0-7]+)|(0x[0-9a-fA-F]+)|([1-9]\d*|0)))?"#,
-        priority = 2,
-        callback = |lex| lex.slice().parse::<Rational64>().ok()
+        priority = 0,
+        callback = |lex| lex.slice().parse::<BigRational>().ok()
     )]
-    Rational(Rational),
+    Rational(BigRational),
     #[regex(r#""("[^"\\]*(?:\\.[^"\\]*)*")""#, |lex| InternedString::from(lex.slice()))]
     String(InternedString),
 
@@ -49,6 +56,8 @@ pub enum Token {
     CommaAt,
     #[token("#")]
     Hash,
+    #[token("#[")]
+    HashLBrack,
     #[token("'")]
     Quote,
     #[token("`")]
@@ -64,7 +73,9 @@ impl Display for Token {
             Whitespace => write!(f, "Whitespace"),
             Comment => write!(f, "Comment"),
             Ident(name) => write!(f, "Ident({})", name),
-            Number(n) => write!(f, "Number({})", n),
+            Int(n) => write!(f, "Int({})", n),
+            Float(n) => write!(f, "Float({})", n),
+            Rational(n) => write!(f, "Rational({})", n),
             String(s) => write!(f, "String({:?})", s),
             LParen => write!(f, "("),
             RParen => write!(f, ")"),
@@ -77,6 +88,7 @@ impl Display for Token {
             Comma => write!(f, ","),
             CommaAt => write!(f, ",@"),
             Hash => write!(f, "#"),
+            HashLBrack => write!(f, "#["),
             Quote => write!(f, "'"),
             Backquote => write!(f, "`"),
         }

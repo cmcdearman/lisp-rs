@@ -27,13 +27,7 @@
       (gcd b (mod a b)))
   (gcd 10 5))
 
-;; type hints
-(let (gcd (a : Int) (b : Int) : Int)
-  (if (= b 0) 
-      a
-      (gcd b (mod a b)))
-  (gcd 10 5))
-
+;; higher order function
 (let (map f xs)
   (if (empty? xs) ()
       (pair (f (head xs)) (map f (tail xs)))))
@@ -42,11 +36,6 @@
   (if (= n 0)
       1
       (* n (fact (- n 1)))))
-
-(let (ack m n)
-  (cond ((= m 0) (+ n 1))
-        ((= n 0) (ack (- m 1) 1))
-        (t (ack (- m 1) (ack m (- n 1))))))
 
 ;; lists
 '(1 2 3)
@@ -66,44 +55,46 @@
 #{ 1 2 3 }
 
 ;; maps
-{ :a 1 :b 2 }
+{ 'a 1 'b 2 }
 
-;; User defined types
-;; product type
-(type (Point 
-  (x : Int) 
-  (y : Int)))
+;; maps as records
+(let person { 'name "John" 'age 30 })
+(display (. person 'name))
+;; or
+(display person.name)
 
-;; product type with type parameters
-(type (Pair T 
-  (head : T) 
-  (tail : (Pair T))))
+;; macros
+(macro (cond clauses)
+  (if (empty? clauses)
+      ()
+      (let (clause (head clauses))
+        (if (= (head clause) 'else)
+            (list 'begin (tail clause))
+            (list 'if (head clause) (list 'begin (tail clause)) (cond (tail clauses)))))))
 
-;; sum type
-(type (Shape
-  (Circle (radius : Int))
-  (Rectangle (width : Int) (height : Int))
-  (Triangle (base : Int) (height : Int))))
+(macro (when test body)
+  `(if ,test (begin ,@body) ()))
 
-;; sum type with type parameters
-(type (Option T (Some T) (None)))
+(macro (while test body)
+  `(let (loop)
+     (if ,test
+         (begin ,@body (loop))
+         ())))
 
-(type (Result T E 
-  (Ok T) 
-  (Err E)))
+;; example uses
+(while (< i 10)
+  (println i)
+  (set! i (+ i 1)))
 
-;; sum type with complex type parameters
-(type (List T
-  (Pair (head : T) (tail : (List T)))
-  (Empty)))
+(let (ack m n)
+  (cond ((= m 0) (+ n 1))
+        ((= n 0) (ack (- m 1) 1))
+        (t (ack (- m 1) (ack m (- n 1))))))
 
 ;; modules
 (module List
-  (type List T
-    (Pair (head : T) (tail : (List T)))
-    (Empty))
-
-  (let empty (Empty))
+  (let (pair { 'head 'tail }))
+  (let (empty '()))
 
   (let (empty? xs)
     (match xs
@@ -135,27 +126,5 @@
     (foldl (lambda (acc x) (pair x acc)) () xs)))
 
 ;; module usage
+(use List)
 (List.map (lambda (x) (* x x)) [1 2 3])
-
-;; macros
-(macro (cond clauses)
-  (if (empty? clauses)
-      ()
-      (let (clause (head clauses))
-        (if (= (head clause) 'else)
-            (list 'begin (tail clause))
-            (list 'if (head clause) (list 'begin (tail clause)) (cond (tail clauses)))))))
-
-(macro (when test body)
-  `(if ,test (begin ,@body) ()))
-
-(macro (while test body)
-  `(let (loop)
-     (if ,test
-         (begin ,@body (loop))
-         ())))
-
-;; example uses
-(while (< i 10)
-  (println i)
-  (set! i (+ i 1)))

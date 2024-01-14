@@ -1,17 +1,65 @@
-use std::str::FromStr;
+use num_bigint::BigInt as NumBigInt;
+use num_rational::{BigRational as NumBigRational, Rational64};
+use std::{fmt::Display, str::FromStr};
 
-use num_complex::Complex64;
-use num_rational::Rational64;
+// Int(i64),
+// BigInt(BigInt),
+// Float(f64),
+// Rational(Rational),
+// BigRational(BigRational),
 
 #[derive(Debug, Clone, PartialEq)]
-pub enum Num {
-    Int(i64),
-    Float(f64),
-    Rational(Rational),
-    Complex(Complex64),
+pub struct Int(i64);
+
+impl Display for Int {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", *self)
+    }
+}
+
+impl FromStr for Int {
+    type Err = std::num::ParseIntError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Self(s.parse()?))
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]
+pub struct BigInt(NumBigInt);
+
+impl Display for BigInt {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", *self)
+    }
+}
+
+impl FromStr for BigInt {
+    type Err = num_bigint::ParseBigIntError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Self(s.parse()?))
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct Float(f64);
+
+impl Display for Float {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", *self)
+    }
+}
+
+impl FromStr for Float {
+    type Err = std::num::ParseFloatError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Self(s.parse()?))
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Rational(Rational64);
 
 impl Rational {
@@ -28,7 +76,34 @@ impl Rational {
     }
 }
 
+impl Display for Rational {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        if self.denom() == 1 {
+            write!(f, "{}", self.numer())
+        } else {
+            write!(f, "{}/{}", self.numer(), self.denom())
+        }
+    }
+}
+
 impl FromStr for Rational {
+    type Err = num_rational::ParseRatioError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Self(s.parse()?))
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct BigRational(NumBigRational);
+
+impl Display for BigRational {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", *self)
+    }
+}
+
+impl FromStr for BigRational {
     type Err = num_rational::ParseRatioError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
