@@ -2,7 +2,7 @@ pub mod sexpr;
 pub mod token;
 
 use self::{
-    sexpr::{Atom, AtomKind, Lit, Root, Sexpr, SexprKind, SexprList},
+    sexpr::{Atom, AtomKind, DataList, Lit, Root, Sexpr, SexprKind, SynList},
     token::Token,
 };
 use chumsky::{
@@ -73,7 +73,7 @@ fn sexpr_reader<'a, I: ValueInput<'a, Token = Token, Span = Span>>(
             .at_least(1)
             .collect::<Vec<_>>()
             .map(List::from)
-            .map_with_span(SexprList::new)
+            .map_with_span(SynList::new)
             .map(SexprKind::SynList)
             .map_with_span(Sexpr::new)
             .delimited_by(just(Token::LParen), just(Token::RParen));
@@ -84,14 +84,14 @@ fn sexpr_reader<'a, I: ValueInput<'a, Token = Token, Span = Span>>(
             .at_least(1)
             .collect::<Vec<_>>()
             .map(List::from)
-            .map_with_span(SexprList::new)
+            .map_with_span(DataList::new)
             .map(SexprKind::DataList)
             .map_with_span(Sexpr::new)
             .delimited_by(just(Token::LBrack), just(Token::RBrack));
 
         let empty = just(Token::LBrack)
             .then(just(Token::RBrack))
-            .map_with_span(|_, span| SexprKind::DataList(SexprList::new(List::Empty, span)))
+            .map_with_span(|_, span| SexprKind::DataList(DataList::new(List::Empty, span)))
             .map_with_span(Sexpr::new);
 
         let vector = sexpr
@@ -116,7 +116,7 @@ fn sexpr_reader<'a, I: ValueInput<'a, Token = Token, Span = Span>>(
                     )),
                     span,
                 ));
-                SexprKind::SynList(SexprList::new(list, span))
+                SexprKind::SynList(SynList::new(list, span))
             })
             .map_with_span(Sexpr::new);
 
@@ -133,7 +133,7 @@ fn sexpr_reader<'a, I: ValueInput<'a, Token = Token, Span = Span>>(
                     )),
                     span,
                 ));
-                SexprKind::SynList(SexprList::new(list, span))
+                SexprKind::SynList(SynList::new(list, span))
             })
             .map_with_span(Sexpr::new);
 
@@ -150,7 +150,7 @@ fn sexpr_reader<'a, I: ValueInput<'a, Token = Token, Span = Span>>(
                     )),
                     span,
                 ));
-                SexprKind::SynList(SexprList::new(list, span))
+                SexprKind::SynList(SynList::new(list, span))
             })
             .map_with_span(Sexpr::new);
 
@@ -167,7 +167,7 @@ fn sexpr_reader<'a, I: ValueInput<'a, Token = Token, Span = Span>>(
                     )),
                     span,
                 ));
-                SexprKind::SynList(SexprList::new(list, span))
+                SexprKind::SynList(SynList::new(list, span))
             })
             .map_with_span(Sexpr::new);
 

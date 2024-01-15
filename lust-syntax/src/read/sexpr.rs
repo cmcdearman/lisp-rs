@@ -63,8 +63,8 @@ impl Display for Sexpr {
 #[derive(Debug, Clone, PartialEq)]
 pub enum SexprKind {
     Atom(Atom),
-    SynList(SexprList),
-    DataList(SexprList),
+    SynList(SynList),
+    DataList(DataList),
     Vector(Vec<Sexpr>),
 }
 
@@ -89,12 +89,12 @@ impl Display for SexprKind {
 }
 
 #[derive(Debug, Clone, PartialEq, Default)]
-pub struct SexprList {
+pub struct SynList {
     head: List<Sexpr>,
     span: Span,
 }
 
-impl SexprList {
+impl SynList {
     pub fn new(head: List<Sexpr>, span: Span) -> Self {
         Self { head, span }
     }
@@ -108,16 +108,42 @@ impl SexprList {
     }
 }
 
-impl Display for SexprList {
+impl Display for SynList {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "(")?;
+        write!(f, "{}", self.head)
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Default)]
+pub struct DataList {
+    head: List<Sexpr>,
+    span: Span,
+}
+
+impl DataList {
+    pub fn new(head: List<Sexpr>, span: Span) -> Self {
+        Self { head, span }
+    }
+
+    pub fn head(&self) -> &List<Sexpr> {
+        &self.head
+    }
+
+    pub fn span(&self) -> &Span {
+        &self.span
+    }
+}
+
+impl Display for DataList {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "[")?;
         for (i, s) in self.head.iter().enumerate() {
             if i != 0 {
                 write!(f, " ")?;
             }
             write!(f, "{}", s)?;
         }
-        write!(f, ")")
+        write!(f, "]")
     }
 }
 

@@ -17,8 +17,10 @@ pub fn repl() {
         }
         match read(&src) {
             (Some(root), errs) => {
-                println!("root: {:#?}", root);
-                println!("errs: {:#?}", errs);
+                println!("{}", root);
+                if !errs.is_empty() {
+                    println!("errs: {:?}", errs);
+                }
             }
             (None, errs) => {
                 println!("errs: {:?}", errs);

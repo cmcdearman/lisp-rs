@@ -2,18 +2,12 @@ use num_bigint::BigInt as NumBigInt;
 use num_rational::{BigRational as NumBigRational, Rational64};
 use std::{fmt::Display, str::FromStr};
 
-// Int(i64),
-// BigInt(BigInt),
-// Float(f64),
-// Rational(Rational),
-// BigRational(BigRational),
-
 #[derive(Debug, Clone, PartialEq)]
 pub struct Int(i64);
 
 impl Display for Int {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", *self)
+        write!(f, "{}", self.0)
     }
 }
 
@@ -30,7 +24,7 @@ pub struct BigInt(NumBigInt);
 
 impl Display for BigInt {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", *self)
+        write!(f, "{}", self.0)
     }
 }
 
@@ -47,7 +41,7 @@ pub struct Float(f64);
 
 impl Display for Float {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", *self)
+        write!(f, "{}", self.0)
     }
 }
 
@@ -99,7 +93,7 @@ pub struct BigRational(NumBigRational);
 
 impl Display for BigRational {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", *self)
+        write!(f, "{}", self.0)
     }
 }
 

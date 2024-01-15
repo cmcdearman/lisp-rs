@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 #[derive(Debug, Clone, PartialEq, Default)]
 pub enum List<T> {
     #[default]
@@ -58,5 +60,21 @@ impl<'a, T> Iterator for ListIter<'a, T> {
                 Some(head)
             }
         }
+    }
+}
+
+impl<'a, T> Display for List<T>
+where
+    T: Display,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "(")?;
+        for (i, s) in self.iter().enumerate() {
+            if i != 0 {
+                write!(f, " ")?;
+            }
+            write!(f, "{}", s)?;
+        }
+        write!(f, ")")
     }
 }
