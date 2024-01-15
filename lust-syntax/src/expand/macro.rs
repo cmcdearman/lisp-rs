@@ -1,5 +1,7 @@
 use crate::read::sexpr::Sexpr;
+use itertools::Itertools;
 use lust_utils::{intern::InternedString, span::Span};
+use std::fmt::Display;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Macro {
@@ -36,6 +38,18 @@ impl Macro {
     }
 }
 
+impl Display for Macro {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "(macro ({} {}) {})",
+            self.name,
+            self.params.join(" "),
+            self.body
+        )
+    }
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct MacroCall {
     name: InternedString,
@@ -58,5 +72,11 @@ impl MacroCall {
 
     pub fn span(&self) -> &Span {
         &self.span
+    }
+}
+
+impl Display for MacroCall {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "({} {})", self.name, self.args.iter().join(" "))
     }
 }

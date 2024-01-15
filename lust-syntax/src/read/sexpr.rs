@@ -90,54 +90,70 @@ impl Display for SexprKind {
 
 #[derive(Debug, Clone, PartialEq, Default)]
 pub struct SynList {
-    head: List<Sexpr>,
+    list: List<Sexpr>,
     span: Span,
 }
 
 impl SynList {
-    pub fn new(head: List<Sexpr>, span: Span) -> Self {
-        Self { head, span }
+    pub fn new(list: List<Sexpr>, span: Span) -> Self {
+        Self { list, span }
     }
 
-    pub fn head(&self) -> &List<Sexpr> {
-        &self.head
+    pub fn list(&self) -> &List<Sexpr> {
+        &self.list
     }
 
     pub fn span(&self) -> &Span {
         &self.span
+    }
+
+    pub fn head(&self) -> Option<&Sexpr> {
+        self.list.head()
+    }
+
+    pub fn tail(&self) -> Option<&List<Sexpr>> {
+        self.list.tail()
     }
 }
 
 impl Display for SynList {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.head)
+        write!(f, "{}", self.list)
     }
 }
 
 #[derive(Debug, Clone, PartialEq, Default)]
 pub struct DataList {
-    head: List<Sexpr>,
+    list: List<Sexpr>,
     span: Span,
 }
 
 impl DataList {
-    pub fn new(head: List<Sexpr>, span: Span) -> Self {
-        Self { head, span }
+    pub fn new(list: List<Sexpr>, span: Span) -> Self {
+        Self { list, span }
     }
 
-    pub fn head(&self) -> &List<Sexpr> {
-        &self.head
+    pub fn list(&self) -> &List<Sexpr> {
+        &self.list
     }
 
     pub fn span(&self) -> &Span {
         &self.span
+    }
+
+    pub fn head(&self) -> Option<&Sexpr> {
+        self.list.head()
+    }
+
+    pub fn tail(&self) -> Option<&List<Sexpr>> {
+        self.list.tail()
     }
 }
 
 impl Display for DataList {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "[")?;
-        for (i, s) in self.head.iter().enumerate() {
+        for (i, s) in self.list.iter().enumerate() {
             if i != 0 {
                 write!(f, " ")?;
             }

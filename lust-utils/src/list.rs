@@ -11,12 +11,44 @@ pub enum List<T> {
 }
 
 impl<T> List<T> {
+    pub fn head(&self) -> Option<&T> {
+        match self {
+            Self::Empty => None,
+            Self::Pair { head, .. } => Some(head),
+        }
+    }
+
+    pub fn tail(&self) -> Option<&Self> {
+        match self {
+            Self::Empty => None,
+            Self::Pair { tail, .. } => Some(tail),
+        }
+    }
+
     pub fn push_front(&mut self, head: T) {
         let tail = std::mem::replace(self, Self::Empty);
         *self = Self::Pair {
             head,
             tail: Box::new(tail),
         };
+    }
+
+    pub fn push_back(&mut self, head: T) {
+        let mut tail = self;
+        loop {
+            match tail {
+                Self::Empty => {
+                    *tail = Self::Pair {
+                        head,
+                        tail: Box::new(Self::Empty),
+                    };
+                    break;
+                }
+                Self::Pair { tail: next, .. } => {
+                    tail = next;
+                }
+            }
+        }
     }
 
     pub fn iter(&self) -> impl Iterator<Item = &T> {
