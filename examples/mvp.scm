@@ -64,22 +64,20 @@
 (display person.name)
 
 ;; macros
-(macro (cond clauses)
-  (if (empty? clauses)
-      ()
-      (let (clause (head clauses))
-        (if (= (head clause) 'else)
-            (list 'begin (tail clause))
-            (list 'if (head clause) (list 'begin (tail clause)) (cond (tail clauses)))))))
+(macro (cond clauses...)
+  `(let (test (head clauses))
+     (if (head test)
+         (begin (tail test))
+         (cond ,@(tail clauses)))))
 
-(macro (when test body)
+(macro (when test body...)
   `(if ,test (begin ,@body) ()))
 
-(macro (while test body)
+(macro (while test body...)
   `(let (loop)
      (if ,test
          (begin ,@body (loop))
-         ())))
+         ([]))))
 
 ;; example uses
 (while (< i 10)
