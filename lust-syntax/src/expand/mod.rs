@@ -82,18 +82,22 @@ pub fn collect_calls(root: &Root, macros: HashMap<InternedString, Macro>) -> Vec
                 Some(h) => match h.kind() {
                     SexprKind::Atom(a) => match a.kind() {
                         AtomKind::Sym(s) => {
-                            if &**s == "macro" {
-                                continue;
+                            if let Some(m) = macros.get(s) {
+                                match list.tail() {
+                                    Some(t) => {
+                                        let mut args = vec![];
+                                        for arg in t.iter() {
+                                            args.push(arg.clone());
+                                        }
+                                        calls.push(MacroCall::new(
+                                            m.name().clone(),
+                                            args,
+                                            *list.span(),
+                                        ));
+                                    }
+                                    None => panic!("macro must have a body"),
+                                }
                             }
-                            calls.push(MacroCall::new(
-                                s.clone(),
-                                list.tail()
-                                    .unwrap_or(&List::new())
-                                    .iter()
-                                    .cloned()
-                                    .collect(),
-                                *list.span(),
-                            ));
                         }
                         _ => continue,
                     },
@@ -109,26 +113,13 @@ pub fn collect_calls(root: &Root, macros: HashMap<InternedString, Macro>) -> Vec
 
 pub fn expand_macros(root: &Root) -> Root {
     let macros = collect_macros(root);
+    let calls = collect_calls(root, macros.clone());
+    for call in calls {
+        if let Some(m) = macros.get(call.name()) {
+            
+        } else {
+            panic!("macro {} not found", call.name());
+        }
+    }
     todo!()
-    // let mut root = root.clone();
-    // let macros = collect_macros(&root);
-    // let calls = collect_calls(&root);
-    // for call in calls {
-    //     let mut expanded = false;
-    //     for m in &macros {
-    //         if &*call.name() == m.name() {
-    //             let mut body = m.body().clone();
-    //             for (i, param) in m.params().iter().enumerate() {
-    //                 body = body.replace(param, call.args()[i].clone());
-    //             }
-    //             root.replace(&call, body);
-    //             expanded = true;
-    //             break;
-    //         }
-    //     }
-    //     if !expanded {
-    //         panic!("macro {} not found", call.name());
-    //     }
-    // }
-    // root
 }

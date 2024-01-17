@@ -52,6 +52,42 @@ impl Sexpr {
     pub fn span(&self) -> &Span {
         &self.span
     }
+
+    pub fn replace(&mut self, kind: SexprKind) {
+        self.kind = Box::new(kind);
+    }
+
+    pub fn replace_sym(&mut self, sym: InternedString) {
+        // recursively replace all instances of the symbol
+        match self.kind() {
+            SexprKind::Atom(a) => match a.kind() {
+                AtomKind::Sym(s) => {
+                    if s == &sym {
+                        *self = Sexpr::new(
+                            SexprKind::Atom(Atom::new(AtomKind::Sym(sym), *a.span())),
+                            *self.span(),
+                        );
+                    }
+                }
+                _ => (),
+            },
+            SexprKind::SynList(l) => {
+                for s in l.list().iter() {
+                    s.replace_sym(sym.clone());
+                }
+            }
+            SexprKind::DataList(l) => {
+                for s in l.list().iter() {
+                    s.replace_sym(sym.clone());
+                }
+            }
+            SexprKind::Vector(v) => {
+                for s in v {
+                    s.replace_sym(sym.clone());
+                }
+            }
+        }
+    }
 }
 
 impl Display for Sexpr {

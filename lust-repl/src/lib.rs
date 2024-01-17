@@ -30,9 +30,9 @@ pub fn repl() {
             }
         };
         // println!("macros: {:#?}", collect_macros(&root));
-        for m in collect_macros(&root) {
-            println!("{}", m);
-        }
+        // for m in collect_macros(&root) {
+        //     println!("{}", m);
+        // }
         io::stdout().flush().unwrap();
         src.clear();
     }

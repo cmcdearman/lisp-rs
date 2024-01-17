@@ -54,6 +54,26 @@ impl<T> List<T> {
     pub fn iter(&self) -> impl Iterator<Item = &T> {
         ListIter::new(self)
     }
+
+    pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut T> {
+        ListIterMut::new(self)
+    }
+}
+
+impl<'a, T> Display for List<T>
+where
+    T: Display,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "(")?;
+        for (i, s) in self.iter().enumerate() {
+            if i != 0 {
+                write!(f, " ")?;
+            }
+            write!(f, "{}", s)?;
+        }
+        write!(f, ")")
+    }
 }
 
 impl<T, I> From<I> for List<T>
@@ -95,18 +115,29 @@ impl<'a, T> Iterator for ListIter<'a, T> {
     }
 }
 
-impl<'a, T> Display for List<T>
-where
-    T: Display,
-{
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "(")?;
-        for (i, s) in self.iter().enumerate() {
-            if i != 0 {
-                write!(f, " ")?;
-            }
-            write!(f, "{}", s)?;
+#[derive(Debug)]
+pub struct ListIterMut<'a, T> {
+    list: &'a mut List<T>,
+}
+
+impl<'a, T> ListIterMut<'a, T> {
+    pub fn new(list: &'a mut List<T>) -> Self {
+        Self { list }
+    }
+}
+
+impl<'a, T> Iterator for ListIterMut<'a, T> {
+    type Item = &'a mut T;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let result = match self.list {
+            List::Empty => None,
+            List::Pair { head, tail } => Some(head),
+        };
+        if let List::Pair { tail: next_tail, .. } = &mut self.list {
+            let tail = std::mem::replace(next_tail, List::Empty);
+            self.list = tail;
         }
-        write!(f, ")")
+        result
     }
 }
