@@ -20,6 +20,10 @@ impl Root {
     pub fn sexprs(&self) -> &[Sexpr] {
         &self.sexprs
     }
+
+    pub fn span(&self) -> &Span {
+        &self.span
+    }
 }
 
 impl Display for Root {
@@ -57,34 +61,51 @@ impl Sexpr {
         self.kind = Box::new(kind);
     }
 
-    pub fn replace_sym(&mut self, sym: InternedString) {
+    pub fn replace_sym(&mut self, sym: InternedString, arg: Sexpr) {
         // recursively replace all instances of the symbol
         match self.kind() {
             SexprKind::Atom(a) => match a.kind() {
                 AtomKind::Sym(s) => {
                     if s == &sym {
-                        *self = Sexpr::new(
-                            SexprKind::Atom(Atom::new(AtomKind::Sym(sym), *a.span())),
-                            *self.span(),
-                        );
+                        *self = arg;
                     }
                 }
                 _ => (),
             },
             SexprKind::SynList(l) => {
-                for mut s in l.list().iter_mut() {
-                    s.replace_sym(sym.clone());
+                let mut new_vec = vec![];
+                for s in l.list().iter() {
+                    let mut new_s = s.clone();
+                    new_s.replace_sym(sym.clone(), arg.clone());
+                    new_vec.push(new_s);
                 }
+                let new_list = List::from(new_vec);
+                *self = Sexpr::new(
+                    SexprKind::SynList(SynList::new(new_list, *l.span())),
+                    *self.span(),
+                );
             }
             SexprKind::DataList(l) => {
+                let mut new_vec = vec![];
                 for s in l.list().iter() {
-                    s.replace_sym(sym.clone());
+                    let mut new_s = s.clone();
+                    new_s.replace_sym(sym.clone(), arg.clone());
+                    new_vec.push(new_s);
                 }
+                let new_list = List::from(new_vec);
+                *self = Sexpr::new(
+                    SexprKind::DataList(DataList::new(new_list, *l.span())),
+                    *self.span(),
+                );
             }
             SexprKind::Vector(v) => {
-                for s in v {
-                    s.replace_sym(sym.clone());
+                let mut new_vec = vec![];
+                for s in v.iter() {
+                    let mut new_s = s.clone();
+                    new_s.replace_sym(sym.clone(), arg.clone());
+                    new_vec.push(new_s);
                 }
+                *self = Sexpr::new(SexprKind::Vector(new_vec), *self.span());
             }
         }
     }

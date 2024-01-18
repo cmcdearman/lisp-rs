@@ -1,4 +1,4 @@
-use lust_syntax::{expand::collect_macros, read::read};
+use lust_syntax::{expand::expand_macros, read::read};
 use std::io::{self, Write};
 
 pub fn repl() {
@@ -33,6 +33,8 @@ pub fn repl() {
         // for m in collect_macros(&root) {
         //     println!("{}", m);
         // }
+        let expanded = expand_macros(&root);
+        println!("expanded: {:#?}", expanded);
         io::stdout().flush().unwrap();
         src.clear();
     }
