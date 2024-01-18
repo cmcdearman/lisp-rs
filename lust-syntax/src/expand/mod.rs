@@ -116,7 +116,6 @@ pub fn expand_macros(root: &Root) -> Root {
     let calls = collect_calls(root, macros.clone());
     for call in calls {
         if let Some(m) = macros.get(call.name()) {
-            
         } else {
             panic!("macro {} not found", call.name());
         }

@@ -72,7 +72,7 @@ impl Sexpr {
                 _ => (),
             },
             SexprKind::SynList(l) => {
-                for s in l.list().iter() {
+                for mut s in l.list().iter_mut() {
                     s.replace_sym(sym.clone());
                 }
             }

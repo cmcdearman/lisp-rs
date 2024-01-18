@@ -55,7 +55,7 @@ impl<T> List<T> {
         ListIter::new(self)
     }
 
-    pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut T> {
+    pub fn iter_mut(self) -> impl Iterator<Item = T> {
         ListIterMut::new(self)
     }
 }
@@ -116,28 +116,26 @@ impl<'a, T> Iterator for ListIter<'a, T> {
 }
 
 #[derive(Debug)]
-pub struct ListIterMut<'a, T> {
-    list: &'a mut List<T>,
+pub struct ListIterMut<T> {
+    list: List<T>,
 }
 
-impl<'a, T> ListIterMut<'a, T> {
-    pub fn new(list: &'a mut List<T>) -> Self {
+impl<T> ListIterMut<T> {
+    pub fn new(list: List<T>) -> Self {
         Self { list }
     }
 }
 
-impl<'a, T> Iterator for ListIterMut<'a, T> {
-    type Item = &'a mut T;
+impl<T> Iterator for ListIterMut<T> {
+    type Item = T;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let result = match self.list {
+        match std::mem::replace(&mut self.list, List::Empty) {
             List::Empty => None,
-            List::Pair { head, tail } => Some(head),
-        };
-        if let List::Pair { tail: next_tail, .. } = &mut self.list {
-            let tail = std::mem::replace(next_tail, List::Empty);
-            self.list = tail;
+            List::Pair { head, tail } => {
+                self.list = *tail;
+                Some(head)
+            }
         }
-        result
     }
 }
