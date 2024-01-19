@@ -1,8 +1,6 @@
-use std::{cell::RefCell, collections::HashMap, rc::Rc};
-
-use lust_utils::intern::InternedString;
-
 use super::r#macro::Macro;
+use lust_utils::intern::InternedString;
+use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
 #[derive(Debug, Clone)]
 pub struct Store {
