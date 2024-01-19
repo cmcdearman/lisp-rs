@@ -1,10 +1,14 @@
-use self::r#macro::{Macro, MacroCall};
+use self::{
+    r#macro::{Macro, MacroCall},
+    store::Store,
+};
 use crate::read::sexpr::{Atom, AtomKind, Root, Sexpr, SexprKind, SynList};
 use lust_utils::{intern::InternedString, list::List, span::Span};
-use std::collections::HashMap;
+use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
 pub mod env;
 pub mod r#macro;
+pub mod store;
 
 fn extract_macro(list: &List<Sexpr>, span: Span) -> Macro {
     let mut iter = list.iter();
@@ -45,106 +49,95 @@ fn extract_macro(list: &List<Sexpr>, span: Span) -> Macro {
     Macro::new(name, params, body, span)
 }
 
-fn collect_macros(root: &Root) -> HashMap<InternedString, Macro> {
-    let mut macros = HashMap::new();
+fn collect_macros(mut store: Store, root: &Root) {
     for sexpr in root.sexprs() {
-        match sexpr.kind() {
-            SexprKind::SynList(list) => match list.head() {
-                Some(h) => match h.kind() {
-                    SexprKind::Atom(a) => match a.kind() {
-                        AtomKind::Sym(s) => {
-                            if &**s == "macro" {
-                                match list.tail() {
-                                    Some(t) => {
-                                        let m = extract_macro(t, *list.span());
-                                        macros.insert(m.name().clone(), m);
-                                    }
-                                    None => panic!("macro must have a body"),
-                                }
-                            }
-                        }
-                        _ => continue,
-                    },
-                    _ => continue,
-                },
-                None => continue,
-            },
-            _ => {}
+        let kind = match sexpr.kind() {
+            SexprKind::SynList(list) => list,
+            _ => continue,
+        };
+
+        let head = match kind.head() {
+            Some(h) => h,
+            None => continue,
+        };
+
+        let atom_kind = match head.kind() {
+            SexprKind::Atom(a) => a,
+            _ => continue,
+        };
+
+        let sym = match atom_kind.kind() {
+            AtomKind::Sym(s) => s,
+            _ => continue,
+        };
+
+        if &**sym != "macro" {
+            continue;
         }
+
+        let tail = match kind.tail() {
+            Some(t) => t,
+            None => panic!("macro must have a body"),
+        };
+
+        let m = extract_macro(tail, *kind.span());
+        store.insert(m);
     }
-    macros
 }
 
-fn collect_calls(root: &Root, macros: HashMap<InternedString, Macro>) -> Vec<MacroCall> {
-    let mut calls = vec![];
-    for sexpr in root.sexprs() {
-        match sexpr.kind() {
-            SexprKind::SynList(list) => match list.head() {
-                Some(h) => match h.kind() {
-                    SexprKind::Atom(a) => match a.kind() {
-                        AtomKind::Sym(s) => {
-                            if let Some(m) = macros.get(s) {
-                                match list.tail() {
-                                    Some(t) => {
-                                        let mut args = vec![];
-                                        for arg in t.iter() {
-                                            args.push(arg.clone());
-                                        }
-                                        calls.push(MacroCall::new(
-                                            m.name().clone(),
-                                            args,
-                                            *list.span(),
-                                        ));
-                                    }
-                                    None => panic!("macro must have a body"),
-                                }
-                            }
-                        }
-                        _ => continue,
-                    },
-                    _ => continue,
-                },
-                None => continue,
-            },
-            _ => {}
-        }
-    }
-    calls
-}
-
-pub fn expand_macros(root: &Root) -> Root {
-    let macros = collect_macros(root);
+pub fn expand_macros(store: Store, root: &Root) -> Root {
+    collect_macros(store.clone(), root);
     let mut sexprs = vec![];
     for sexpr in root.sexprs() {
-        match sexpr.kind() {
-            SexprKind::SynList(list) => match list.head() {
-                Some(h) => match h.kind() {
-                    SexprKind::Atom(a) => match a.kind() {
-                        AtomKind::Sym(s) => {
-                            if let Some(m) = macros.get(s) {
-                                match list.tail() {
-                                    Some(t) => {
-                                        let mut args = vec![];
-                                        for arg in t.iter() {
-                                            args.push(arg.clone());
-                                        }
-                                        let mut body = m.body().clone();
-                                        for (i, param) in m.params().iter().enumerate() {
-                                            body.replace_sym(param.clone(), args[i].clone());
-                                        }
-                                        sexprs.push(body);
-                                    }
-                                    None => panic!("macro must have a body"),
-                                }
-                            }
-                        }
-                        _ => sexprs.push(sexpr.clone()),
-                    },
-                    _ => sexprs.push(sexpr.clone()),
-                },
-                None => sexprs.push(sexpr.clone()),
-            },
-            _ => sexprs.push(sexpr.clone()),
+        let kind = match sexpr.kind() {
+            SexprKind::SynList(list) => list,
+            _ => {
+                sexprs.push(sexpr.clone());
+                continue;
+            }
+        };
+
+        let head = match kind.head() {
+            Some(h) => h,
+            None => {
+                sexprs.push(sexpr.clone());
+                continue;
+            }
+        };
+
+        let atom_kind = match head.kind() {
+            SexprKind::Atom(a) => a,
+            _ => {
+                sexprs.push(sexpr.clone());
+                continue;
+            }
+        };
+
+        let sym = match atom_kind.kind() {
+            AtomKind::Sym(s) => s,
+            _ => {
+                sexprs.push(sexpr.clone());
+                continue;
+            }
+        };
+
+        if let Some(m) = store.get(sym) {
+            let tail = match kind.tail() {
+                Some(t) => t,
+                None => panic!("macro must have a body"),
+            };
+
+            let mut args = vec![];
+            for arg in tail.iter() {
+                args.push(arg.clone());
+            }
+            let mut body = m.body().clone();
+            for (i, param) in m.params().iter().enumerate() {
+                body.replace_sym(param.clone(), args[i].clone());
+            }
+            sexprs.push(body);
+        } else {
+            sexprs.push(sexpr.clone());
         }
     }
     Root::new(sexprs, *root.span())

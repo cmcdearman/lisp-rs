@@ -1,10 +1,19 @@
-use lust_syntax::{expand::expand_macros, read::read};
-use std::io::{self, Write};
+use lust_syntax::{
+    expand::{expand_macros, store::Store},
+    read::read,
+};
+use std::{
+    cell::RefCell,
+    collections::HashMap,
+    io::{self, Write},
+    rc::Rc,
+};
 
 pub fn repl() {
     let mut src = String::new();
     // let mut compiler = Compiler::default();
     // let mut vm = Interpreter::default();
+    let store = Store::new();
     loop {
         print!("> ");
         io::stdout().flush().unwrap();
@@ -33,7 +42,7 @@ pub fn repl() {
         // for m in collect_macros(&root) {
         //     println!("{}", m);
         // }
-        let expanded = expand_macros(&root);
+        let expanded = expand_macros(store.clone(), &root);
         println!("expanded: {:#?}", expanded);
         io::stdout().flush().unwrap();
         src.clear();
