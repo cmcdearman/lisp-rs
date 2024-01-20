@@ -59,9 +59,10 @@
 
 ;; maps as records
 (let person { 'name "John" 'age 30 })
-(display (. person 'name))
-;; or
 (display person.name)
+;; => "John"
+(display person.age)
+;; => 30
 
 ;; macros
 (macro (cond clauses...)
@@ -71,6 +72,9 @@
          (cond ,@(tail clauses)))))
 
 (macro (when test body...)
+  `(if ,test (begin ,@body) ()))
+
+(macro (when test (vargs body))
   `(if ,test (begin ,@body) ()))
 
 (macro (while test body...)

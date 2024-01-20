@@ -251,15 +251,17 @@ impl Display for Atom {
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum AtomKind {
-    Sym(InternedString),
     Lit(Lit),
+    Sym(InternedString),
+    Path(Vec<InternedString>),
 }
 
 impl Display for AtomKind {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            AtomKind::Sym(s) => write!(f, "{}", s),
             AtomKind::Lit(l) => write!(f, "{}", l),
+            AtomKind::Sym(s) => write!(f, "{}", s),
+            AtomKind::Path(p) => write!(f, "{}", p.join(".")),
         }
     }
 }

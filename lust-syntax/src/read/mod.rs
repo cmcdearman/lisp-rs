@@ -1,6 +1,8 @@
 pub mod sexpr;
 pub mod token;
 
+use std::vec;
+
 use self::{
     sexpr::{Atom, AtomKind, DataList, Lit, Root, Sexpr, SexprKind, SynList},
     token::Token,
@@ -59,8 +61,44 @@ fn root_reader<'a, I: ValueInput<'a, Token = Token, Span = Span>>(
 fn sexpr_reader<'a, I: ValueInput<'a, Token = Token, Span = Span>>(
 ) -> impl Parser<'a, I, Sexpr, extra::Err<Rich<'a, Token, Span>>> {
     recursive(|sexpr| {
-        let atom = ident_reader()
-            .map(AtomKind::Sym)
+        // path = symbol ("." symbol)+
+        let path = ident_reader()
+            .then(
+                just(Token::Period)
+                    .ignore_then(ident_reader())
+                    .repeated()
+                    .at_least(1)
+                    .collect::<Vec<_>>(),
+            )
+            .map(|(lhs, rhs)| {
+                let mut v = vec![lhs];
+                v.extend(rhs);
+                v
+            })
+            .map(AtomKind::Path);
+
+        // map foo... to (vargs foo)
+        let variadic = ident_reader()
+            .then_ignore(just(Token::Ellipsis))
+            .map_with_span(|name, span| {
+                let mut list = List::Empty;
+                list.push_front(Sexpr::new(
+                    SexprKind::Atom(Atom::new(
+                        AtomKind::Sym(InternedString::from("vargs")),
+                        span,
+                    )),
+                    span,
+                ));
+                list.push_front(Sexpr::new(
+                    SexprKind::Atom(Atom::new(AtomKind::Sym(name), span)),
+                    span,
+                ));
+                SexprKind::SynList(SynList::new(list, span))
+            })
+            .map_with_span(Sexpr::new);
+
+        let atom = path
+            .or(ident_reader().map(AtomKind::Sym))
             .or(lit_reader().map(AtomKind::Lit))
             .map_with_span(Atom::new)
             .map(SexprKind::Atom)
@@ -179,6 +217,7 @@ fn sexpr_reader<'a, I: ValueInput<'a, Token = Token, Span = Span>>(
             .or(quasiquote)
             .or(unquote)
             .or(unquote_splice)
+            .or(variadic)
     })
 }
 

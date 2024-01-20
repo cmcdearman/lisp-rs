@@ -1,0 +1,18 @@
+sexpr = atom | list
+synList = "(" atom sexpr* ")"
+dataList = "[" sexpr* "]"
+atom = lit | symbol | vector
+path = symbol ("." symbol)+
+vector = "#[" sexpr* "]"
+lit = number | bool | string
+number = int | real
+
+# Tokens/Terminals
+int = [0-9]+
+real = digit+ "." digit+
+string = '"' char* '"'
+bool = "true" | "false"
+symbol = letter char*
+char = "_" | letter | digit
+letter = [a-zA-Z]
+digit = [0-9]

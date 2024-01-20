@@ -11,7 +11,7 @@ pub enum Token {
     Whitespace,
     #[regex(r#";[^\n]*"#)]
     Comment,
-    #[regex(r#"[^'\d\[\]()\s,{};][^'\[\]()\s,{};]*"#, |lex| InternedString::from(lex.slice()))]
+    #[regex(r#"[^.'\d\[\]()\s,{};][^.'\[\]()\s,{};]*"#, |lex| InternedString::from(lex.slice()))]
     Ident(InternedString),
     #[regex(
         r#"(0b[0-1]+)|(0o[0-7]+)|(0x[0-9a-fA-F]+)|([1-9]\d*|0)"#, 
@@ -50,6 +50,8 @@ pub enum Token {
     Colon,
     #[token(".")]
     Period,
+    #[token("...")]
+    Ellipsis,
     #[token(",")]
     Comma,
     #[token(",@")]
@@ -76,7 +78,7 @@ impl Display for Token {
             Int(n) => write!(f, "Int({})", n),
             Float(n) => write!(f, "Float({})", n),
             Rational(n) => write!(f, "Rational({})", n),
-            String(s) => write!(f, "String({:?})", s),
+            String(s) => write!(f, "String({})", s),
             LParen => write!(f, "("),
             RParen => write!(f, ")"),
             LBrack => write!(f, "["),
@@ -85,6 +87,7 @@ impl Display for Token {
             RBrace => write!(f, "}}"),
             Colon => write!(f, ":"),
             Period => write!(f, "."),
+            Ellipsis => write!(f, "..."),
             Comma => write!(f, ","),
             CommaAt => write!(f, ",@"),
             Hash => write!(f, "#"),
