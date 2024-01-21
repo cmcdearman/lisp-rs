@@ -207,7 +207,8 @@ fn sexpr_reader<'a, I: ValueInput<'a, Token = Token, Span = Span>>(
                 ));
                 SexprKind::SynList(SynList::new(list, span))
             })
-            .map_with_span(Sexpr::new);
+            .map_with_span(Sexpr::new)
+            .boxed();
 
         atom.or(syn_list)
             .or(data_list)
