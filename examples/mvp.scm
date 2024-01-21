@@ -37,6 +37,19 @@
       1
       (* n (fact (- n 1)))))
 
+(let (binary-search target xs)
+  (let (loop xs low high)
+    (if (<= low high)
+        (let (mid (/ (+ low high) 2))
+          (let (midval (xs mid))
+            (if (= midval target)
+                mid
+                (if (< midval target)
+                    (loop xs (+ mid 1) high)
+                    (loop xs low (- mid 1))))))
+        -1))
+  (binary-search 3 (lambda (x) (- x 3)) 0 10))
+
 ;; lists
 '(1 2 3)
 [1 2 3]

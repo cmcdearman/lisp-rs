@@ -77,26 +77,6 @@ fn sexpr_reader<'a, I: ValueInput<'a, Token = Token, Span = Span>>(
             })
             .map(AtomKind::Path);
 
-        // map foo... to (vargs foo)
-        let variadic = ident_reader()
-            .then_ignore(just(Token::Ellipsis))
-            .map_with_span(|name, span| {
-                let mut list = List::Empty;
-                list.push_front(Sexpr::new(
-                    SexprKind::Atom(Atom::new(
-                        AtomKind::Sym(InternedString::from("vargs")),
-                        span,
-                    )),
-                    span,
-                ));
-                list.push_front(Sexpr::new(
-                    SexprKind::Atom(Atom::new(AtomKind::Sym(name), span)),
-                    span,
-                ));
-                SexprKind::SynList(SynList::new(list, span))
-            })
-            .map_with_span(Sexpr::new);
-
         let atom = path
             .or(ident_reader().map(AtomKind::Sym))
             .or(lit_reader().map(AtomKind::Lit))
@@ -203,6 +183,26 @@ fn sexpr_reader<'a, I: ValueInput<'a, Token = Token, Span = Span>>(
                         AtomKind::Sym(InternedString::from("unquote-splicing")),
                         span,
                     )),
+                    span,
+                ));
+                SexprKind::SynList(SynList::new(list, span))
+            })
+            .map_with_span(Sexpr::new);
+
+        // map foo... to (vargs foo)
+        let variadic = ident_reader()
+            .then_ignore(just(Token::Ellipsis))
+            .map_with_span(|name, span| {
+                let mut list = List::Empty;
+                list.push_front(Sexpr::new(
+                    SexprKind::Atom(Atom::new(
+                        AtomKind::Sym(InternedString::from("vargs")),
+                        span,
+                    )),
+                    span,
+                ));
+                list.push_front(Sexpr::new(
+                    SexprKind::Atom(Atom::new(AtomKind::Sym(name), span)),
                     span,
                 ));
                 SexprKind::SynList(SynList::new(list, span))
