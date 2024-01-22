@@ -81,9 +81,9 @@ impl Decl {
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum DeclKind {
-    Let {
+    Def {
         name: InternedString,
-        value: Expr,
+        expr: Expr,
         span: Span,
     },
 }
@@ -117,7 +117,7 @@ pub enum ExprKind {
     Ident(InternedString),
     Let {
         name: InternedString,
-        value: Box<Expr>,
+        expr: Box<Expr>,
         body: Box<Expr>,
         span: Span,
     },

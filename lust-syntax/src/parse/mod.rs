@@ -6,15 +6,15 @@ pub mod ast;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Error {
-    kind: ErrorKind,
+    msg: String,
     span: Span,
 }
 
-#[derive(Debug, Clone, PartialEq)]
-pub enum ErrorKind {
-    UnexpectedSexpr,
-    UnexpectedEof,
-}
+// #[derive(Debug, Clone, PartialEq)]
+// pub enum ErrorKind {
+//     UnexpectedSexpr,
+//     UnexpectedEof,
+// }
 
 pub type Result<T> = std::result::Result<T, Error>;
 
@@ -32,7 +32,82 @@ pub fn parse(root: sexpr::Root) -> (Option<ast::Root>, Vec<Error>) {
 
 fn parse_item(sexpr: Sexpr) -> Result<Item> {
     match sexpr.kind() {
-        sexpr::SexprKind::SynList(_) => todo!(),
+        sexpr::SexprKind::SynList(l) => {
+            let mut iter = l.list().iter();
+            if let Some(sexpr) = iter.next() {
+                match sexpr.kind() {
+                    sexpr::SexprKind::Atom(a) => match a.kind() {
+                        sexpr::AtomKind::Sym(s) => match &**s {
+                            "def" => {
+                                let name = match iter.next() {
+                                    Some(sexpr) => match sexpr.kind() {
+                                        sexpr::SexprKind::Atom(a) => match a.kind() {
+                                            sexpr::AtomKind::Sym(s) => s.clone(),
+                                            _ => {
+                                                return Err(Error {
+                                                    msg: "expected symbol".to_string(),
+                                                    span: *sexpr.span(),
+                                                })
+                                            }
+                                        },
+                                        _ => {
+                                            return Err(Error {
+                                                msg: "expected symbol".to_string(),
+                                                span: *sexpr.span(),
+                                            })
+                                        }
+                                    },
+                                    None => {
+                                        return Err(Error {
+                                            msg: "expected symbol".to_string(),
+                                            span: *sexpr.span(),
+                                        })
+                                    }
+                                };
+                                let mut iter = iter.skip(1);
+                                let expr = match iter.next() {
+                                    Some(sexpr) => parse_expr(sexpr.clone())?,
+                                    None => {
+                                        return Err(Error {
+                                            msg: "expected expression".to_string(),
+                                            span: *sexpr.span(),
+                                        })
+                                    }
+                                };
+                                Ok(Item::new(
+                                    ItemKind::Decl(Decl::new(
+                                        DeclKind::Def {
+                                            name,
+                                            expr: expr,
+                                            span: *sexpr.span(),
+                                        },
+                                        *sexpr.span(),
+                                    )),
+                                    *sexpr.span(),
+                                ))
+                            }
+                            _ => Err(Error {
+                                msg: "expected symbol".to_string(),
+                                span: *sexpr.span(),
+                            }),
+                        },
+                        _ => Err(Error {
+                            msg: "expected symbol".to_string(),
+                            span: *sexpr.span(),
+                        }),
+                    },
+                    _ => Err(Error {
+                        msg: "expected symbol".to_string(),
+                        span: *sexpr.span(),
+                    }),
+                }
+            } else {
+                Err(Error {
+                    msg: "expected symbol".to_string(),
+                    span: *sexpr.span(),
+                })
+            }
+        }
         sexpr::SexprKind::Atom(_) | sexpr::SexprKind::DataList(_) | sexpr::SexprKind::Vector(_) => {
             Ok(Item::new(
                 ItemKind::Expr(parse_expr(sexpr.clone())?),
@@ -60,12 +135,11 @@ fn parse_expr(sexpr: Sexpr) -> Result<Expr> {
         },
         sexpr::SexprKind::SynList(_) => todo!(),
         sexpr::SexprKind::DataList(l) => {
-            let mut new_list = List::Empty;
+            let mut exprs = vec![];
             for sexpr in l.list().iter() {
-                println!("sexpr: {:?}", sexpr);
-                new_list.push_front(parse_expr(sexpr.clone())?);
+                exprs.push(parse_expr(sexpr.clone())?);
             }
-            Ok(Expr::new(ExprKind::List(new_list), *sexpr.span()))
+            Ok(Expr::new(ExprKind::List(List::from(exprs)), *sexpr.span()))
         }
         sexpr::SexprKind::Vector(v) => {
             let mut exprs = vec![];

@@ -1,9 +1,9 @@
 ;; let binding
 ;; bindings are immutable by default
-(let a 1)
+(def a 1)
 
 ;; mutable binding
-(let! a 1)
+(def! a 1)
 
 ;; if expression
 ;; Every if expression must have a then and an else clause.
@@ -13,7 +13,7 @@
     (println "1 is not equal to 2"))
 
 ;; let binding to function
-(let (fib n)
+(def (fib n)
   (let (loop n a b)
     (if (= n 0)
       a
@@ -21,34 +21,21 @@
     (loop n 0 1)))
 
 ;; let binding to function with expression body
-(let (gcd a b)
+(def (gcd a b)
   (if (= b 0) 
       a
       (gcd b (mod a b)))
   (gcd 10 5))
 
 ;; higher order function
-(let (map f xs)
+(def (map f xs)
   (if (empty? xs) ()
       (pair (f (head xs)) (map f (tail xs)))))
 
-(let (fact n)
+(def (fact n)
   (if (= n 0)
       1
       (* n (fact (- n 1)))))
-
-(let (binary-search target xs)
-  (let (loop xs low high)
-    (if (<= low high)
-        (let (mid (/ (+ low high) 2))
-          (let (midval (xs mid))
-            (if (= midval target)
-                mid
-                (if (< midval target)
-                    (loop xs (+ mid 1) high)
-                    (loop xs low (- mid 1))))))
-        -1))
-  (binary-search 3 (lambda (x) (- x 3)) 0 10))
 
 ;; lists
 '(1 2 3)
@@ -71,7 +58,7 @@
 { 'a 1 'b 2 }
 
 ;; maps as records
-(let person { 'name "John" 'age 30 })
+(def person { 'name "John" 'age 30 })
 (display person.name)
 ;; => "John"
 (display person.age)
@@ -101,43 +88,43 @@
   (println i)
   (set! i (+ i 1)))
 
-(let (ack m n)
+(def (ack m n)
   (cond ((= m 0) (+ n 1))
         ((= n 0) (ack (- m 1) 1))
         ('t (ack (- m 1) (ack m (- n 1))))))
 
 ;; modules
 (module List
-  (let (pair { 'head 'tail }))
-  (let (empty '()))
+  (def (pair { 'head 'tail }))
+  (def (empty '()))
 
-  (let (empty? xs)
+  (def (empty? xs)
     (match xs
       (Empty true)
       (Pair false)))
 
-  (let (map f xs)
+  (def (map f xs)
     (if (empty? xs) ()
         (pair (f (head xs)) (map f (tail xs)))))
   
-  (let (foldl f acc xs) 
+  (def (foldl f acc xs) 
     (if (empty? xs)
         acc
         (foldl f (f acc (head xs)) (tail xs))))
   
-  (let (foldr f acc xs)
+  (def (foldr f acc xs)
     (if (empty? xs)
         acc
         (f (head xs) (foldr f acc (tail xs)))))
 
-  (let (filter f xs)
+  (def (filter f xs)
     (if (empty? xs)
         ()
         (if (f (head xs))
             (pair (head xs) (filter f (tail xs)))
             (filter f (tail xs)))))
 
-  (let (reverse xs)
+  (def (reverse xs)
     (foldl (lambda (acc x) (pair x acc)) () xs)))
 
 ;; module usage

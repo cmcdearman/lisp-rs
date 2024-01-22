@@ -54,10 +54,6 @@ impl<T> List<T> {
     pub fn iter(&self) -> impl Iterator<Item = &T> {
         ListIter::new(self)
     }
-
-    // pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut T> {
-    //     ListIterMut::new(self)
-    // }
 }
 
 impl<'a, T> Display for List<T>
