@@ -1,7 +1,8 @@
-sexpr = atom | list
+sexpr = atom | synList | dataList | variadic
 synList = "(" atom sexpr* ")"
 dataList = "[" sexpr* "]"
-atom = lit | symbol | vector
+variadic = symbol "..."
+atom = lit | symbol | vector | path
 path = symbol ("." symbol)+
 vector = "#[" sexpr* "]"
 lit = number | bool | string

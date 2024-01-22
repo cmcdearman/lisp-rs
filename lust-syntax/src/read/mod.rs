@@ -39,6 +39,7 @@ pub fn read<'src>(src: &'src str) -> (Option<Root>, Vec<SyntaxError<'src>>) {
     if !errs.is_empty() {
         return (None, errs);
     }
+    println!("tokens: {:?}", tokens);
     let tok_stream = Stream::from_iter(tokens).spanned(Span::from(src.len()..src.len()));
     let (root, errs) = root_reader().parse(tok_stream).into_output_errors();
     (
@@ -195,14 +196,14 @@ fn sexpr_reader<'a, I: ValueInput<'a, Token = Token, Span = Span>>(
             .map_with_span(|name, span| {
                 let mut list = List::Empty;
                 list.push_front(Sexpr::new(
+                    SexprKind::Atom(Atom::new(AtomKind::Sym(name), span)),
+                    span,
+                ));
+                list.push_front(Sexpr::new(
                     SexprKind::Atom(Atom::new(
                         AtomKind::Sym(InternedString::from("vargs")),
                         span,
                     )),
-                    span,
-                ));
-                list.push_front(Sexpr::new(
-                    SexprKind::Atom(Atom::new(AtomKind::Sym(name), span)),
                     span,
                 ));
                 SexprKind::SynList(SynList::new(list, span))
@@ -210,7 +211,8 @@ fn sexpr_reader<'a, I: ValueInput<'a, Token = Token, Span = Span>>(
             .map_with_span(Sexpr::new)
             .boxed();
 
-        atom.or(syn_list)
+        variadic
+            .or(syn_list)
             .or(data_list)
             .or(empty)
             .or(vector)
@@ -218,7 +220,7 @@ fn sexpr_reader<'a, I: ValueInput<'a, Token = Token, Span = Span>>(
             .or(quasiquote)
             .or(unquote)
             .or(unquote_splice)
-            .or(variadic)
+            .or(atom)
     })
 }
 
