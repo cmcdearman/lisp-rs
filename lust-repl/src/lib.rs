@@ -1,6 +1,6 @@
 use lust_syntax::{
     expand::{expand_macros, store::Store},
-    read::read,
+    read::read, parse::parse,
 };
 use std::{
     cell::RefCell,
@@ -42,8 +42,15 @@ pub fn repl() {
         // for m in collect_macros(&root) {
         //     println!("{}", m);
         // }
-        let expanded = expand_macros(store.clone(), &root);
-        println!("expanded: {:#?}", expanded);
+        // let expanded = expand_macros(store.clone(), &root);
+        // println!("expanded: {:#?}", expanded);
+        if let (Some(ast), errors) = parse(root) {
+            println!("ast: {:#?}", ast);
+            if !errors.is_empty() {
+                println!("errors: {:?}", errors);
+                continue;
+            }
+        }
         io::stdout().flush().unwrap();
         src.clear();
     }
