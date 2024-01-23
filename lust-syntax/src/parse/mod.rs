@@ -1,6 +1,7 @@
 use self::ast::*;
-use crate::read::sexpr::{self, Sexpr};
+use crate::read::sexpr::{self, Sexpr, SexprKind};
 use lust_utils::{list::List, span::Span};
+use num_bigfloat::E;
 
 pub mod ast;
 
@@ -34,42 +35,25 @@ fn parse_item(sexpr: Sexpr) -> Result<Item> {
     match sexpr.kind() {
         sexpr::SexprKind::SynList(l) => {
             let mut iter = l.list().iter();
-            if let Some(sexpr) = iter.next() {
-                match sexpr.kind() {
-                    sexpr::SexprKind::Atom(a) => match a.kind() {
-                        sexpr::AtomKind::Sym(s) => match &**s {
+            if let Some(first) = iter.next() {
+                if let Some(atom) = first.as_atom() {
+                    if let Some(sym) = atom.as_sym() {
+                        match sym.as_ref() {
                             "def" => {
                                 let name = match iter.next() {
-                                    Some(sexpr) => match sexpr.kind() {
-                                        sexpr::SexprKind::Atom(a) => match a.kind() {
-                                            sexpr::AtomKind::Sym(s) => s.clone(),
-                                            _ => {
-                                                return Err(Error {
-                                                    msg: "expected symbol".to_string(),
-                                                    span: *sexpr.span(),
-                                                })
-                                            }
-                                        },
-                                        _ => {
-                                            return Err(Error {
-                                                msg: "expected symbol".to_string(),
-                                                span: *sexpr.span(),
-                                            })
-                                        }
-                                    },
+                                    Some(name) => name,
                                     None => {
                                         return Err(Error {
-                                            msg: "expected symbol".to_string(),
+                                            msg: "expected name".to_string(),
                                             span: *sexpr.span(),
                                         })
                                     }
                                 };
-                                let mut iter = iter.skip(1);
                                 let expr = match iter.next() {
-                                    Some(sexpr) => parse_expr(sexpr.clone())?,
+                                    Some(expr) => expr,
                                     None => {
                                         return Err(Error {
-                                            msg: "expected expression".to_string(),
+                                            msg: "expected expr".to_string(),
                                             span: *sexpr.span(),
                                         })
                                     }
@@ -77,35 +61,33 @@ fn parse_item(sexpr: Sexpr) -> Result<Item> {
                                 Ok(Item::new(
                                     ItemKind::Decl(Decl::new(
                                         DeclKind::Def {
-                                            name,
-                                            expr: expr,
-                                            span: *sexpr.span(),
+                                            name: name.clone(),
+                                            expr: parse_expr(expr.clone())?,
+                                            span: sexpr.span().clone(),
                                         },
                                         *sexpr.span(),
                                     )),
                                     *sexpr.span(),
                                 ))
                             }
-                            _ => Err(Error {
-                                msg: "expected symbol".to_string(),
-                                span: *sexpr.span(),
-                            }),
-                        },
-                        _ => Err(Error {
+                        }
+                    } else {
+                        return Err(Error {
                             msg: "expected symbol".to_string(),
                             span: *sexpr.span(),
-                        }),
-                    },
-                    _ => Err(Error {
-                        msg: "expected symbol".to_string(),
+                        });
+                    }
+                } else {
+                    return Err(Error {
+                        msg: "expected atom".to_string(),
                         span: *sexpr.span(),
-                    }),
+                    });
                 }
             } else {
-                Err(Error {
-                    msg: "expected symbol".to_string(),
+                return Err(Error {
+                    msg: "expected atom".to_string(),
                     span: *sexpr.span(),
-                })
+                });
             }
         }
         sexpr::SexprKind::Atom(_) | sexpr::SexprKind::DataList(_) | sexpr::SexprKind::Vector(_) => {

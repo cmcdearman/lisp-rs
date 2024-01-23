@@ -20,8 +20,21 @@
       (loop (- n 1) b (+ a b)))
     (loop n 0 1)))
 
-;; let binding to function with expression body
+;; pattern matching
+(def (gcd a 0) a)
+(def (gcd a b) (gcd b (mod a b)))
+
+(def (fib 0) 0)
+(def (fib 1) 1)
+(def (fib n) (+ (fib (- n 1)) (fib (- n 2))))
+
 (def (gcd a b)
+  (match (a b)
+    ((a 0) a)
+    ((a b) (gcd b (mod a b)))))
+
+;; let binding to function with expression body
+(let (gcd a b)
   (if (= b 0) 
       a
       (gcd b (mod a b)))
@@ -57,12 +70,16 @@
 ;; maps
 { 'a 1 'b 2 }
 
-;; maps as records
+;; maps bound
 (def person { 'name "John" 'age 30 })
+;; map access
 (display person.name)
 ;; => "John"
 (display person.age)
 ;; => 30
+
+;; currying allows point-free style
+(def sum (foldl + 0))
 
 ;; macros
 (macro (cond clauses...)
@@ -95,13 +112,14 @@
 
 ;; modules
 (module List
-  (def (pair { 'head 'tail }))
-  (def (empty '()))
+  (def (pair head tail) { 'head head 'tail tail })
+  (def empty '())
 
   (def (empty? xs)
-    (match xs
-      (Empty true)
-      (Pair false)))
+    (= xs empty))
+
+  (def (push-front xs x)
+    (pair x xs))
 
   (def (map f xs)
     (if (empty? xs) ()
@@ -124,7 +142,7 @@
             (pair (head xs) (filter f (tail xs)))
             (filter f (tail xs)))))
 
-  (def (reverse xs)
+  (def (rev xs)
     (foldl (lambda (acc x) (pair x acc)) () xs)))
 
 ;; module usage

@@ -1,11 +1,10 @@
-use std::{collections::HashMap, hash::Hash};
-
 use lust_utils::{
     intern::InternedString,
     list::List,
     num::{BigInt, BigRational, Float},
     span::Span,
 };
+use std::collections::BTreeMap;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Root {
@@ -86,6 +85,10 @@ pub enum DeclKind {
         expr: Expr,
         span: Span,
     },
+    // UnDef {
+    //     name: InternedString,
+    //     span: Span,
+    // },
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -123,34 +126,23 @@ pub enum ExprKind {
     },
     List(List<Expr>),
     Vector(Vec<Expr>),
-    // Table(),
+    Map(BTreeMap<Expr, Expr>),
 }
 
-// #[derive(Debug, Clone, PartialEq)]
-// pub struct Table {
-//     rows: Vec<Row>,
-//     span: Span,
-// }
+#[derive(Debug, Clone, PartialEq)]
+pub struct Pattern {
+    kind: Box<PatternKind>,
+    span: Span,
+}
 
-// impl Table {
-//     pub fn new(rows: Vec<Row>, span: Span) -> Self {
-//         Self { rows, span }
-//     }
-
-//     pub fn rows(&self) -> &[Row] {
-//         &self.rows
-//     }
-
-//     pub fn span(&self) -> Span {
-//         self.span
-//     }
-// }
-
-// #[derive(Debug, Clone, PartialEq)]
-// pub struct Row {
-//     cells: Vec<Cell>,
-//     span: Span,
-// }
+#[derive(Debug, Clone, PartialEq)]
+pub enum PatternKind {
+    Lit(Lit),
+    Ident(InternedString),
+    List(List<Pattern>),
+    Vector(Vec<Pattern>),
+    Map(BTreeMap<Pattern, Pattern>),
+}
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Lit {

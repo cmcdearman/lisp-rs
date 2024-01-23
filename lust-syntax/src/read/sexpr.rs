@@ -57,6 +57,34 @@ impl Sexpr {
         &self.span
     }
 
+    pub fn as_atom(&self) -> Option<&Atom> {
+        match self.kind() {
+            SexprKind::Atom(a) => Some(a),
+            _ => None,
+        }
+    }
+
+    pub fn as_syn_list(&self) -> Option<&SynList> {
+        match self.kind() {
+            SexprKind::SynList(l) => Some(l),
+            _ => None,
+        }
+    }
+
+    pub fn as_data_list(&self) -> Option<&DataList> {
+        match self.kind() {
+            SexprKind::DataList(l) => Some(l),
+            _ => None,
+        }
+    }
+
+    pub fn as_vector(&self) -> Option<&Vec<Sexpr>> {
+        match self.kind() {
+            SexprKind::Vector(v) => Some(v),
+            _ => None,
+        }
+    }
+
     pub fn replace(&mut self, kind: SexprKind) {
         self.kind = Box::new(kind);
     }
@@ -240,6 +268,27 @@ impl Atom {
 
     pub fn span(&self) -> &Span {
         &self.span
+    }
+
+    pub fn as_lit(&self) -> Option<&Lit> {
+        match self.kind() {
+            AtomKind::Lit(l) => Some(l),
+            _ => None,
+        }
+    }
+
+    pub fn as_sym(&self) -> Option<&InternedString> {
+        match self.kind() {
+            AtomKind::Sym(s) => Some(s),
+            _ => None,
+        }
+    }
+
+    pub fn as_path(&self) -> Option<&Vec<InternedString>> {
+        match self.kind() {
+            AtomKind::Path(p) => Some(p),
+            _ => None,
+        }
     }
 }
 
