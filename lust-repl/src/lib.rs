@@ -1,6 +1,7 @@
 use lust_syntax::{
     expand::{expand_macros, store::Store},
-    read::read, parse::parse,
+    parse::parse,
+    read::read,
 };
 use std::{
     cell::RefCell,
@@ -26,7 +27,7 @@ pub fn repl() {
         }
         let root = match read(&src) {
             (Some(root), errs) => {
-                // println!("{}", root);
+                println!("sexprs: {:#?}", root);
                 if !errs.is_empty() {
                     println!("errs: {:?}", errs);
                     continue;

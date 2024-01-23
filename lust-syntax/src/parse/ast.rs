@@ -81,7 +81,7 @@ impl Decl {
 #[derive(Debug, Clone, PartialEq)]
 pub enum DeclKind {
     Def {
-        name: InternedString,
+        pat: Pattern,
         expr: Expr,
         span: Span,
     },
@@ -120,19 +120,63 @@ pub enum ExprKind {
     Ident(InternedString),
     Let {
         name: InternedString,
-        expr: Box<Expr>,
-        body: Box<Expr>,
+        expr: Expr,
+        body: Expr,
         span: Span,
+    },
+    Match {
+        expr: Expr,
+        arms: Vec<MatchArm>,
+        span: Span,
+    },
+    If {
+        cond: Expr,
+        then: Expr,
+        else_: Expr,
+        span: Span,
+    },
+    Lambda {
+        param: Pattern,
+        body: Expr,
     },
     List(List<Expr>),
     Vector(Vec<Expr>),
     Map(BTreeMap<Expr, Expr>),
+    MapAccess {
+        map: Expr,
+        key: Expr,
+        span: Span,
+    },
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct MatchArm {
+    pat: Pattern,
+    expr: Expr,
+    span: Span,
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Pattern {
     kind: Box<PatternKind>,
     span: Span,
+}
+
+impl Pattern {
+    pub fn new(kind: PatternKind, span: Span) -> Self {
+        Self {
+            kind: Box::new(kind),
+            span,
+        }
+    }
+
+    pub fn kind(&self) -> &PatternKind {
+        &self.kind
+    }
+
+    pub fn span(&self) -> Span {
+        self.span
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]

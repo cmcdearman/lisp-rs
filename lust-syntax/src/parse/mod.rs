@@ -1,5 +1,5 @@
 use self::ast::*;
-use crate::read::sexpr::{self, Sexpr, SexprKind};
+use crate::read::sexpr::{self, AtomKind, Sexpr, SexprKind};
 use lust_utils::{list::List, span::Span};
 use num_bigfloat::E;
 
@@ -23,7 +23,7 @@ pub fn parse(root: sexpr::Root) -> (Option<ast::Root>, Vec<Error>) {
     let mut items = vec![];
     let mut errs = vec![];
     for sexpr in root.sexprs() {
-        match parse_item(sexpr.clone()) {
+        match parse_item(sexpr) {
             Ok(item) => items.push(item),
             Err(err) => errs.push(err),
         }
@@ -31,7 +31,7 @@ pub fn parse(root: sexpr::Root) -> (Option<ast::Root>, Vec<Error>) {
     (Some(ast::Root::new(items, *root.span())), errs)
 }
 
-fn parse_item(sexpr: Sexpr) -> Result<Item> {
+fn parse_item(sexpr: &Sexpr) -> Result<Item> {
     match sexpr.kind() {
         sexpr::SexprKind::SynList(l) => {
             let mut iter = l.list().iter();
@@ -40,11 +40,11 @@ fn parse_item(sexpr: Sexpr) -> Result<Item> {
                     if let Some(sym) = atom.as_sym() {
                         match sym.as_ref() {
                             "def" => {
-                                let name = match iter.next() {
-                                    Some(name) => name,
+                                let pat = match iter.next() {
+                                    Some(binder) => parse_pattern(binder)?,
                                     None => {
                                         return Err(Error {
-                                            msg: "expected name".to_string(),
+                                            msg: "expected binder".to_string(),
                                             span: *sexpr.span(),
                                         })
                                     }
@@ -58,15 +58,21 @@ fn parse_item(sexpr: Sexpr) -> Result<Item> {
                                         })
                                     }
                                 };
-                                Ok(Item::new(
+                                return Ok(Item::new(
                                     ItemKind::Decl(Decl::new(
                                         DeclKind::Def {
-                                            name: name.clone(),
-                                            expr: parse_expr(expr.clone())?,
+                                            pat,
+                                            expr: parse_expr(expr)?,
                                             span: sexpr.span().clone(),
                                         },
                                         *sexpr.span(),
                                     )),
+                                    *sexpr.span(),
+                                ));
+                            }
+                            _ => {
+                                return Ok(Item::new(
+                                    ItemKind::Expr(parse_expr(sexpr)?),
                                     *sexpr.span(),
                                 ))
                             }
@@ -91,25 +97,19 @@ fn parse_item(sexpr: Sexpr) -> Result<Item> {
             }
         }
         sexpr::SexprKind::Atom(_) | sexpr::SexprKind::DataList(_) | sexpr::SexprKind::Vector(_) => {
-            Ok(Item::new(
-                ItemKind::Expr(parse_expr(sexpr.clone())?),
-                *sexpr.span(),
-            ))
+            Ok(Item::new(ItemKind::Expr(parse_expr(sexpr)?), *sexpr.span()))
         }
     }
 }
 
-fn parse_decl(sexpr: Sexpr) -> Result<Decl> {
+fn parse_decl(sexpr: &Sexpr) -> Result<Decl> {
     todo!()
 }
 
-fn parse_expr(sexpr: Sexpr) -> Result<Expr> {
+fn parse_expr(sexpr: &Sexpr) -> Result<Expr> {
     match sexpr.kind() {
         sexpr::SexprKind::Atom(a) => match a.kind() {
-            sexpr::AtomKind::Lit(l) => Ok(Expr::new(
-                ExprKind::Lit(parse_lit(l.clone())?),
-                *sexpr.span(),
-            )),
+            sexpr::AtomKind::Lit(l) => Ok(Expr::new(ExprKind::Lit(parse_lit(l)?), *sexpr.span())),
             sexpr::AtomKind::Sym(name) => {
                 Ok(Expr::new(ExprKind::Ident(name.clone()), *sexpr.span()))
             }
@@ -119,21 +119,40 @@ fn parse_expr(sexpr: Sexpr) -> Result<Expr> {
         sexpr::SexprKind::DataList(l) => {
             let mut exprs = vec![];
             for sexpr in l.list().iter() {
-                exprs.push(parse_expr(sexpr.clone())?);
+                exprs.push(parse_expr(sexpr)?);
             }
             Ok(Expr::new(ExprKind::List(List::from(exprs)), *sexpr.span()))
         }
         sexpr::SexprKind::Vector(v) => {
             let mut exprs = vec![];
             for sexpr in v.iter() {
-                exprs.push(parse_expr(sexpr.clone())?);
+                exprs.push(parse_expr(sexpr)?);
             }
             Ok(Expr::new(ExprKind::Vector(exprs), *sexpr.span()))
         }
     }
 }
 
-fn parse_lit(lit: sexpr::Lit) -> Result<Lit> {
+fn parse_pattern(sexpr: &Sexpr) -> Result<Pattern> {
+    match sexpr.kind() {
+        SexprKind::Atom(a) => match a.kind() {
+            AtomKind::Sym(s) => Ok(Pattern::new(PatternKind::Ident(s.clone()), *sexpr.span())),
+            AtomKind::Lit(l) => Ok(Pattern::new(PatternKind::Lit(parse_lit(l)?), *sexpr.span())),
+            _ => todo!(),
+        },
+        SexprKind::SynList(_) => todo!(),
+        SexprKind::DataList(_) => todo!(),
+        SexprKind::Vector(v) => {
+            let mut patterns = vec![];
+            for sexpr in v.iter() {
+                patterns.push(parse_pattern(sexpr)?);
+            }
+            Ok(Pattern::new(PatternKind::Vector(patterns), *sexpr.span()))
+        }
+    }
+}
+
+fn parse_lit(lit: &sexpr::Lit) -> Result<Lit> {
     match lit.clone() {
         sexpr::Lit::Int(i) => Ok(Lit::Int(i)),
         sexpr::Lit::Float(f) => Ok(Lit::Float(f)),
