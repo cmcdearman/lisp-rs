@@ -1,4 +1,3 @@
-;; let binding
 ;; bindings are immutable by default
 (def a 1)
 
@@ -12,40 +11,32 @@
     (println "1 is equal to 2")
     (println "1 is not equal to 2"))
 
-;; let binding to function
-(def (fib n)
+;; lambda expression using `fn`
+(fn (x) (+ x 1))
+
+;; `defn` macro for defining functions
+(defn (fib n)
   (let (loop n a b)
     (if (= n 0)
       a
       (loop (- n 1) b (+ a b)))
     (loop n 0 1)))
 
-;; pattern matching
-(def (gcd a 0) a)
-(def (gcd a b) (gcd b (mod a b)))
+;; `defn` is a contraction for `def` and `fn`. The following are equivalent:
+(defn f (x) (+ x 1))
+(def f (fn (x) (+ x 1)))
 
-(def (fib 0) 0)
-(def (fib 1) 1)
-(def (fib n) (+ (fib (- n 1)) (fib (- n 2))))
-
-(def (gcd a b)
-  (match (a b)
-    ((a 0) a)
-    ((a b) (gcd b (mod a b)))))
-
-;; let binding to function with expression body
-(let (gcd a b)
-  (if (= b 0) 
-      a
-      (gcd b (mod a b)))
-  (gcd 10 5))
+;; `let` expression
+(let ((a 1) 
+      (b 2))
+  (+ a b))
 
 ;; higher order function
-(def (map f xs)
+(defn map (f xs)
   (if (empty? xs) ()
       (pair (f (head xs)) (map f (tail xs)))))
 
-(def (fact n)
+(defn fact (n)
   (if (= n 0)
       1
       (* n (fact (- n 1)))))
