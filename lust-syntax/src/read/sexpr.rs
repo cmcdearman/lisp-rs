@@ -4,7 +4,7 @@ use lust_utils::{
     num::{BigInt, BigRational, Float},
     span::Span,
 };
-use std::fmt::Display;
+use std::{collections::BTreeMap, fmt::Display};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Root {
@@ -35,7 +35,7 @@ impl Display for Root {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct Sexpr {
     kind: Box<SexprKind>,
     span: Span,
@@ -135,6 +135,17 @@ impl Sexpr {
                 }
                 *self = Sexpr::new(SexprKind::Vector(new_vec), *self.span());
             }
+            SexprKind::Table(t) => {
+                let mut new_table = BTreeMap::new();
+                for (k, v) in t.iter() {
+                    let mut new_k = k.clone();
+                    let mut new_v = v.clone();
+                    new_k.replace_sym(sym.clone(), arg.clone());
+                    new_v.replace_sym(sym.clone(), arg.clone());
+                    new_table.insert(new_k, new_v);
+                }
+                *self = Sexpr::new(SexprKind::Table(new_table), *self.span());
+            }
         }
     }
 }
@@ -145,12 +156,21 @@ impl Display for Sexpr {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+impl Eq for Sexpr {}
+
+impl Ord for Sexpr {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.kind.cmp(&other.kind)
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub enum SexprKind {
     Atom(Atom),
     SynList(SynList),
     DataList(DataList),
     Vector(Vec<Sexpr>),
+    Table(BTreeMap<Sexpr, Sexpr>),
 }
 
 impl Display for SexprKind {
@@ -169,11 +189,21 @@ impl Display for SexprKind {
                 }
                 write!(f, "]")
             }
+            SexprKind::Table(t) => {
+                write!(f, "{{")?;
+                for (i, (k, v)) in t.iter().enumerate() {
+                    if i != 0 {
+                        write!(f, ", ")?;
+                    }
+                    write!(f, "{}: {}", k, v)?;
+                }
+                write!(f, "}}")
+            }
         }
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Default)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Default)]
 pub struct SynList {
     list: List<Sexpr>,
     span: Span,
@@ -207,7 +237,7 @@ impl Display for SynList {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Default)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Default)]
 pub struct DataList {
     list: List<Sexpr>,
     span: Span,
@@ -248,7 +278,7 @@ impl Display for DataList {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct Atom {
     kind: Box<AtomKind>,
     span: Span,
@@ -298,7 +328,7 @@ impl Display for Atom {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub enum AtomKind {
     Lit(Lit),
     Sym(InternedString),
@@ -315,7 +345,7 @@ impl Display for AtomKind {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub enum Lit {
     Int(BigInt),
     Float(Float),

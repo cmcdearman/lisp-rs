@@ -185,7 +185,7 @@ pub enum PatternKind {
     Ident(InternedString),
     List(List<Pattern>),
     Vector(Vec<Pattern>),
-    Map(BTreeMap<Pattern, Pattern>),
+    Table(BTreeMap<Pattern, Pattern>),
 }
 
 #[derive(Debug, Clone, PartialEq)]

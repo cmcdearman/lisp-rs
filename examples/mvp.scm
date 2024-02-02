@@ -143,8 +143,8 @@
             (filter f (tail xs)))))
 
   (def (rev xs)
-    (foldl (lambda (acc x) (pair x acc)) () xs)))
+    (foldl (fn (acc x) (pair x acc)) () xs)))
 
 ;; module usage
 (use List)
-(List.map (lambda (x) (* x x)) [1 2 3])
+(List.map (fn (x) (* x x)) [1 2 3])

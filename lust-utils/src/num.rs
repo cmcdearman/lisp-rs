@@ -19,7 +19,7 @@ impl FromStr for Int {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct BigInt(NumBigInt);
 
 impl Display for BigInt {
@@ -36,7 +36,7 @@ impl FromStr for BigInt {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct Float(f64);
 
 impl Display for Float {
@@ -53,7 +53,7 @@ impl FromStr for Float {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Rational(Rational64);
 
 impl Rational {
@@ -88,7 +88,7 @@ impl FromStr for Rational {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct BigRational(NumBigRational);
 
 impl Display for BigRational {
