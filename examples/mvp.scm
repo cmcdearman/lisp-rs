@@ -36,6 +36,12 @@
   (if (empty? xs) ()
       (pair (f (head xs)) (map f (tail xs)))))
 
+;; pattern matching
+(defn map (f xs)
+  (match xs
+    ([])
+    ((x :: xs) (pair (f x) (map f xs)))))
+
 (defn fact (n)
   (if (= n 0)
       1
