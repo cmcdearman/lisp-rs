@@ -53,6 +53,13 @@
     ([])
     ((x :: xs) (pair (f x) (map f xs)))))
 
+(def map f [] [])
+(def map f (Pair x xs) (Pair (f x) (map f xs)))
+
+(def fib 0 0)
+(def fib 1 1)
+(def fib n (+ (fib (- n 1)) (fib (- n 2))))
+
 (defn fact (n)
   (if (= n 0)
       1
