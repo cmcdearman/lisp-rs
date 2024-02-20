@@ -22,6 +22,17 @@
       (loop (- n 1) b (+ a b)))
     (loop n 0 1)))
 
+;; benchmark:
+;; fib from 1 to 40
+(def (main args)
+  (let (loop n)
+    (if (= n 40)
+      ()
+      (begin
+        (println (fib n))
+        (loop (+ n 1))))
+    (loop 1)))
+
 ;; `defn` is a contraction for `def` and `fn`. The following are equivalent:
 (defn f (x) (+ x 1))
 (def f (fn (x) (+ x 1)))
