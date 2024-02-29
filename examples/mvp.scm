@@ -15,7 +15,7 @@
 (fn (x) (+ x 1))
 
 ;; `defn` macro for defining functions
-(defn (fib n)
+(defn fib (n)
   (let (loop n a b)
     (if (= n 0)
       a
@@ -24,10 +24,10 @@
 
 ;; benchmark:
 ;; fib from 1 to 40
-(def (main args)
+(defn main (args)
   (let (loop n)
     (if (= n 40)
-      ()
+      []
       (begin
         (println (fib n))
         (loop (+ n 1))))
@@ -47,18 +47,32 @@
   (if (empty? xs) ()
       (pair (f (head xs)) (map f (tail xs)))))
 
+;; pattern types
+;; `Pair` is a pattern type that matches a pair of values
+;; Here's what it looks like:
+;; (Pair x xs)
+;; `Range` is a pattern type that matches a range of values
+;; Here's what it looks like:
+;; (.. start end)
+
 ;; pattern matching
 (defn map (f xs)
   (match xs
-    ([])
-    ((x :: xs) (pair (f x) (map f xs)))))
+    ([] [])
+    ((:: x xs) (pair (f x) (map f xs)))))
 
-(def map f [] [])
-(def map f (Pair x xs) (Pair (f x) (map f xs)))
+(defn map (f []) [])
+(defn map (f (:: x xs)) (:: (f x) (map f xs)))
 
-(def fib 0 0)
-(def fib 1 1)
-(def fib n (+ (fib (- n 1)) (fib (- n 2))))
+(defn fib (0) 0)
+(defn fib (1) 1)
+(defn fib (n) (+ (fib (- n 1)) (fib (- n 2))))
+
+(defn fib (n)
+  (match n
+    ((0) 0)
+    ((1) 1)
+    ((n) (+ (fib (- n 1)) (fib (- n 2))))))
 
 (defn fact (n)
   (if (= n 0)
@@ -82,6 +96,19 @@
 ;; sets
 #{ 1 2 3 }
 
+;; records are just maps with symbols as keys
+;; `defrecord` macro for defining records
+(defrecord (Point x y))
+
+;; expands to
+(defn Point (x y) { 'x x 'y y })
+
+;; record creation
+(def p (Point 1 2))
+
+;; record access
+(. p 'x)
+
 ;; maps
 { 'a 1 'b 2 }
 
@@ -93,23 +120,23 @@
 (display person.age)
 ;; => 30
 
-;; currying allows point-free style
-(def sum (foldl + 0))
+;; named-argument currying
+(def sum (foldl (= f +) (= init 0)))
 
 ;; macros
-(macro (cond clauses...)
+(defmacro (cond & clauses)
   `(let (test (head clauses))
      (if (head test)
          (begin (tail test))
          (cond ,@(tail clauses)))))
 
-(macro (when test body...)
+(defmacro (when test &body)
   `(if ,test (begin ,@body) ()))
 
-(macro (when test (vargs body))
+(defmacro (when test &body)
   `(if ,test (begin ,@body) ()))
 
-(macro (while test body...)
+(defmacro (while test & body)
   `(let (loop)
      (if ,test
          (begin ,@body (loop))
@@ -127,7 +154,7 @@
 
 ;; modules
 (module List
-  (def (pair head tail) { 'head head 'tail tail })
+  (def (pair head tail) { 'head head 'tail tail})
   (def empty '())
 
   (def (empty? xs)
