@@ -61,6 +61,7 @@
     ([] [])
     ((:: x xs) (pair (f x) (map f xs)))))
 
+(: map (-> (-> a b) [a] [b])
 (defn map (f []) [])
 (defn map (f (:: x xs)) (:: (f x) (map f xs)))
 
@@ -99,17 +100,31 @@
 #{ 1 2 3 }
 
 ;; records are just maps with symbols as keys
-;; `defrecord` macro for defining records
-(defrecord (Point x y))
-
-;; expands to
-(defn Point (x y) { 'x x 'y y })
+(type (Point 
+  (x : Int) 
+  (y : Int)))
 
 ;; record creation
 (def p (Point 1 2))
 
 ;; record access
-(. p 'x)
+p.x
+
+;; sum type
+(type Shape
+  (Circle radius)
+  (Rect width height))
+
+(type Bool True False)
+
+;; generic sum type
+(type (Option T)
+  None
+  (Some T))
+
+;; A product type is just a sum type with only one constructor
+(type (Pair a b)
+  (Pair a b))
 
 ;; maps bound
 (def person { 'name "John" 'age 30 })
