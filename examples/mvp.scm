@@ -68,6 +68,8 @@
 (defn fib (1) 1)
 (defn fib (n) (+ (fib (- n 1)) (fib (- n 2))))
 
+;; type annotations
+(: fib (-> Int Int))
 (defn fib (n)
   (match n
     ((0) 0)
@@ -108,9 +110,6 @@
 
 ;; record access
 (. p 'x)
-
-;; maps
-{ 'a 1 'b 2 }
 
 ;; maps bound
 (def person { 'name "John" 'age 30 })
