@@ -16,10 +16,10 @@
 
 ;; `defn` macro for defining functions
 (defn fib (n)
-  (let (loop n a b)
-    (if (= n 0)
-      a
-      (loop (- n 1) b (+ a b)))
+  (let ((loop (fn (n a b)
+          (if (= n 0)
+              a
+              (loop (- n 1) b (+ a b))))))
     (loop n 0 1)))
 
 ;; benchmark:
@@ -44,7 +44,7 @@
 
 ;; higher order function
 (defn map (f xs)
-  (if (empty? xs) ()
+  (if (empty? xs) []
       (pair (f (head xs)) (map f (tail xs)))))
 
 ;; pattern types
@@ -61,7 +61,7 @@
     ([] [])
     ((:: x xs) (pair (f x) (map f xs)))))
 
-(: map (-> (-> a b) [a] [b])
+;; (: map (-> (-> a b) [a] [b]))
 (defn map (f []) [])
 (defn map (f (:: x xs)) (:: (f x) (map f xs)))
 
@@ -69,8 +69,18 @@
 (defn fib (1) 1)
 (defn fib (n) (+ (fib (- n 1)) (fib (- n 2))))
 
+;; overload operator by using match guards
+(defn == ((Pair a b) (Pair c d))
+  (and (== a c) (== b d)))
+
+(defn + (rational? a rational? b) 
+  (let ((gcd (gcd (a.denom) (b.denom))))
+    (Rational (+ (* a.numer (/ b.denom gcd)) 
+                 (* b.numer (/ a.denom gcd))) 
+                 (* a.denom (/ b.denom gcd)))))
+
 ;; type annotations
-(: fib (-> Int Int))
+;; (: fib (-> Int Int))
 (defn fib (n)
   (match n
     ((0) 0)
@@ -97,12 +107,12 @@
 #[1 2 3]
 
 ;; sets
-#{ 1 2 3 }
+#{ 1 2 3}
 
 ;; records are just maps with symbols as keys
 (type (Point 
-  (x : Int) 
-  (y : Int)))
+       (x : Int) 
+       (y : Int)))
 
 ;; record creation
 (def p (Point 1 2))
@@ -127,7 +137,7 @@ p.x
   (Pair a b))
 
 ;; maps bound
-(def person { 'name "John" 'age 30 })
+(def person { 'name "John" 'age 30})
 ;; map access
 (display person.name)
 ;; => "John"
