@@ -81,9 +81,9 @@ fn parse_decl(sexpr: &Sexpr) -> ParseResult<Decl> {
 fn parse_expr(sexpr: &Sexpr) -> ParseResult<Expr> {
     match sexpr.kind() {
         sexpr::SexprKind::Atom(a) => match a.kind() {
-            sexpr::AtomKind::Lit(l) => Ok(Expr::new(ExprKind::Lit(parse_lit(l)?), *sexpr.span())),
+            sexpr::AtomKind::Lit(l) => Ok(Expr::new(ExprKind::Lit(parse_lit(l)?), sexpr.span())),
             sexpr::AtomKind::Sym(name) => {
-                Ok(Expr::new(ExprKind::Ident(name.clone()), *sexpr.span()))
+                Ok(Expr::new(ExprKind::Ident(name.clone()), sexpr.span()))
             }
             sexpr::AtomKind::Path(_) => todo!(),
         },
