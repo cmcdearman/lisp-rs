@@ -1,5 +1,5 @@
 ;; this is a basic statically-typed lambda calculus extended with the following special forms:
-;; `def`, `let`, `if`, `quote`, `fn`, `and`, `or`, `not`, `begin`
+;; `def`, `let`, `if`, `quote`, `fn`, `and`, `or`, `begin`
 ;; and a few built-in functions (e.g. `+`, `-`, `*`, `/`, `=`, `>`, `<`, `<=`, `>=`)
 
 ;; def expressions

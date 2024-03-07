@@ -2,7 +2,7 @@ use num_bigint::BigInt as NumBigInt;
 use num_rational::{BigRational as NumBigRational, Rational64};
 use std::{fmt::Display, str::FromStr};
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Int(i64);
 
 impl Display for Int {
@@ -37,15 +37,15 @@ impl FromStr for BigInt {
 }
 
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
-pub struct Float(f64);
+pub struct Real(f64);
 
-impl Display for Float {
+impl Display for Real {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.0)
     }
 }
 
-impl FromStr for Float {
+impl FromStr for Real {
     type Err = std::num::ParseFloatError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {

@@ -113,13 +113,13 @@ fn sexpr_reader<'a, I: ValueInput<'a, Token = Token, Span = Span>>(
             .map_with_span(|_, span| SexprKind::DataList(DataList::new(List::Empty, span)))
             .map_with_span(Sexpr::new);
 
-        let vector = sexpr
-            .clone()
-            .repeated()
-            .collect()
-            .map(SexprKind::Vector)
-            .map_with_span(Sexpr::new)
-            .delimited_by(just(Token::HashLBrack), just(Token::RBrack));
+        // let vector = sexpr
+        //     .clone()
+        //     .repeated()
+        //     .collect()
+        //     .map(SexprKind::Vector)
+        //     .map_with_span(Sexpr::new)
+        //     .delimited_by(just(Token::HashLBrack), just(Token::RBrack));
 
         // quote = "'" sexpr
         let quote = just(Token::Quote)
@@ -215,7 +215,7 @@ fn sexpr_reader<'a, I: ValueInput<'a, Token = Token, Span = Span>>(
             .or(syn_list)
             .or(data_list)
             .or(empty)
-            .or(vector)
+            // .or(vector)
             .or(quote)
             .or(quasiquote)
             .or(unquote)
@@ -235,8 +235,8 @@ fn lit_reader<'a, I: ValueInput<'a, Token = Token, Span = Span>>(
 ) -> impl Parser<'a, I, Lit, extra::Err<Rich<'a, Token, Span>>> {
     select! {
         Token::Int(n) => Lit::Int(n),
-        Token::Float(n) => Lit::Float(n),
+        Token::Real(n) => Lit::Real(n),
         Token::Rational(n) => Lit::Rational(n),
-        Token::String(s) => Lit::Str(s),
+        Token::String(s) => Lit::String(s),
     }
 }

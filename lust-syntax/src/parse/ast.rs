@@ -1,58 +1,28 @@
 use lust_utils::{
     intern::InternedString,
     list::List,
-    num::{BigInt, BigRational, Float},
+    num::{BigInt, BigRational, Int, Rational, Real},
     span::Span,
 };
-use std::collections::BTreeMap;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Root {
-    items: Vec<Item>,
+    decls: Vec<Decl>,
     span: Span,
 }
 
 impl Root {
-    pub fn new(items: Vec<Item>, span: Span) -> Self {
-        Self { items, span }
+    pub fn new(decls: Vec<Decl>, span: Span) -> Self {
+        Self { decls, span }
     }
 
-    pub fn items(&self) -> &[Item] {
-        &self.items
-    }
-
-    pub fn span(&self) -> Span {
-        self.span
-    }
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub struct Item {
-    kind: Box<ItemKind>,
-    span: Span,
-}
-
-impl Item {
-    pub fn new(kind: ItemKind, span: Span) -> Self {
-        Self {
-            kind: Box::new(kind),
-            span,
-        }
-    }
-
-    pub fn kind(&self) -> &ItemKind {
-        &self.kind
+    pub fn decls(&self) -> &[Decl] {
+        &self.decls
     }
 
     pub fn span(&self) -> Span {
         self.span
     }
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub enum ItemKind {
-    Decl(Decl),
-    Expr(Expr),
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -80,15 +50,7 @@ impl Decl {
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum DeclKind {
-    Def {
-        pat: Pattern,
-        expr: Expr,
-        span: Span,
-    },
-    // UnDef {
-    //     name: InternedString,
-    //     span: Span,
-    // },
+    Def { name: InternedString, expr: Expr },
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -122,78 +84,74 @@ pub enum ExprKind {
         name: InternedString,
         expr: Expr,
         body: Expr,
-        span: Span,
     },
-    Match {
-        expr: Expr,
-        arms: Vec<MatchArm>,
-        span: Span,
-    },
+    // Match {
+    //     expr: Expr,
+    //     arms: Vec<MatchArm>,
+    //     span: Span,
+    // },
     If {
         cond: Expr,
         then: Expr,
         else_: Expr,
-        span: Span,
     },
     Lambda {
-        param: Pattern,
+        param: InternedString,
         body: Expr,
     },
     List(List<Expr>),
-    Vector(Vec<Expr>),
-    Map(BTreeMap<Expr, Expr>),
-    MapAccess {
-        map: Expr,
-        key: Expr,
-        span: Span,
-    },
+    // Vector(Vec<Expr>),
+    // Map(BTreeMap<Expr, Expr>),
+    // MapAccess {
+    //     map: Expr,
+    //     key: Expr,
+    //     span: Span,
+    // },
 }
 
-#[derive(Debug, Clone, PartialEq)]
-pub struct MatchArm {
-    pat: Pattern,
-    expr: Expr,
-    span: Span,
-}
+// #[derive(Debug, Clone, PartialEq)]
+// pub struct MatchArm {
+//     pat: Pattern,
+//     expr: Expr,
+//     span: Span,
+// }
 
-#[derive(Debug, Clone, PartialEq)]
-pub struct Pattern {
-    kind: Box<PatternKind>,
-    span: Span,
-}
+// #[derive(Debug, Clone, PartialEq)]
+// pub struct Pattern {
+//     kind: Box<PatternKind>,
+//     span: Span,
+// }
 
-impl Pattern {
-    pub fn new(kind: PatternKind, span: Span) -> Self {
-        Self {
-            kind: Box::new(kind),
-            span,
-        }
-    }
+// impl Pattern {
+//     pub fn new(kind: PatternKind, span: Span) -> Self {
+//         Self {
+//             kind: Box::new(kind),
+//             span,
+//         }
+//     }
 
-    pub fn kind(&self) -> &PatternKind {
-        &self.kind
-    }
+//     pub fn kind(&self) -> &PatternKind {
+//         &self.kind
+//     }
 
-    pub fn span(&self) -> Span {
-        self.span
-    }
-}
+//     pub fn span(&self) -> Span {
+//         self.span
+//     }
+// }
 
-#[derive(Debug, Clone, PartialEq)]
-pub enum PatternKind {
-    Lit(Lit),
-    Ident(InternedString),
-    List(List<Pattern>),
-    Vector(Vec<Pattern>),
-    Table(BTreeMap<Pattern, Pattern>),
-}
+// #[derive(Debug, Clone, PartialEq)]
+// pub enum PatternKind {
+//     Lit(Lit),
+//     Ident(InternedString),
+//     List(List<Pattern>),
+// }
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Lit {
-    Int(BigInt),
-    Float(Float),
-    Rational(BigRational),
-    Str(InternedString),
+    Int(Int),
+    Real(Real),
+    Rational(Rational),
+    String(InternedString),
     Bool(bool),
     Char(char),
 }

@@ -1,5 +1,5 @@
 use logos::Logos;
-use lust_utils::{intern::InternedString, num::{Float, BigInt, BigRational}};
+use lust_utils::{intern::InternedString, num::{Int, Rational, Real}};
 use std::fmt::{Debug, Display};
 
 #[derive(Logos, Debug, Clone, Default, PartialEq)]
@@ -16,21 +16,21 @@ pub enum Token {
     #[regex(
         r#"(0b[0-1]+)|(0o[0-7]+)|(0x[0-9a-fA-F]+)|([1-9]\d*|0)"#, 
         priority = 2, 
-        callback = |lex| lex.slice().parse::<BigInt>().ok()
+        callback = |lex| lex.slice().parse::<Int>().ok()
     )]
-    Int(BigInt),
+    Int(Int),
     #[regex(
         r#"([1-9]\d*|0)(\.\d+)?([eE][+-]?\d+)?"#, 
         priority = 1, 
-        callback = |lex| lex.slice().parse::<Float>().ok()
+        callback = |lex| lex.slice().parse::<Real>().ok()
     )]
-    Float(Float),
+    Real(Real),
     #[regex(
         r#"((0b[0-1]+)|(0o[0-7]+)|(0x[0-9a-fA-F]+)|([1-9]\d*|0))(/-?((0b[0-1]+)|(0o[0-7]+)|(0x[0-9a-fA-F]+)|([1-9]\d*|0)))?"#,
         priority = 0,
-        callback = |lex| lex.slice().parse::<BigRational>().ok()
+        callback = |lex| lex.slice().parse::<Rational>().ok()
     )]
-    Rational(BigRational),
+    Rational(Rational),
     #[regex(r#""("[^"\\]*(?:\\.[^"\\]*)*")""#, |lex| InternedString::from(lex.slice()))]
     String(InternedString),
 
@@ -76,7 +76,7 @@ impl Display for Token {
             Comment => write!(f, "Comment"),
             Ident(name) => write!(f, "Ident({})", name),
             Int(n) => write!(f, "Int({})", n),
-            Float(n) => write!(f, "Float({})", n),
+            Real(n) => write!(f, "Float({})", n),
             Rational(n) => write!(f, "Rational({})", n),
             String(s) => write!(f, "String({})", s),
             LParen => write!(f, "("),

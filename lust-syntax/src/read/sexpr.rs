@@ -1,10 +1,10 @@
 use lust_utils::{
     intern::InternedString,
     list::List,
-    num::{BigInt, BigRational, Float},
+    num::{Int, Rational, Real},
     span::Span,
 };
-use std::{collections::BTreeMap, fmt::Display};
+use std::fmt::Display;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Root {
@@ -21,8 +21,8 @@ impl Root {
         &self.sexprs
     }
 
-    pub fn span(&self) -> &Span {
-        &self.span
+    pub fn span(&self) -> Span {
+        self.span
     }
 }
 
@@ -53,8 +53,29 @@ impl Sexpr {
         &self.kind
     }
 
-    pub fn span(&self) -> &Span {
-        &self.span
+    pub fn span(&self) -> Span {
+        self.span
+    }
+
+    pub fn as_special_form(&self) -> Option<&str> {
+        match self.kind() {
+            SexprKind::SynList(l) => match l.head() {
+                Some(head) => match head.kind() {
+                    SexprKind::Atom(a) => match a.kind() {
+                        AtomKind::Sym(s) => match s.as_ref() {
+                            "def" | "let" | "quote" | "fn" | "and" | "or" | "begin" => {
+                                Some(s.as_ref())
+                            }
+                            _ => None,
+                        },
+                        _ => None,
+                    },
+                    _ => None,
+                },
+                None => None,
+            },
+            _ => None,
+        }
     }
 
     pub fn as_atom(&self) -> Option<&Atom> {
@@ -78,12 +99,12 @@ impl Sexpr {
         }
     }
 
-    pub fn as_vector(&self) -> Option<&Vec<Sexpr>> {
-        match self.kind() {
-            SexprKind::Vector(v) => Some(v),
-            _ => None,
-        }
-    }
+    // pub fn as_vector(&self) -> Option<&Vec<Sexpr>> {
+    //     match self.kind() {
+    //         SexprKind::Vector(v) => Some(v),
+    //         _ => None,
+    //     }
+    // }
 
     pub fn replace(&mut self, kind: SexprKind) {
         self.kind = Box::new(kind);
@@ -109,8 +130,8 @@ impl Sexpr {
                 }
                 let new_list = List::from(new_vec);
                 *self = Sexpr::new(
-                    SexprKind::SynList(SynList::new(new_list, *l.span())),
-                    *self.span(),
+                    SexprKind::SynList(SynList::new(new_list, l.span())),
+                    self.span(),
                 );
             }
             SexprKind::DataList(l) => {
@@ -123,29 +144,28 @@ impl Sexpr {
                 let new_list = List::from(new_vec);
                 *self = Sexpr::new(
                     SexprKind::DataList(DataList::new(new_list, *l.span())),
-                    *self.span(),
+                    self.span(),
                 );
-            }
-            SexprKind::Vector(v) => {
-                let mut new_vec = vec![];
-                for s in v.iter() {
-                    let mut new_s = s.clone();
-                    new_s.replace_sym(sym.clone(), arg.clone());
-                    new_vec.push(new_s);
-                }
-                *self = Sexpr::new(SexprKind::Vector(new_vec), *self.span());
-            }
-            SexprKind::Table(t) => {
-                let mut new_table = BTreeMap::new();
-                for (k, v) in t.iter() {
-                    let mut new_k = k.clone();
-                    let mut new_v = v.clone();
-                    new_k.replace_sym(sym.clone(), arg.clone());
-                    new_v.replace_sym(sym.clone(), arg.clone());
-                    new_table.insert(new_k, new_v);
-                }
-                *self = Sexpr::new(SexprKind::Table(new_table), *self.span());
-            }
+            } // SexprKind::Vector(v) => {
+              //     let mut new_vec = vec![];
+              //     for s in v.iter() {
+              //         let mut new_s = s.clone();
+              //         new_s.replace_sym(sym.clone(), arg.clone());
+              //         new_vec.push(new_s);
+              //     }
+              //     *self = Sexpr::new(SexprKind::Vector(new_vec), *self.span());
+              // }
+              // SexprKind::Table(t) => {
+              //     let mut new_table = BTreeMap::new();
+              //     for (k, v) in t.iter() {
+              //         let mut new_k = k.clone();
+              //         let mut new_v = v.clone();
+              //         new_k.replace_sym(sym.clone(), arg.clone());
+              //         new_v.replace_sym(sym.clone(), arg.clone());
+              //         new_table.insert(new_k, new_v);
+              //     }
+              //     *self = Sexpr::new(SexprKind::Table(new_table), *self.span());
+              // }
         }
     }
 }
@@ -158,19 +178,17 @@ impl Display for Sexpr {
 
 impl Eq for Sexpr {}
 
-impl Ord for Sexpr {
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        self.kind.cmp(&other.kind)
-    }
-}
+// impl Ord for Sexpr {
+//     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+//         self.kind.cmp(&other.kind)
+//     }
+// }
 
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub enum SexprKind {
     Atom(Atom),
     SynList(SynList),
     DataList(DataList),
-    Vector(Vec<Sexpr>),
-    Table(BTreeMap<Sexpr, Sexpr>),
 }
 
 impl Display for SexprKind {
@@ -179,31 +197,31 @@ impl Display for SexprKind {
             SexprKind::Atom(a) => write!(f, "{}", a),
             SexprKind::SynList(l) => write!(f, "{}", l),
             SexprKind::DataList(l) => write!(f, "{}", l),
-            SexprKind::Vector(v) => {
-                write!(f, "[")?;
-                for (i, s) in v.iter().enumerate() {
-                    if i != 0 {
-                        write!(f, " ")?;
-                    }
-                    write!(f, "{}", s)?;
-                }
-                write!(f, "]")
-            }
-            SexprKind::Table(t) => {
-                write!(f, "{{")?;
-                for (i, (k, v)) in t.iter().enumerate() {
-                    if i != 0 {
-                        write!(f, ", ")?;
-                    }
-                    write!(f, "{}: {}", k, v)?;
-                }
-                write!(f, "}}")
-            }
+            //     SexprKind::Vector(v) => {
+            //         write!(f, "[")?;
+            //         for (i, s) in v.iter().enumerate() {
+            //             if i != 0 {
+            //                 write!(f, " ")?;
+            //             }
+            //             write!(f, "{}", s)?;
+            //         }
+            //         write!(f, "]")
+            //     }
+            //     SexprKind::Table(t) => {
+            //         write!(f, "{{")?;
+            //         for (i, (k, v)) in t.iter().enumerate() {
+            //             if i != 0 {
+            //                 write!(f, ", ")?;
+            //             }
+            //             write!(f, "{}: {}", k, v)?;
+            //         }
+            //         write!(f, "}}")
+            //     }
         }
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Default)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Default)]
 pub struct SynList {
     list: List<Sexpr>,
     span: Span,
@@ -218,8 +236,8 @@ impl SynList {
         &self.list
     }
 
-    pub fn span(&self) -> &Span {
-        &self.span
+    pub fn span(&self) -> Span {
+        self.span
     }
 
     pub fn head(&self) -> Option<&Sexpr> {
@@ -237,7 +255,7 @@ impl Display for SynList {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Default)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Default)]
 pub struct DataList {
     list: List<Sexpr>,
     span: Span,
@@ -347,10 +365,10 @@ impl Display for AtomKind {
 
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub enum Lit {
-    Int(BigInt),
-    Float(Float),
-    Rational(BigRational),
-    Str(InternedString),
+    Int(Int),
+    Real(Real),
+    Rational(Rational),
+    String(InternedString),
     Bool(bool),
     Char(char),
 }
@@ -359,9 +377,9 @@ impl Display for Lit {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Lit::Int(i) => write!(f, "{}", i),
-            Lit::Float(fl) => write!(f, "{}", fl),
+            Lit::Real(r) => write!(f, "{}", r),
             Lit::Rational(r) => write!(f, "{}", r),
-            Lit::Str(s) => write!(f, "{}", s),
+            Lit::String(s) => write!(f, "{}", s),
             Lit::Bool(b) => write!(f, "{}", b),
             Lit::Char(c) => write!(f, "{}", c),
         }
