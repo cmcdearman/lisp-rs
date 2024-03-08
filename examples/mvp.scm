@@ -48,7 +48,17 @@
       (* n (fact (- n 1)))))
     
 ;; expands to:
-(def fact (fn (n) (if (= n 0) 1 (* n (fact (- n 1))))))
+(def fact
+  (fn (n)
+    (if (= n 0)
+        1
+        (* n (fact (- n 1))))))
+
+(defn ack (m n)
+  (cond
+    ((= m 0) (+ n 1))
+    ((= n 0) (ack (- m 1) 1))
+    (t (ack (- m 1) (ack m (- n 1))))))
 
 ;; variadic macros
 (defmacro while (test &body)
