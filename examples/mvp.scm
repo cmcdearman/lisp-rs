@@ -62,10 +62,17 @@
 
 ;; variadic macros
 (defmacro while (test &body)
-  `(let loop () (if ,test (begin ,@body (loop)))))
+  `(let ((loop (fn () (if ,test (begin ,@body (loop))))))))
 
 (while (< i 10)
   (println i)
   (def i (+ i 1)))
 
 ;; expands to:
+(let ((loop (fn () 
+              (if (< i 10) 
+                (begin 
+                  (println i) 
+                  (def i (+ i 1)) 
+                  (loop))))))
+  (loop))
