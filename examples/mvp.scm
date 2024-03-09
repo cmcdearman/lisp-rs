@@ -25,6 +25,10 @@
 (quote (1 2 3))
 '(1 2 3)
 
+;; quasiquote/unquote expressions
+(quasiquote (1 2 (unquote (+ 1 2)) 4))
+`(1 2 ,(+ 1 2) 4)
+
 ;; lambda expressions
 (fn (x) (+ x 1))
 
