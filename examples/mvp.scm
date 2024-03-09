@@ -46,8 +46,8 @@
 
 ;; We also have a special syntax for lists meant to be used only as data
 ;; Where you might ordinarily write `(1 2 ,(+ 1 2)) in most Lisps, you would write
-;; [1 2 (+ 1 2)] in this language. This is because the former would be interpreted
-;; as a function call, while the latter is interpreted as a list of data.
+;; [1 2 (+ 1 2)] in this language. More precisely, the brackets are used to denote
+;; a quasiquoted list where all elements are unquoted.
 [1 2 (+ 1 2)]
 
 ;; vectors
