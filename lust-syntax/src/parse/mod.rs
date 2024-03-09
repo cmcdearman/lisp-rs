@@ -76,7 +76,7 @@ fn parse_decl(sexpr: &Sexpr) -> ParseResult<Decl> {
         }
         _ => Err(ParseError::new("expected list".to_string(), sexpr.span())),
     }
-}
+}}
 
 fn parse_expr(sexpr: &Sexpr) -> ParseResult<Expr> {
     match sexpr.kind() {

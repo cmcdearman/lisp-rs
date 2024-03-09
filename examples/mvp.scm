@@ -1,8 +1,18 @@
 ;; this is a basic statically-typed lambda calculus extended with the following special forms:
-;; `def`, `let`, `if`, `quote`, `fn`, `and`, `or`, `begin`
+;; `def`
+;; `let`
+;; `if`
+;; `quote` 
+;; `quasiquote`
+;; `unquote`
+;; `unquote-splicing`
+;; `fn`
+;; `and`
+;; `or`
+;; `begin`
 ;; and a few built-in functions (e.g. `+`, `-`, `*`, `/`, `=`, `>`, `<`, `<=`, `>=`)
 
-;; def expressions
+;; def declarations
 (def x 42)
 
 ;; let expressions
@@ -13,6 +23,7 @@
 
 ;; quote expressions
 (quote (1 2 3))
+'(1 2 3)
 
 ;; lambda expressions
 (fn (x) (+ x 1))
@@ -53,6 +64,16 @@
     (if (= n 0)
         1
         (* n (fact (- n 1))))))
+
+(defmacro cond (&clauses)
+  (if (empty? clauses)
+      '()
+      (let ((clause (head clauses)))
+        (if (= (head clause) 'else)
+            `(begin ,@(tail clause))
+            `(if ,(tail clause) 
+               (begin ,@(tail clause)) 
+               (cond ,@(tail clauses)))))))
 
 (defn ack (m n)
   (cond
