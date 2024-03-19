@@ -13,25 +13,37 @@
     (println "1 is not equal to 2"))
 
 ;; let binding to function
-(let (fib n)
+(def (fib n)
   (let (loop n a b)
     (if (= n 0)
       a
       (loop (- n 1) b (+ a b)))
     (loop n 0 1)))
 
+(def (fib n)
+  (let (loop n a b)
+    (match n
+      ((0) a)
+      ((n) (loop (- n 1) b (+ a b))))
+    (loop n 0 1)))
+ 
 ;; let binding to function with expression body
 (let (gcd a b)
   (if (= b 0) 
       a
-      (gcd b (mod a b)))
+      (gcd b (% a b)))
   (gcd 10 5))
+
+(macro (if test then else)
+  `(match ',test
+    ('t ,then)
+    ('f ,else)))
 
 ;; type hints
 (let (gcd (a : Int) (b : Int) : Int)
   (if (= b 0) 
       a
-      (gcd b (mod a b)))
+      (gcd b (% a b)))
   (gcd 10 5))
 
 (let (map f xs)
@@ -63,10 +75,10 @@
 #[1 2 3]
 
 ;; sets
-#{ 1 2 3 }
+#{1 2 3}
 
 ;; maps
-{ :a 1 :b 2 }
+{:a 1 :b 2}
 
 ;; User defined types
 ;; product type
