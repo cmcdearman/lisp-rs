@@ -34,6 +34,11 @@
       (gcd b (% a b)))
   (gcd 10 5))
 
+(def (gcd a b)
+  (if (= b 0) 
+      a
+      (gcd b (% a b))))
+
 (macro (if test then else)
   `(match ',test
     ('t ,then)

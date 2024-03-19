@@ -1,7 +1,6 @@
 ;; this is a basic statically-typed lambda calculus extended with the following special forms:
 ;; `def`
 ;; `let`
-;; `if`
 ;; `quote` 
 ;; `quasiquote`
 ;; `unquote`
@@ -45,7 +44,7 @@
 (begin (println 1) (println 2) (println 3))
 
 ;; We also have a special syntax for lists meant to be used only as data
-;; Where you might ordinarily write `(1 2 ,(+ 1 2)) in most Lisps, you would write
+;; Where you might ordinarily write (list 1 2 (+ 1 2)) in most Lisps, you would write
 ;; [1 2 (+ 1 2)] in this language. More precisely, the brackets are used to denote
 ;; a quasiquoted list where all elements are unquoted.
 [1 2 (+ 1 2)]
@@ -54,36 +53,8 @@
 #[1 2 3]
 
 ;; macros
-(defmacro defn (name args body)
-  `(def ,name (fn ,args ,body)))
-
-(defn fact (n)
-  (if (= n 0)
-      1
-      (* n (fact (- n 1)))))
-    
-;; expands to:
-(def fact
-  (fn (n)
-    (if (= n 0)
-        1
-        (* n (fact (- n 1))))))
-
-(defmacro cond (&clauses)
-  (if (empty? clauses)
-      '()
-      (let ((clause (head clauses)))
-        (if (= (head clause) 'else)
-            `(begin ,@(tail clause))
-            `(if ,(tail clause) 
-               (begin ,@(tail clause)) 
-               (cond ,@(tail clauses)))))))
-
-(defn ack (m n)
-  (cond
-    ((= m 0) (+ n 1))
-    ((= n 0) (ack (- m 1) 1))
-    (t (ack (- m 1) (ack m (- n 1))))))
+(defmacro (loop &body)
+  `(let ((loop (fn () (begin ,@body (loop)))))))
 
 ;; variadic macros
 (defmacro while (test &body)
@@ -101,3 +72,59 @@
                   (def i (+ i 1)) 
                   (loop))))))
   (loop))
+
+(let (fib n)
+  (if (< n 2) 
+      n 
+      (+ (fib (- n 1)) (fib (- n 2)))))
+
+(let (fib n)
+  (if (< n 2) 
+      n 
+      (+ (fib (- n 1)) (fib (- n 2))))
+  (fib 10))
+
+(def x 1)
+
+(defn id (x) x)
+
+(module List
+  (record Nil)
+  (record (Pair head tail)))
+
+;; overload `display` for `List`
+(def (display xs)
+  (match xs
+    (Nil (println "[]"))
+    ((Pair x xs) (begin
+                   (print "[")
+                   (display x)
+                   (print ", ")
+                   (display xs)
+                   (print "]")))))
+
+(def (map f xs)
+  (match xs
+    (Nil Nil)
+    ((Pair x xs) (Pair (f x) (map f xs)))))
+
+;; `begin` expands to a sequence of `let` forms
+(macro (begin &body)
+  `(let ((,_)) (begin ,@(tail body)) ,_))
+
+(begin (println 1) (println 2) (println 3))
+
+;; expands to:
+(let ((_ (print 1))
+      (_ (print 2) (print 3))))
+
+
+(let (x 1 
+      y 2)
+  (println (+ x y)))
+
+(let ((fib n
+        (if (< n 2) 
+            n 
+            (+ (fib (- n 1)) (fib (- n 2))))))
+  (fib 10))
