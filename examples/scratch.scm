@@ -1,161 +1,130 @@
-;; let binding
-;; bindings are immutable by default
-(let a 1)
+;; this is a basic statically-typed lambda calculus extended with the following special forms:
+;; `def`
+;; `let`
+;; `quote` 
+;; `quasiquote`
+;; `unquote`
+;; `unquote-splicing`
+;; `fn`
+;; `and`
+;; `or`
+;; `begin`
+;; and a few built-in functions (e.g. `+`, `-`, `*`, `/`, `=`, `>`, `<`, `<=`, `>=`)
 
-;; mutable binding
-(let! a 1)
+;; def declarations
+(def x 42)
 
-;; if expression
-;; Every if expression must have a then and an else clause.
-;; The types of the then and else clause must be the same.
-(if (= 1 2) 
-    (println "1 is equal to 2")
-    (println "1 is not equal to 2"))
+;; let expressions
+(let ((x 1) (y 2)) (+ x y))
 
-;; let binding to function
-(let (fib n)
-  (let (loop n a b)
-    (if (= n 0)
-      a
-      (loop (- n 1) b (+ a b)))
-    (loop n 0 1)))
+;; if expressions
+(if (< 1 2) 1 2)
 
-;; let binding to function with expression body
-(let (gcd a b)
-  (if (= b 0) 
-      a
-      (gcd b (mod a b)))
-  (gcd 10 5))
-
-;; type hints
-(let (gcd (a : Int) (b : Int) : Int)
-  (if (= b 0) 
-      a
-      (gcd b (mod a b)))
-  (gcd 10 5))
-
-(let (map f xs)
-  (if (empty? xs) ()
-      (pair (f (head xs)) (map f (tail xs)))))
-
-(let (fact n)
-  (if (= n 0)
-      1
-      (* n (fact (- n 1)))))
-
-(let (ack m n)
-  (cond ((= m 0) (+ n 1))
-        ((= n 0) (ack (- m 1) 1))
-        (t (ack (- m 1) (ack m (- n 1))))))
-
-;; lists
+;; quote expressions
+(quote (1 2 3))
 '(1 2 3)
-[1 2 3]
 
-;; quasiquote/unquote
-`(1 2 ,(+ 1 2))
+;; quasiquote/unquote expressions
+(quasiquote (1 2 (unquote (+ 1 2)) 4))
+`(1 2 ,(+ 1 2) 4)
+
+;; lambda expressions
+(fn (x) (+ x 1))
+
+;; and expressions (short-circuiting)
+(and (< 1 2) (> 2 1))
+
+;; or expressions (short-circuiting)
+(or (< 1 2) (> 2 1))
+
+;; not expressions
+(not (< 1 2))
+
+;; begin expressions
+(begin (println 1) (println 2) (println 3))
+
+;; We also have a special syntax for lists meant to be used only as data
+;; Where you might ordinarily write (list 1 2 (+ 1 2)) in most Lisps, you would write
+;; [1 2 (+ 1 2)] in this language. More precisely, the brackets are used to denote
+;; a quasiquoted list where all elements are unquoted.
 [1 2 (+ 1 2)]
-
-;; quasiquote/unquote-splicing
-`(1 2 ,@(list 3 4))
 
 ;; vectors
 #[1 2 3]
 
-;; sets
-#{ 1 2 3 }
-
-;; maps
-{ :a 1 :b 2 }
-
-;; User defined types
-;; product type
-(type (Point 
-  (x : Int) 
-  (y : Int)))
-
-;; product type with type parameters
-(type (Pair T 
-  (head : T) 
-  (tail : (Pair T))))
-
-;; sum type
-(type (Shape
-  (Circle (radius : Int))
-  (Rectangle (width : Int) (height : Int))
-  (Triangle (base : Int) (height : Int))))
-
-;; sum type with type parameters
-(type (Option T (Some T) (None)))
-
-(type (Result T E 
-  (Ok T) 
-  (Err E)))
-
-;; sum type with complex type parameters
-(type (List T
-  (Pair (head : T) (tail : (List T)))
-  (Empty)))
-
-;; modules
-(module List
-  (type List T
-    (Pair (head : T) (tail : (List T)))
-    (Empty))
-
-  (let empty (Empty))
-
-  (let (empty? xs)
-    (match xs
-      (Empty true)
-      (Pair false)))
-
-  (let (map f xs)
-    (if (empty? xs) ()
-        (pair (f (head xs)) (map f (tail xs)))))
-  
-  (let (foldl f acc xs) 
-    (if (empty? xs)
-        acc
-        (foldl f (f acc (head xs)) (tail xs))))
-  
-  (let (foldr f acc xs)
-    (if (empty? xs)
-        acc
-        (f (head xs) (foldr f acc (tail xs)))))
-
-  (let (filter f xs)
-    (if (empty? xs)
-        ()
-        (if (f (head xs))
-            (pair (head xs) (filter f (tail xs)))
-            (filter f (tail xs)))))
-
-  (let (reverse xs)
-    (foldl (lambda (acc x) (pair x acc)) () xs)))
-
-;; module usage
-(List.map (lambda (x) (* x x)) [1 2 3])
-
 ;; macros
-(macro (cond clauses)
-  (if (empty? clauses)
-      ()
-      (let (clause (head clauses))
-        (if (= (head clause) 'else)
-            (list 'begin (tail clause))
-            (list 'if (head clause) (list 'begin (tail clause)) (cond (tail clauses)))))))
+(defmacro (loop &body)
+  `(let ((loop (fn () (begin ,@body (loop)))))))
 
-(macro (when test body)
-  `(if ,test (begin ,@body) ()))
+;; variadic macros
+(defmacro while (test &body)
+  `(let ((loop (fn () (if ,test (begin ,@body (loop))))))))
 
-(macro (while test body)
-  `(let (loop)
-     (if ,test
-         (begin ,@body (loop))
-         ())))
-
-;; example uses
 (while (< i 10)
   (println i)
-  (set! i (+ i 1)))
+  (def i (+ i 1)))
+
+;; expands to:
+(let ((loop (fn () 
+              (if (< i 10) 
+                (begin 
+                  (println i) 
+                  (def i (+ i 1)) 
+                  (loop))))))
+  (loop))
+
+(let (fib n)
+  (if (< n 2) 
+      n 
+      (+ (fib (- n 1)) (fib (- n 2)))))
+
+(let (fib n)
+  (if (< n 2) 
+      n 
+      (+ (fib (- n 1)) (fib (- n 2))))
+  (fib 10))
+
+(def x 1)
+
+(defn id (x) x)
+
+(module List
+  (record Nil)
+  (record (Pair head tail)))
+
+;; overload `display` for `List`
+(def (display xs)
+  (match xs
+    (Nil (println "[]"))
+    ((Pair x xs) (begin
+                   (print "[")
+                   (display x)
+                   (print ", ")
+                   (display xs)
+                   (print "]")))))
+
+(def (map f xs)
+  (match xs
+    (Nil Nil)
+    ((Pair x xs) (Pair (f x) (map f xs)))))
+
+;; `begin` expands to a sequence of `let` forms
+(macro (begin &body)
+  `(let ((,_)) (begin ,@(tail body)) ,_))
+
+(begin (println 1) (println 2) (println 3))
+
+;; expands to:
+(let ((_ (print 1))
+      (_ (print 2) (print 3))))
+
+
+(let ((x 1) 
+      (y 2))
+  (println (+ x y)))
+
+(let ((fib n
+        (if (< n 2) 
+            n 
+            (+ (fib (- n 1)) (fib (- n 2))))))
+  (fib 10))

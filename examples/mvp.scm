@@ -1,24 +1,22 @@
-;; this is a basic statically-typed lambda calculus extended with the following special forms:
-;; `def`
-;; `let`
-;; `quote` 
-;; `quasiquote`
-;; `unquote`
-;; `unquote-splicing`
-;; `fn`
-;; `and`
-;; `or`
-;; `begin`
-;; and a few built-in functions (e.g. `+`, `-`, `*`, `/`, `=`, `>`, `<`, `<=`, `>=`)
+;; Lust is a simple Lisp-like language based on the idea of term rewriting.
+;; It is a functional language with a simple syntax and semantics.
+;; Terms are rewritten using pattern matching and substitution.
+;; The language is dynamically typed and has first-class functions.
 
 ;; def declarations
 (def x 42)
 
+;; def declarations with pattern matching
+(def (fib 0) 0)
+(def (fib 1) 1)
+(def (fib n) (+ (fib (- n 1)) (fib (- n 2))))
+
+;; You might think `(fib 0)` would be syntax sugar for binding `n` to `0` in the `fib` function.
+;; However, it is actually binding the whole term `(fib 0)` to `0` in the `fib` function.
+;; This is equivalent to telling the runtime that it can replace `(fib 0)` with `0`.
+
 ;; let expressions
 (let ((x 1) (y 2)) (+ x y))
-
-;; if expressions
-(if (< 1 2) 1 2)
 
 ;; quote expressions
 (quote (1 2 3))
@@ -30,6 +28,8 @@
 
 ;; lambda expressions
 (fn (x) (+ x 1))
+;; lambda call
+((fn (x) (+ x 1)) 2)
 
 ;; and expressions (short-circuiting)
 (and (< 1 2) (> 2 1))
@@ -40,91 +40,26 @@
 ;; not expressions
 (not (< 1 2))
 
-;; begin expressions
-(begin (println 1) (println 2) (println 3))
+;; list expressions
+[1 2 (+ 1 2) 4]
 
-;; We also have a special syntax for lists meant to be used only as data
-;; Where you might ordinarily write (list 1 2 (+ 1 2)) in most Lisps, you would write
-;; [1 2 (+ 1 2)] in this language. More precisely, the brackets are used to denote
-;; a quasiquoted list where all elements are unquoted.
-[1 2 (+ 1 2)]
+;; maps
+{'a 1 'b 2}
 
-;; vectors
-#[1 2 3]
+;; map update
+(Map.insert {'a 1 'b 2} 'a 3)
 
-;; macros
-(defmacro (loop &body)
-  `(let ((loop (fn () (begin ,@body (loop)))))))
+;; map access
+(Map.get {'a 1 'b 2} 'a)
 
-;; variadic macros
-(defmacro while (test &body)
-  `(let ((loop (fn () (if ,test (begin ,@body (loop))))))))
+;; map remove
+(Map.remove {'a 1 'b 2} 'a)
 
-(while (< i 10)
-  (println i)
-  (def i (+ i 1)))
+;; sets
+#{1 2 3}
 
-;; expands to:
-(let ((loop (fn () 
-              (if (< i 10) 
-                (begin 
-                  (println i) 
-                  (def i (+ i 1)) 
-                  (loop))))))
-  (loop))
+;; module declarations
+(module Vector
+  (macro (new) `{:data []})
+  (macro (new &xs) `{:data ,@xs}))
 
-(let (fib n)
-  (if (< n 2) 
-      n 
-      (+ (fib (- n 1)) (fib (- n 2)))))
-
-(let (fib n)
-  (if (< n 2) 
-      n 
-      (+ (fib (- n 1)) (fib (- n 2))))
-  (fib 10))
-
-(def x 1)
-
-(defn id (x) x)
-
-(module List
-  (record Nil)
-  (record (Pair head tail)))
-
-;; overload `display` for `List`
-(def (display xs)
-  (match xs
-    (Nil (println "[]"))
-    ((Pair x xs) (begin
-                   (print "[")
-                   (display x)
-                   (print ", ")
-                   (display xs)
-                   (print "]")))))
-
-(def (map f xs)
-  (match xs
-    (Nil Nil)
-    ((Pair x xs) (Pair (f x) (map f xs)))))
-
-;; `begin` expands to a sequence of `let` forms
-(macro (begin &body)
-  `(let ((,_)) (begin ,@(tail body)) ,_))
-
-(begin (println 1) (println 2) (println 3))
-
-;; expands to:
-(let ((_ (print 1))
-      (_ (print 2) (print 3))))
-
-
-(let (x 1 
-      y 2)
-  (println (+ x y)))
-
-(let ((fib n
-        (if (< n 2) 
-            n 
-            (+ (fib (- n 1)) (fib (- n 2))))))
-  (fib 10))
