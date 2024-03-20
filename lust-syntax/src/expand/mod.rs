@@ -1,8 +1,8 @@
 use self::{
     r#macro::{Macro, MacroCall},
-    store::Store,
+    store::MacroStore,
 };
-use crate::read::sexpr::{Atom, AtomKind, Root, Sexpr, SexprKind, SynList};
+use crate::read::sexpr::{Atom, AtomKind, Root, Sexpr, SexprKind};
 use lust_utils::{intern::InternedString, list::List, span::Span};
 use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
@@ -49,7 +49,7 @@ fn extract_macro(list: &List<Sexpr>, span: Span) -> Macro {
     Macro::new(name, params, body, span)
 }
 
-fn collect_macros(mut store: Store, root: &Root) {
+fn collect_macros(mut store: MacroStore, root: &Root) {
     for sexpr in root.sexprs() {
         let kind = match sexpr.kind() {
             SexprKind::SynList(list) => list,
@@ -80,12 +80,12 @@ fn collect_macros(mut store: Store, root: &Root) {
             None => panic!("macro must have a body"),
         };
 
-        let m = extract_macro(tail, *kind.span());
+        let m = extract_macro(tail, kind.span());
         store.insert(m);
     }
 }
 
-pub fn expand_macros(store: Store, root: &Root) -> Root {
+pub fn expand_macros(store: MacroStore, root: &Root) -> Root {
     collect_macros(store.clone(), root);
     let mut sexprs = vec![];
     for sexpr in root.sexprs() {

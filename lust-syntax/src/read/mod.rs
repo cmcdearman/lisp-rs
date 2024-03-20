@@ -4,7 +4,7 @@ pub mod token;
 use std::vec;
 
 use self::{
-    sexpr::{Atom, AtomKind, DataList, Lit, Root, Sexpr, SexprKind, SynList},
+    sexpr::{Atom, AtomKind, Lit, Root, Sexpr, SexprKind},
     token::Token,
 };
 use chumsky::{
@@ -86,40 +86,48 @@ fn sexpr_reader<'a, I: ValueInput<'a, Token = Token, Span = Span>>(
             .map_with_span(Sexpr::new)
             .boxed();
 
-        let syn_list = sexpr
+        let list = sexpr
             .clone()
             .repeated()
             .at_least(1)
             .collect::<Vec<_>>()
             .map(List::from)
-            .map_with_span(SynList::new)
-            .map(SexprKind::SynList)
+            .map(SexprKind::List)
             .map_with_span(Sexpr::new)
             .delimited_by(just(Token::LParen), just(Token::RParen));
 
-        let data_list = sexpr
+        let list_lit = sexpr
             .clone()
             .repeated()
             .at_least(1)
             .collect::<Vec<_>>()
             .map(List::from)
-            .map_with_span(DataList::new)
+            .map(|list| {
+                list.push_front(Sexpr::new(
+                    SexprKind::Atom(Atom::new(
+                        AtomKind::Sym(InternedString::from("list")),
+                        list.span(),
+                    )),
+                    list.span(),
+                ))
+            })
+            .map_with_span(List::new)
             .map(SexprKind::DataList)
             .map_with_span(Sexpr::new)
             .delimited_by(just(Token::LBrack), just(Token::RBrack));
 
         let empty = just(Token::LBrack)
             .then(just(Token::RBrack))
-            .map_with_span(|_, span| SexprKind::DataList(DataList::new(List::Empty, span)))
+            .map_with_span(|_, span| SexprKind::DataList(List::new(List::Empty, span)))
             .map_with_span(Sexpr::new);
 
-        // let vector = sexpr
-        //     .clone()
-        //     .repeated()
-        //     .collect()
-        //     .map(SexprKind::Vector)
-        //     .map_with_span(Sexpr::new)
-        //     .delimited_by(just(Token::HashLBrack), just(Token::RBrack));
+        let vector = sexpr
+            .clone()
+            .repeated()
+            .collect()
+            .map(SexprKind::Vector)
+            .map_with_span(Sexpr::new)
+            .delimited_by(just(Token::HashLBrack), just(Token::RBrack));
 
         // quote = "'" sexpr
         let quote = just(Token::Quote)
@@ -135,7 +143,7 @@ fn sexpr_reader<'a, I: ValueInput<'a, Token = Token, Span = Span>>(
                     )),
                     span,
                 ));
-                SexprKind::SynList(SynList::new(list, span))
+                SexprKind::List(list)
             })
             .map_with_span(Sexpr::new);
 
@@ -152,7 +160,7 @@ fn sexpr_reader<'a, I: ValueInput<'a, Token = Token, Span = Span>>(
                     )),
                     span,
                 ));
-                SexprKind::SynList(SynList::new(list, span))
+                SexprKind::List(list)
             })
             .map_with_span(Sexpr::new);
 
@@ -169,7 +177,7 @@ fn sexpr_reader<'a, I: ValueInput<'a, Token = Token, Span = Span>>(
                     )),
                     span,
                 ));
-                SexprKind::SynList(SynList::new(list, span))
+                SexprKind::SynList(list)
             })
             .map_with_span(Sexpr::new);
 
@@ -186,7 +194,7 @@ fn sexpr_reader<'a, I: ValueInput<'a, Token = Token, Span = Span>>(
                     )),
                     span,
                 ));
-                SexprKind::SynList(SynList::new(list, span))
+                SexprKind::SynList(list)
             })
             .map_with_span(Sexpr::new);
 
@@ -206,16 +214,15 @@ fn sexpr_reader<'a, I: ValueInput<'a, Token = Token, Span = Span>>(
                     )),
                     span,
                 ));
-                SexprKind::SynList(SynList::new(list, span))
+                SexprKind::SynList(list)
             })
             .map_with_span(Sexpr::new)
             .boxed();
 
         variadic
-            .or(syn_list)
-            .or(data_list)
+            .or(list)
             .or(empty)
-            // .or(vector)
+            .or(vector)
             .or(quote)
             .or(quasiquote)
             .or(unquote)

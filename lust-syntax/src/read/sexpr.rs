@@ -4,7 +4,7 @@ use lust_utils::{
     num::{Int, Rational, Real},
     span::Span,
 };
-use std::fmt::Display;
+use std::{collections::HashMap, fmt::Display};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Root {
@@ -59,7 +59,7 @@ impl Sexpr {
 
     pub fn as_special_form(&self) -> Option<&str> {
         match self.kind() {
-            SexprKind::SynList(l) => match l.head() {
+            SexprKind::List(l) => match l.head() {
                 Some(head) => match head.kind() {
                     SexprKind::Atom(a) => match a.kind() {
                         AtomKind::Sym(s) => match s.as_ref() {
@@ -85,26 +85,12 @@ impl Sexpr {
         }
     }
 
-    pub fn as_syn_list(&self) -> Option<&SynList> {
+    pub fn as_list(&self) -> Option<&List<Sexpr>> {
         match self.kind() {
-            SexprKind::SynList(l) => Some(l),
+            SexprKind::List(l) => Some(l),
             _ => None,
         }
     }
-
-    pub fn as_data_list(&self) -> Option<&DataList> {
-        match self.kind() {
-            SexprKind::DataList(l) => Some(l),
-            _ => None,
-        }
-    }
-
-    // pub fn as_vector(&self) -> Option<&Vec<Sexpr>> {
-    //     match self.kind() {
-    //         SexprKind::Vector(v) => Some(v),
-    //         _ => None,
-    //     }
-    // }
 
     pub fn replace(&mut self, kind: SexprKind) {
         self.kind = Box::new(kind);
@@ -121,7 +107,7 @@ impl Sexpr {
                 }
                 _ => (),
             },
-            SexprKind::SynList(l) => {
+            SexprKind::List(l) => {
                 let mut new_vec = vec![];
                 for s in l.list().iter() {
                     let mut new_s = s.clone();
@@ -129,43 +115,8 @@ impl Sexpr {
                     new_vec.push(new_s);
                 }
                 let new_list = List::from(new_vec);
-                *self = Sexpr::new(
-                    SexprKind::SynList(SynList::new(new_list, l.span())),
-                    self.span(),
-                );
+                *self = Sexpr::new(SexprKind::List(new_list), self.span());
             }
-            SexprKind::DataList(l) => {
-                let mut new_vec = vec![];
-                for s in l.list().iter() {
-                    let mut new_s = s.clone();
-                    new_s.replace_sym(sym.clone(), arg.clone());
-                    new_vec.push(new_s);
-                }
-                let new_list = List::from(new_vec);
-                *self = Sexpr::new(
-                    SexprKind::DataList(DataList::new(new_list, *l.span())),
-                    self.span(),
-                );
-            } // SexprKind::Vector(v) => {
-              //     let mut new_vec = vec![];
-              //     for s in v.iter() {
-              //         let mut new_s = s.clone();
-              //         new_s.replace_sym(sym.clone(), arg.clone());
-              //         new_vec.push(new_s);
-              //     }
-              //     *self = Sexpr::new(SexprKind::Vector(new_vec), *self.span());
-              // }
-              // SexprKind::Table(t) => {
-              //     let mut new_table = BTreeMap::new();
-              //     for (k, v) in t.iter() {
-              //         let mut new_k = k.clone();
-              //         let mut new_v = v.clone();
-              //         new_k.replace_sym(sym.clone(), arg.clone());
-              //         new_v.replace_sym(sym.clone(), arg.clone());
-              //         new_table.insert(new_k, new_v);
-              //     }
-              //     *self = Sexpr::new(SexprKind::Table(new_table), *self.span());
-              // }
         }
     }
 }
@@ -178,17 +129,10 @@ impl Display for Sexpr {
 
 impl Eq for Sexpr {}
 
-// impl Ord for Sexpr {
-//     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-//         self.kind.cmp(&other.kind)
-//     }
-// }
-
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub enum SexprKind {
     Atom(Atom),
-    SynList(SynList),
-    DataList(DataList),
+    List(List<Sexpr>),
 }
 
 impl Display for SexprKind {
@@ -197,102 +141,27 @@ impl Display for SexprKind {
             SexprKind::Atom(a) => write!(f, "{}", a),
             SexprKind::SynList(l) => write!(f, "{}", l),
             SexprKind::DataList(l) => write!(f, "{}", l),
-            //     SexprKind::Vector(v) => {
-            //         write!(f, "[")?;
-            //         for (i, s) in v.iter().enumerate() {
-            //             if i != 0 {
-            //                 write!(f, " ")?;
-            //             }
-            //             write!(f, "{}", s)?;
-            //         }
-            //         write!(f, "]")
-            //     }
-            //     SexprKind::Table(t) => {
-            //         write!(f, "{{")?;
-            //         for (i, (k, v)) in t.iter().enumerate() {
-            //             if i != 0 {
-            //                 write!(f, ", ")?;
-            //             }
-            //             write!(f, "{}: {}", k, v)?;
-            //         }
-            //         write!(f, "}}")
-            //     }
-        }
-    }
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Default)]
-pub struct SynList {
-    list: List<Sexpr>,
-    span: Span,
-}
-
-impl SynList {
-    pub fn new(list: List<Sexpr>, span: Span) -> Self {
-        Self { list, span }
-    }
-
-    pub fn list(&self) -> &List<Sexpr> {
-        &self.list
-    }
-
-    pub fn span(&self) -> Span {
-        self.span
-    }
-
-    pub fn head(&self) -> Option<&Sexpr> {
-        self.list.head()
-    }
-
-    pub fn tail(&self) -> Option<&List<Sexpr>> {
-        self.list.tail()
-    }
-}
-
-impl Display for SynList {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.list)
-    }
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Default)]
-pub struct DataList {
-    list: List<Sexpr>,
-    span: Span,
-}
-
-impl DataList {
-    pub fn new(list: List<Sexpr>, span: Span) -> Self {
-        Self { list, span }
-    }
-
-    pub fn list(&self) -> &List<Sexpr> {
-        &self.list
-    }
-
-    pub fn span(&self) -> &Span {
-        &self.span
-    }
-
-    pub fn head(&self) -> Option<&Sexpr> {
-        self.list.head()
-    }
-
-    pub fn tail(&self) -> Option<&List<Sexpr>> {
-        self.list.tail()
-    }
-}
-
-impl Display for DataList {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "[")?;
-        for (i, s) in self.list.iter().enumerate() {
-            if i != 0 {
-                write!(f, " ")?;
+            SexprKind::Vector(v) => {
+                write!(f, "[")?;
+                for (i, s) in v.iter().enumerate() {
+                    if i != 0 {
+                        write!(f, " ")?;
+                    }
+                    write!(f, "{}", s)?;
+                }
+                write!(f, "]")
             }
-            write!(f, "{}", s)?;
+            SexprKind::Table(t) => {
+                write!(f, "{{")?;
+                for (i, (k, v)) in t.iter().enumerate() {
+                    if i != 0 {
+                        write!(f, ", ")?;
+                    }
+                    write!(f, "{}: {}", k, v)?;
+                }
+                write!(f, "}}")
+            }
         }
-        write!(f, "]")
     }
 }
 
@@ -366,8 +235,10 @@ impl Display for AtomKind {
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub enum Lit {
     Int(Int),
+    BigInt(BigInt),
     Real(Real),
     Rational(Rational),
+    BigRatio(BigRational),
     String(InternedString),
     Bool(bool),
     Char(char),
@@ -377,8 +248,10 @@ impl Display for Lit {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Lit::Int(i) => write!(f, "{}", i),
+            Lit::BigInt(i) => write!(f, "{}", i),
             Lit::Real(r) => write!(f, "{}", r),
             Lit::Rational(r) => write!(f, "{}", r),
+            Lit::BigRatio(r) => write!(f, "{}", r),
             Lit::String(s) => write!(f, "{}", s),
             Lit::Bool(b) => write!(f, "{}", b),
             Lit::Char(c) => write!(f, "{}", c),

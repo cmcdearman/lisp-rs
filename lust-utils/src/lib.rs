@@ -1,4 +1,3 @@
-pub mod btree;
 pub mod intern;
 pub mod list;
 pub mod num;

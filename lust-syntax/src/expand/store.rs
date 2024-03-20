@@ -3,11 +3,11 @@ use lust_utils::intern::InternedString;
 use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
 #[derive(Debug, Clone)]
-pub struct Store {
+pub struct MacroStore {
     macros: Rc<RefCell<HashMap<InternedString, Macro>>>,
 }
 
-impl Store {
+impl MacroStore {
     pub fn new() -> Self {
         Self {
             macros: Rc::new(RefCell::new(HashMap::new())),
