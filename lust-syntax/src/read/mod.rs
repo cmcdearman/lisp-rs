@@ -102,30 +102,24 @@ fn sexpr_reader<'a, I: ValueInput<'a, Token = Token, Span = Span>>(
             .at_least(1)
             .collect::<Vec<_>>()
             .map(List::from)
-            .map(|list| {
-                list.push_front(Sexpr::new(
+            .map_with_span(|list, span| {
+                SexprKind::List(list.push_front(Sexpr::new(
                     SexprKind::Atom(Atom::new(
                         AtomKind::Sym(InternedString::from("list")),
-                        list.span(),
+
                     )),
-                    list.span(),
-                ))
+                    span,
+                )))
             })
-            .map_with_span(List::new)
-            .map(SexprKind::DataList)
             .map_with_span(Sexpr::new)
             .delimited_by(just(Token::LBrack), just(Token::RBrack));
-
-        let empty = just(Token::LBrack)
-            .then(just(Token::RBrack))
-            .map_with_span(|_, span| SexprKind::DataList(List::new(List::Empty, span)))
-            .map_with_span(Sexpr::new);
 
         let vector = sexpr
             .clone()
             .repeated()
-            .collect()
-            .map(SexprKind::Vector)
+            .collect::<Vec<_>>()
+            .map(List::from)
+            .map(SexprKind::List)
             .map_with_span(Sexpr::new)
             .delimited_by(just(Token::HashLBrack), just(Token::RBrack));
 

@@ -1,9 +1,10 @@
 use lust_utils::{
     intern::InternedString,
     list::List,
-    num::{Int, Rational, Real},
+    num::{BigInt, Int, Rational, Real},
     span::Span,
 };
+use num_rational::BigRational;
 use std::{collections::HashMap, fmt::Display};
 
 #[derive(Debug, Clone, PartialEq)]
@@ -109,7 +110,7 @@ impl Sexpr {
             },
             SexprKind::List(l) => {
                 let mut new_vec = vec![];
-                for s in l.list().iter() {
+                for s in l.iter() {
                     let mut new_s = s.clone();
                     new_s.replace_sym(sym.clone(), arg.clone());
                     new_vec.push(new_s);
@@ -139,28 +140,7 @@ impl Display for SexprKind {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             SexprKind::Atom(a) => write!(f, "{}", a),
-            SexprKind::SynList(l) => write!(f, "{}", l),
-            SexprKind::DataList(l) => write!(f, "{}", l),
-            SexprKind::Vector(v) => {
-                write!(f, "[")?;
-                for (i, s) in v.iter().enumerate() {
-                    if i != 0 {
-                        write!(f, " ")?;
-                    }
-                    write!(f, "{}", s)?;
-                }
-                write!(f, "]")
-            }
-            SexprKind::Table(t) => {
-                write!(f, "{{")?;
-                for (i, (k, v)) in t.iter().enumerate() {
-                    if i != 0 {
-                        write!(f, ", ")?;
-                    }
-                    write!(f, "{}: {}", k, v)?;
-                }
-                write!(f, "}}")
-            }
+            SexprKind::List(l) => write!(f, "{}", l),
         }
     }
 }
