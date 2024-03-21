@@ -44,16 +44,22 @@
 [1 2 (+ 1 2) 4]
 
 ;; maps
-{'a 1 'b 2}
+{:a 1 :b 2}
+
+;; Maps use keyword symbols as keys. Keywords are symbols 
+;; that evaluate to themselves they are used to represent 
+;; named arguments and are often used as keys in maps.
+:foo
+; => :foo
 
 ;; map update
-(Map.insert {'a 1 'b 2} 'a 3)
+(Map.insert {:o 1 :b 2} :a 3)
 
 ;; map access
-(Map.get {'a 1 'b 2} 'a)
+(Map.get {:a 1 :b 2} :a)
 
 ;; map remove
-(Map.remove {'a 1 'b 2} 'a)
+(Map.remove {:a 1 :b 2} :a)
 
 ;; sets
 #{1 2 3}
