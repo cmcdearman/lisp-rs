@@ -25,6 +25,13 @@
 (def (fib 1) 1)
 (def (fib n) (+ (fib (- n 1)) (fib (- n 2))))
 
+;; this could also be done with a `match` expression
+(def (fib n)
+  (match n
+    (0 0)
+    (1 1)
+    (n (+ (fib (- n 1)) (fib (- n 2))))))
+
 ;; call the `fib` function
 (fib 10)
 
@@ -89,7 +96,7 @@
 ;; Macros are rules for transforming terms at compile time.
 ;; They are used to define new syntax and to optimize code.
 ;; Macros are defined using the `macro` special form.
-(macro (if cond then else) `(match ,cond :t ,then :f ,else))
+(macro (if cond then else) `(match ,cond (#t ,then) (#f ,else)))
 
 ;; module declarations
 (module Vector
