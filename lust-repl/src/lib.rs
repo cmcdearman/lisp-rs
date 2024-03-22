@@ -1,8 +1,4 @@
-use lust_syntax::{
-    expand::{expand_macros, store::Store},
-    parse::parse,
-    read::read,
-};
+use lust_syntax::read::read;
 use std::{
     cell::RefCell,
     collections::HashMap,
@@ -14,7 +10,7 @@ pub fn repl() {
     let mut src = String::new();
     // let mut compiler = Compiler::default();
     // let mut vm = Interpreter::default();
-    let store = Store::new();
+    // let store = Store::new();
     loop {
         print!("> ");
         io::stdout().flush().unwrap();
@@ -45,13 +41,13 @@ pub fn repl() {
         // }
         // let expanded = expand_macros(store.clone(), &root);
         // println!("expanded: {:#?}", expanded);
-        if let (Some(ast), errors) = parse(root) {
-            println!("ast: {:#?}", ast);
-            if !errors.is_empty() {
-                println!("errors: {:?}", errors);
-                continue;
-            }
-        }
+        // if let (Some(ast), errors) = parse(root) {
+        //     println!("ast: {:#?}", ast);
+        //     if !errors.is_empty() {
+        //         println!("errors: {:?}", errors);
+        //         continue;
+        //     }
+        // }
         io::stdout().flush().unwrap();
         src.clear();
     }

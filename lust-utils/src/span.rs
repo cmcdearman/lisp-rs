@@ -57,6 +57,15 @@ impl From<Range<usize>> for Span {
     }
 }
 
+impl From<Range<u32>> for Span {
+    fn from(range: Range<u32>) -> Self {
+        Self {
+            start: range.start,
+            end: range.end,
+        }
+    }
+}
+
 impl chumsky::span::Span for Span {
     type Context = ();
 

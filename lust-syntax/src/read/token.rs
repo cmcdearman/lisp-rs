@@ -31,6 +31,8 @@ pub enum Token {
         callback = |lex| lex.slice().parse::<Rational>().ok()
     )]
     Rational(Rational),
+    #[regex(r"#t|#f", |lex| lex.slice() == "#t")]
+    Bool(bool),
     #[regex(r#""("[^"\\]*(?:\\.[^"\\]*)*")""#, |lex| InternedString::from(lex.slice()))]
     String(InternedString),
 
@@ -78,6 +80,7 @@ impl Display for Token {
             Int(n) => write!(f, "Int({})", n),
             Real(n) => write!(f, "Float({})", n),
             Rational(n) => write!(f, "Rational({})", n),
+            Bool(b) => write!(f, "Bool({})", b),
             String(s) => write!(f, "String({})", s),
             LParen => write!(f, "("),
             RParen => write!(f, ")"),

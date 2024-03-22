@@ -102,14 +102,15 @@ fn sexpr_reader<'a, I: ValueInput<'a, Token = Token, Span = Span>>(
             .at_least(1)
             .collect::<Vec<_>>()
             .map(List::from)
-            .map_with_span(|list, span| {
-                SexprKind::List(list.push_front(Sexpr::new(
+            .map_with_span(|mut list, span: Span| {
+                list.push_front(Sexpr::new(
                     SexprKind::Atom(Atom::new(
                         AtomKind::Sym(InternedString::from("list")),
-
+                        Span::from(span.start()..span.start()),
                     )),
                     span,
-                )))
+                ));
+                SexprKind::List(list)
             })
             .map_with_span(Sexpr::new)
             .delimited_by(just(Token::LBrack), just(Token::RBrack));
@@ -171,7 +172,7 @@ fn sexpr_reader<'a, I: ValueInput<'a, Token = Token, Span = Span>>(
                     )),
                     span,
                 ));
-                SexprKind::SynList(list)
+                SexprKind::List(list)
             })
             .map_with_span(Sexpr::new);
 
@@ -188,7 +189,7 @@ fn sexpr_reader<'a, I: ValueInput<'a, Token = Token, Span = Span>>(
                     )),
                     span,
                 ));
-                SexprKind::SynList(list)
+                SexprKind::List(list)
             })
             .map_with_span(Sexpr::new);
 
@@ -202,20 +203,17 @@ fn sexpr_reader<'a, I: ValueInput<'a, Token = Token, Span = Span>>(
                     span,
                 ));
                 list.push_front(Sexpr::new(
-                    SexprKind::Atom(Atom::new(
-                        AtomKind::Sym(InternedString::from("vargs")),
-                        span,
-                    )),
+                    SexprKind::Atom(Atom::new(AtomKind::Sym(InternedString::from("varg")), span)),
                     span,
                 ));
-                SexprKind::SynList(list)
+                SexprKind::List(list)
             })
             .map_with_span(Sexpr::new)
             .boxed();
 
         variadic
             .or(list)
-            .or(empty)
+            .or(list_lit)
             .or(vector)
             .or(quote)
             .or(quasiquote)
@@ -238,6 +236,7 @@ fn lit_reader<'a, I: ValueInput<'a, Token = Token, Span = Span>>(
         Token::Int(n) => Lit::Int(n),
         Token::Real(n) => Lit::Real(n),
         Token::Rational(n) => Lit::Rational(n),
+        Token::Bool(b) => Lit::Bool(b),
         Token::String(s) => Lit::String(s),
     }
 }
