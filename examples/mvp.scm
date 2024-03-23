@@ -75,9 +75,10 @@
 ;; maps
 {:a 1 :b 2}
 
-;; Maps use keyword symbols as keys. Keywords are symbols 
-;; that evaluate to themselves they are used to represent 
-;; named arguments and are often used as keys in maps.
+;; Maps that use keyword symbols as keys are called records. 
+;; Keywords are symbols that evaluate to themselves they
+;; are used to represent named arguments and are often 
+;; used as keys in maps.
 :foo
 ; => :foo
 
@@ -96,10 +97,18 @@
 ;; Macros are rules for transforming terms at compile time.
 ;; They are used to define new syntax and to optimize code.
 ;; Macros are defined using the `macro` special form.
-(macro (if cond then else) `(match ,cond (#t ,then) (#f ,else)))
+(macro (if cond then else) 
+  `(match ,cond 
+     (#t ,then) 
+     (#f ,else)))
 
 ;; module declarations
 (module Vector
-  (macro (new) `{:data []})
-  (macro (new &xs) `{:data ,@xs}))
+  (def (new) {:data []})
+  (def (new &xs) {:data xs}))
 
+(def (fib n) 
+  (match n
+    (0 0)
+    (1 1)
+    (n (+ (fib (- n 1)) (fib (- n 2))))))
