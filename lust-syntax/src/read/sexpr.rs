@@ -1,10 +1,9 @@
 use lust_utils::{
     intern::InternedString,
     list::List,
-    num::{BigInt, Int, Rational, Real},
+    num::{BigInt, BigRational, Int, Rational, Real},
     span::Span,
 };
-use num_rational::BigRational;
 use std::{collections::HashMap, fmt::Display};
 
 #[derive(Debug, Clone, PartialEq)]
@@ -218,7 +217,7 @@ pub enum Lit {
     BigInt(BigInt),
     Real(Real),
     Rational(Rational),
-    BigRatio(BigRational),
+    BigRational(BigRational),
     String(InternedString),
     Bool(bool),
     Char(char),
@@ -231,7 +230,7 @@ impl Display for Lit {
             Lit::BigInt(i) => write!(f, "{}", i),
             Lit::Real(r) => write!(f, "{}", r),
             Lit::Rational(r) => write!(f, "{}", r),
-            Lit::BigRatio(r) => write!(f, "{}", r),
+            Lit::BigRational(r) => write!(f, "{}", r),
             Lit::String(s) => write!(f, "{}", s),
             Lit::Bool(b) => write!(f, "{}", b),
             Lit::Char(c) => write!(f, "{}", c),

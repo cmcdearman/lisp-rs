@@ -149,8 +149,10 @@ pub enum ExprKind {
 #[derive(Debug, Clone, PartialEq)]
 pub enum Lit {
     Int(Int),
+    BigInt(BigInt),
     Real(Real),
     Rational(Rational),
+    BigRational(BigRational),
     String(InternedString),
     Bool(bool),
     Char(char),

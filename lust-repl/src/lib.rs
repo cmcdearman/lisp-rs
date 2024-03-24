@@ -41,13 +41,13 @@ pub fn repl() {
         // }
         // let expanded = expand_macros(store.clone(), &root);
         // println!("expanded: {:#?}", expanded);
-        // if let (Some(ast), errors) = parse(root) {
-        //     println!("ast: {:#?}", ast);
-        //     if !errors.is_empty() {
-        //         println!("errors: {:?}", errors);
-        //         continue;
-        //     }
-        // }
+        if let (Some(ast), errors) = parse(root) {
+            println!("ast: {:#?}", ast);
+            if !errors.is_empty() {
+                println!("errors: {:?}", errors);
+                continue;
+            }
+        }
         io::stdout().flush().unwrap();
         src.clear();
     }
