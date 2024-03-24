@@ -32,7 +32,7 @@ fn parse_decl(sexpr: &Sexpr) -> ParseResult<Decl> {
                 SexprKind::Atom(a) => match a.kind() {
                     AtomKind::Sym(s) => match s.as_ref() {
                         "def" => {
-                            let mut iter = list.list().iter();
+                            let mut iter = list.iter();
                             iter.next(); // skip head
                             let name = match iter
                                 .next()
@@ -73,6 +73,7 @@ fn parse_decl(sexpr: &Sexpr) -> ParseResult<Decl> {
                 },
                 _ => Err(ParseError::new("expected atom".to_string(), head.span())),
             }
+                SexprKind::List(_) => todo!(),
         }
         _ => Err(ParseError::new("expected list".to_string(), sexpr.span())),
     }
