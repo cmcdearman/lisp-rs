@@ -69,6 +69,7 @@
 
 ;; list expressions
 [1 2 (+ 1 2) 4]
+
 ;; this is equivalent to
 (List.new 1 2 (+ 1 2) 4)
 
