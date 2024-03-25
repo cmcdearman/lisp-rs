@@ -70,7 +70,7 @@
 ;; list expressions
 [1 2 (+ 1 2) 4]
 ;; this is equivalent to
-(list 1 2 (+ 1 2) 4)
+(List.new 1 2 (+ 1 2) 4)
 
 ;; maps
 {:a 1 :b 2}
