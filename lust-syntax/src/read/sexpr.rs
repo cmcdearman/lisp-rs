@@ -4,26 +4,12 @@ use lust_utils::{
     num::{BigInt, BigRational, Int, Rational, Real},
     span::Span,
 };
-use std::{collections::HashMap, fmt::Display};
+use std::fmt::Display;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Root {
-    sexprs: Vec<Sexpr>,
-    span: Span,
-}
-
-impl Root {
-    pub fn new(sexprs: Vec<Sexpr>, span: Span) -> Self {
-        Self { sexprs, span }
-    }
-
-    pub fn sexprs(&self) -> &[Sexpr] {
-        &self.sexprs
-    }
-
-    pub fn span(&self) -> Span {
-        self.span
-    }
+    pub sexprs: Vec<Sexpr>,
+    pub span: Span,
 }
 
 impl Display for Root {
@@ -37,8 +23,8 @@ impl Display for Root {
 
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct Sexpr {
-    kind: Box<SexprKind>,
-    span: Span,
+    pub kind: Box<SexprKind>,
+    pub span: Span,
 }
 
 impl Sexpr {
@@ -49,23 +35,14 @@ impl Sexpr {
         }
     }
 
-    pub fn kind(&self) -> &SexprKind {
-        &self.kind
-    }
-
-    pub fn span(&self) -> Span {
-        self.span
-    }
-
     pub fn as_special_form(&self) -> Option<&str> {
-        match self.kind() {
+        match *self.kind {
             SexprKind::List(l) => match l.head() {
-                Some(head) => match head.kind() {
-                    SexprKind::Atom(a) => match a.kind() {
+                Some(head) => match *head.kind {
+                    SexprKind::Atom(a) => match *a.kind {
                         AtomKind::Sym(s) => match s.as_ref() {
-                            "def" | "let" | "quote" | "fn" | "and" | "or" | "begin" => {
-                                Some(s.as_ref())
-                            }
+                            "def" | "let" | "quote" | "fn" | "and" | "or" | "match"
+                            | "quasiquote" => Some(s.as_ref()),
                             _ => None,
                         },
                         _ => None,
@@ -78,15 +55,15 @@ impl Sexpr {
         }
     }
 
-    pub fn as_atom(&self) -> Option<&Atom> {
-        match self.kind() {
+    pub fn as_atom(&self) -> Option<Atom> {
+        match *self.kind {
             SexprKind::Atom(a) => Some(a),
             _ => None,
         }
     }
 
-    pub fn as_list(&self) -> Option<&List<Sexpr>> {
-        match self.kind() {
+    pub fn as_list(&self) -> Option<List<Sexpr>> {
+        match *self.kind {
             SexprKind::List(l) => Some(l),
             _ => None,
         }
@@ -98,10 +75,10 @@ impl Sexpr {
 
     pub fn replace_sym(&mut self, sym: InternedString, arg: Sexpr) {
         // recursively replace all instances of the symbol
-        match self.kind() {
-            SexprKind::Atom(a) => match a.kind() {
+        match *self.kind {
+            SexprKind::Atom(a) => match *a.kind {
                 AtomKind::Sym(s) => {
-                    if s == &sym {
+                    if s == sym {
                         *self = arg;
                     }
                 }
@@ -115,7 +92,7 @@ impl Sexpr {
                     new_vec.push(new_s);
                 }
                 let new_list = List::from(new_vec);
-                *self = Sexpr::new(SexprKind::List(new_list), self.span());
+                *self = Sexpr::new(SexprKind::List(new_list), self.span);
             }
         }
     }
@@ -146,8 +123,8 @@ impl Display for SexprKind {
 
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct Atom {
-    kind: Box<AtomKind>,
-    span: Span,
+    pub kind: Box<AtomKind>,
+    pub span: Span,
 }
 
 impl Atom {
@@ -158,31 +135,16 @@ impl Atom {
         }
     }
 
-    pub fn kind(&self) -> &AtomKind {
-        &self.kind
-    }
-
-    pub fn span(&self) -> &Span {
-        &self.span
-    }
-
-    pub fn as_lit(&self) -> Option<&Lit> {
-        match self.kind() {
+    pub fn as_lit(&self) -> Option<Lit> {
+        match *self.kind {
             AtomKind::Lit(l) => Some(l),
             _ => None,
         }
     }
 
-    pub fn as_sym(&self) -> Option<&InternedString> {
-        match self.kind() {
+    pub fn as_sym(&self) -> Option<InternedString> {
+        match *self.kind {
             AtomKind::Sym(s) => Some(s),
-            _ => None,
-        }
-    }
-
-    pub fn as_path(&self) -> Option<&Vec<InternedString>> {
-        match self.kind() {
-            AtomKind::Path(p) => Some(p),
             _ => None,
         }
     }
@@ -198,7 +160,6 @@ impl Display for Atom {
 pub enum AtomKind {
     Lit(Lit),
     Sym(InternedString),
-    Path(Vec<InternedString>),
 }
 
 impl Display for AtomKind {
@@ -206,7 +167,6 @@ impl Display for AtomKind {
         match self {
             AtomKind::Lit(l) => write!(f, "{}", l),
             AtomKind::Sym(s) => write!(f, "{}", s),
-            AtomKind::Path(p) => write!(f, "{}", p.join(".")),
         }
     }
 }

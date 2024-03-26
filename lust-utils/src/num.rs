@@ -2,7 +2,7 @@ use num_bigint::BigInt as NumBigInt;
 use num_rational::{BigRational as NumBigRational, Rational64};
 use std::{fmt::Display, str::FromStr};
 
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Int(i64);
 
 impl Display for Int {
@@ -19,7 +19,7 @@ impl FromStr for Int {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct BigInt(NumBigInt);
 
 impl Display for BigInt {

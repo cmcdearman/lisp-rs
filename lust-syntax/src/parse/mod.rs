@@ -11,16 +11,16 @@ pub mod error;
 pub fn parse(root: sexpr::Root) -> (Option<ast::Root>, Vec<ParseError>) {
     let mut items = vec![];
     let mut errs = vec![];
-    for sexpr in root.sexprs() {
-        match parse_decl(sexpr) {
+    for sexpr in root.sexprs {
+        match parse_def(sexpr) {
             Ok(decl) => items.push(decl),
             Err(err) => errs.push(err),
         }
     }
-    (Some(ast::Root::new(items, root.span())), errs)
+    (Some(ast::Root {defs, span: root.span}), errs)
 }
 
-fn parse_decl(sexpr: &Sexpr) -> ParseResult<Decl> {
+fn parse_def(sexpr: &Sexpr) -> ParseResult<Decl> {
     match sexpr.kind() {
         SexprKind::List(list) => {
             let head = list.head().ok_or(ParseError::new(
@@ -83,56 +83,34 @@ fn parse_decl(sexpr: &Sexpr) -> ParseResult<Decl> {
 fn parse_expr(sexpr: &Sexpr) -> ParseResult<Expr> {
     match sexpr.kind() {
         sexpr::SexprKind::Atom(a) => match a.kind() {
-            sexpr::AtomKind::Lit(l) => Ok(Expr::new(ExprKind::Lit(parse_lit(l)?), sexpr.span())),
+            sexpr::AtomKind::Lit(l) => Ok(Expr::new(ExprKind::Lit(parse_lit(l)), sexpr.span())),
             sexpr::AtomKind::Sym(name) => {
                 Ok(Expr::new(ExprKind::Ident(name.clone()), sexpr.span()))
             }
-            sexpr::AtomKind::Path(_) => todo!(),
         },
-        sexpr::SexprKind::SynList(l) => {
-            let first = l.list().head().ok_or(ParseError::new(
+        sexpr::SexprKind::List(l) => {
+            let first = l.head().ok_or(ParseError::new(
                 "expected first element".to_string(),
                 sexpr.span(),
             ))?;
             // handle special forms
             todo!()
         }
-        sexpr::SexprKind::DataList(l) => Ok(Expr::new(
-            ExprKind::List(List::from(
-                l.list()
-                    .iter()
-                    .map(parse_expr)
-                    .collect::<ParseResult<Vec<Expr>>>()?,
-            )),
-            sexpr.span(),
-        )), // sexpr::SexprKind::Vector(v) => {
-            //     let mut exprs = vec![];
-            //     for sexpr in v.iter() {
-            //         exprs.push(parse_expr(sexpr)?);
-            //     }
-            //     Ok(Expr::new(ExprKind::Vector(exprs), *sexpr.span()))
-            // }
     }
 }
 
-// fn parse_pattern(sexpr: &Sexpr) -> Result<Pattern> {
-//     match sexpr.kind() {
-//         SexprKind::Atom(a) => match a.kind() {
-//             AtomKind::Sym(s) => Ok(Pattern::new(PatternKind::Ident(s.clone()), *sexpr.span())),
-//             AtomKind::Lit(l) => Ok(Pattern::new(PatternKind::Lit(parse_lit(l)?), *sexpr.span())),
-//             _ => todo!(),
-//         },
-//         SexprKind::SynList(_) => todo!(),
-//         SexprKind::DataList(_) => todo!(),
-//         // SexprKind::Vector(v) => {
-//         //     let mut patterns = vec![];
-//         //     for sexpr in v.iter() {
-//         //         patterns.push(parse_pattern(sexpr)?);
-//         //     }
-//         //     Ok(Pattern::new(PatternKind::Vector(patterns), *sexpr.span()))
-//         // }
-//     }
-// }
+fn parse_pattern(sexpr: &Sexpr) -> ParseResult<Pattern> {
+    match sexpr.kind() {
+        SexprKind::Atom(a) => match a.kind() {
+            AtomKind::Sym(s) => Ok(Pattern::new(PatternKind::Ident(s.clone()), sexpr.span())),
+            AtomKind::Lit(l) => Ok(Pattern::new(PatternKind::Lit(parse_lit(l)), sexpr.span())),
+        },
+        SexprKind::List(list) => {
+            // parse list sexprs as patterns
+            list.iter().map(|s| parse_pattern(s)).collect::<ParseResult<_>>()?
+        }
+    }
+}
 
 fn parse_lit(lit: &sexpr::Lit) -> Lit {
     match lit.clone() {
