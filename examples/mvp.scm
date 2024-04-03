@@ -21,6 +21,7 @@
 (def x 42)
 
 ;; def declarations with pattern matching
+(: fib Int Int)
 (def (fib 0) 0)
 (def (fib 1) 1)
 (def (fib n) (+ (fib (- n 1)) (fib (- n 2))))
