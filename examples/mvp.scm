@@ -20,23 +20,24 @@
 ;; def declarations
 (def x 42)
 
-;; def declarations with pattern matching
-(: fib Int Int)
-(def (fib 0) 0)
-(def (fib 1) 1)
-(def (fib n) (+ (fib (- n 1)) (fib (- n 2))))
-
-(def (fib (n : Int) : Int)
+(def (fib n)
   (if (<= n 1)
     n
     (+ (fib (- n 1)) (fib (- n 2)))))
 
-(def (fib-iter (n : Int) : Int)
+(def (fib-iter n)
   (let loop ((a 0) (b 1) (i n))
     (if (= i 0)
       a
       (loop b (+ a b) (- i 1)))))
 
+(def (fib-iter n) 
+  (let (fn loop (a b i)) 
+    (if (= i 0) 
+      a 
+      (loop b (+ a b) (- i 1))) 
+    (loop 0 1 n)))
+    
 ;; this could also be done with a `match` expression
 (def (fib n)
   (match n
