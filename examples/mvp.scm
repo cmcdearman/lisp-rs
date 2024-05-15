@@ -22,8 +22,8 @@
 
 (def (fib n)
   (if (<= n 1)
-    n
-    (+ (fib (- n 1)) (fib (- n 2)))))
+      n
+      (+ (fib (- n 1)) (fib (- n 2)))))
 
 (def (fib-iter n)
   (let loop ((a 0) (b 1) (i n))
@@ -89,6 +89,9 @@
 ;; maps
 {:a 1 :b 2}
 
+;; this is equivalent to
+(Map.new :a 1 :b 2)
+
 ;; Maps that use keyword symbols as keys are called records. 
 ;; Keywords are symbols that evaluate to themselves they
 ;; are used to represent named arguments and are often 
@@ -107,6 +110,9 @@
 
 ;; sets
 #{1 2 3}
+
+;; this is equivalent to
+(Set.new 1 2 3)
 
 ;; Macros are rules for transforming terms at compile time.
 ;; They are used to define new syntax and to optimize code.
