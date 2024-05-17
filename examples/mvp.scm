@@ -25,18 +25,18 @@
       n
       (+ (fib (- n 1)) (fib (- n 2)))))
 
-(def (fib-iter n)
+(defn fib (n)
+  "Compute the nth Fibonacci number."
+  (if (<= n 1)
+      n
+      (+ (fib (- n 1)) (fib (- n 2)))))
+
+(defn fib-iter (n)
+  "Compute the nth Fibonacci number iteratively."
   (let loop ((a 0) (b 1) (i n))
     (if (= i 0)
       a
       (loop b (+ a b) (- i 1)))))
-
-(def (fib-iter n) 
-  (let (fn loop (a b i)) 
-    (if (= i 0) 
-      a 
-      (loop b (+ a b) (- i 1))) 
-    (loop 0 1 n)))
     
 ;; this could also be done with a `match` expression
 (def (fib n)
