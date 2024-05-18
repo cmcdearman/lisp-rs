@@ -25,14 +25,12 @@
       n
       (+ (fib (- n 1)) (fib (- n 2)))))
 
-(defn fib (n)
-  "Compute the nth Fibonacci number."
+(defn (fib n)
   (if (<= n 1)
       n
       (+ (fib (- n 1)) (fib (- n 2)))))
 
-(defn fib-iter (n)
-  "Compute the nth Fibonacci number iteratively."
+(defn (fib-iter n)
   (let loop ((a 0) (b 1) (i n))
     (if (= i 0)
       a
