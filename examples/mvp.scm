@@ -33,8 +33,8 @@
 (def (fib-iter n)
   (let loop ((a 0) (b 1) (i n))
     (if (= i 0)
-      a
-      (loop b (+ a b) (- i 1)))))
+        a
+        (loop b (+ a b) (- i 1)))))
     
 ;; this could also be done with a `match` expression
 (def (fib n)
