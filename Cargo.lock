@@ -625,35 +625,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "lust-compile"
-version = "0.1.0"
-dependencies = [
- "env_logger",
- "insta",
- "itertools",
- "log",
- "notify",
- "num-bigfloat",
- "num-bigint",
- "num-complex",
- "num-rational",
-]
-
-[[package]]
-name = "lust-hir"
-version = "0.1.0"
-dependencies = [
- "env_logger",
- "insta",
- "itertools",
- "log",
- "num-bigfloat",
- "num-bigint",
- "num-complex",
- "num-rational",
-]
-
-[[package]]
 name = "lust-rename"
 version = "0.1.0"
 dependencies = [

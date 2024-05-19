@@ -1,8 +1,6 @@
 [workspace]
 members = [
     "lust",
-    "lust-compile",
-    "lust-hir",
     "lust-rename",
     "lust-repl",
     "lust-runtime",

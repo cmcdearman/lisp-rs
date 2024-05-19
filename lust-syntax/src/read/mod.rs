@@ -1,8 +1,6 @@
 pub mod sexpr;
 pub mod token;
 
-use std::vec;
-
 use self::{
     sexpr::{Atom, AtomKind, Lit, Root, Sexpr, SexprKind},
     token::Token,
@@ -17,6 +15,7 @@ use chumsky::{
 };
 use logos::Logos;
 use lust_utils::{intern::InternedString, list::List, span::Span};
+use std::vec;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum SyntaxError<'a> {
