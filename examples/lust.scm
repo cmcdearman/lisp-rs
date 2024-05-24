@@ -23,7 +23,7 @@
   (or (is-alpha? ch) (digit? ch)))
 
 (def (peek-char lexer) 
-  (if (Map.get lexer pos) < (String.length (Map.get lexer src))
+  (if (< (Map.get lexer pos) (String.length (Map.get lexer src)))
       (String.get (Map.get lexer src) (Map.get lexer pos))
       :nil))
 
