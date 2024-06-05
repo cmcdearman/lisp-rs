@@ -25,6 +25,16 @@
       n
       (+ (fib (- n 1)) (fib (- n 2)))))
 
+(def (fib 0) 0)
+(def (fib 1) 1)
+(def (fib n) (+ (fib (- n 1)) (fib (- n 2))))
+
+(def (gcd a 0) a)
+(def (gcd a b) (gcd b (% a b)))
+
+(def (map f []) [])
+(def (map f (x . xs)) (:: (f x) (map f xs)))
+
 (def (fib n)
   (if (<= n 1)
       n
