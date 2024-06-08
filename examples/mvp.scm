@@ -64,6 +64,12 @@
 ;; let expressions
 (let ((x 1) (y 2)) (+ x y))
 
+;; fn expressions
+(let ((x 1)
+      ((foo y) (+ x y)))
+  (foo 2))
+  
+
 ;; quote expressions
 (quote (1 2 3))
 '(1 2 3)
