@@ -136,6 +136,15 @@
      (#t ,then) 
      (#f ,else)))
 
+;; Reader macros are rules for transforming terms at read time.
+;; They are used to define new syntax and to optimize code.
+;; The most common reader macro is the quote reader macro.
+;; Quote can be defined as a reader macro using the `reader` special form
+;; and template matching.
+(reader-macro (quote stream)
+  (match stream
+    ("'{term}" `(quote term))))
+
 ;; module declarations
 (module Vector
   (def (new) {:data []})
