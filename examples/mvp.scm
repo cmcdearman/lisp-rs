@@ -45,6 +45,19 @@
     (if (= i 0)
         a
         (loop b (+ a b) (- i 1)))))
+
+;; def fib_iter n =
+;;   let loop a b i =
+;;     if i = 0 then a
+;;     else loop b (a + b) (i - 1)
+;;   in loop 0 1 n
+
+(def (fib-iter n) 
+  (letf (loop a b i) 
+    (if (= i 0)
+        a 
+        (loop b (+ a b) (- i 1)))
+    (loop 0 1 n)))
     
 ;; this could also be done with a `match` expression
 (def (fib n)
