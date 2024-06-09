@@ -143,7 +143,7 @@
 ;; and template matching.
 (reader-macro (quote stream)
   (match stream
-    ("'{term}" `(quote term))))
+    ("'{term}" (quote term))))
 
 ;; module declarations
 (module Vector
