@@ -1,23 +1,3 @@
-;; Lust is a simple Lisp-like language based on the idea of term rewriting.
-;; It is a functional language with a simple syntax and semantics.
-;; Terms are rewritten using pattern matching and substitution.
-;; The language is dynamically typed and has first-class functions.
-
-;; Special Forms:
-;; - def: define a variable
-;; - let: bind variables in a scope
-;; - match: pattern match a term
-;; - list: create a list
-;; - fn: create a lambda function
-;; - and: short-circuiting logical and
-;; - or: short-circuiting logical or
-;; - quote: prevent evaluation of a term
-;; - quasiquote: prevent evaluation of a term, except for unquoted terms
-;; - unquote: evaluate a term in a quasiquote
-;; - unquote-splicing: evaluate a term in a quasiquote and splice the result
-;; - module: define a module
-
-;; def declarations
 (def x 42)
 
 (def (fib n)
