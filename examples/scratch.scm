@@ -1,28 +1,71 @@
-;; this is a basic statically-typed lambda calculus extended with the following special forms:
-;; `def`
-;; `let`
-;; `quote` 
-;; `quasiquote`
-;; `unquote`
-;; `unquote-splicing`
-;; `fn`
-;; `and`
-;; `or`
-;; `begin`
-;; and a few built-in functions (e.g. `+`, `-`, `*`, `/`, `=`, `>`, `<`, `<=`, `>=`)
+;; Lust is a simple Lisp-like language based on the idea of term rewriting.
+;; It is a functional language with a simple syntax and semantics.
+;; Terms are rewritten using pattern matching and substitution.
+;; The language is dynamically typed and has first-class functions.
+
+;; Special Forms:
+;; - def: define a variable
+;; - let: bind variables in a scope
+;; - match: pattern match a term
+;; - list: create a list
+;; - fn: create a lambda function
+;; - and: short-circuiting logical and
+;; - or: short-circuiting logical or
+;; - quote: prevent evaluation of a term
+;; - quasiquote: prevent evaluation of a term, except for unquoted terms
+;; - unquote: evaluate a term in a quasiquote
+;; - unquote-splicing: evaluate a term in a quasiquote and splice the result
+;; - module: define a module
 
 ;; def declarations
 (def x 42)
 
+(def (fib n)
+  (if (<= n 1)
+      n
+      (+ (fib (- n 1)) (fib (- n 2)))))
+
+(def (fib n)
+  (if (<= n 1)
+      n
+      (+ (fib (- n 1)) (fib (- n 2)))))
+
+(def (fib-iter n)
+  (let loop ((a 0) (b 1) (i n))
+    (if (= i 0)
+        a
+        (loop b (+ a b) (- i 1)))))
+
+(def (fib-iter n) 
+  (letf (loop a b i) 
+    (if (= i 0)
+        a 
+        (loop b (+ a b) (- i 1)))
+    (loop 0 1 n)))
+    
+;; this could also be done with a `match` expression
+(def (fib n)
+  (match n
+    (0 0)
+    (1 1)
+    (n (+ (fib (- n 1)) (fib (- n 2))))))
+
+;; call the `fib` function
+(fib 10)
+
+;; Note: The pattern matching in the `fib` function is not the same as in other languages.
+;; You might think `(fib 0)` would be syntax sugar for binding `n` to `0` in the `fib` function.
+;; However, it is actually binding the whole term `(fib 0)` to `0` in the `fib` function.
+;; This is equivalent to telling the runtime that it can replace `(fib 0)` with `0`.
+
 ;; let expressions
 (let ((x 1) (y 2)) (+ x y))
-
-;; if expressions
-(if (< 1 2) 1 2)
 
 ;; quote expressions
 (quote (1 2 3))
 '(1 2 3)
+;; > '(1 2 3)
+;; (1 2 3)
 
 ;; quasiquote/unquote expressions
 (quasiquote (1 2 (unquote (+ 1 2)) 4))
@@ -30,6 +73,8 @@
 
 ;; lambda expressions
 (fn (x) (+ x 1))
+;; lambda call
+((fn (x) (+ x 1)) 2)
 
 ;; and expressions (short-circuiting)
 (and (< 1 2) (> 2 1))
@@ -40,91 +85,66 @@
 ;; not expressions
 (not (< 1 2))
 
-;; begin expressions
-(begin (println 1) (println 2) (println 3))
+;; list expressions
+[1 2 (+ 1 2) 4]
 
-;; We also have a special syntax for lists meant to be used only as data
-;; Where you might ordinarily write (list 1 2 (+ 1 2)) in most Lisps, you would write
-;; [1 2 (+ 1 2)] in this language. More precisely, the brackets are used to denote
-;; a quasiquoted list where all elements are unquoted.
-[1 2 (+ 1 2)]
+;; this is equivalent to
+(List.new 1 2 (+ 1 2) 4)
 
-;; vectors
-#[1 2 3]
+;; maps
+{:a 1 :b 2}
 
-;; macros
-(defmacro (loop &body)
-  `(let ((loop (fn () (begin ,@body (loop)))))))
+;; this is equivalent to
+(Map.new :a 1 :b 2)
 
-;; variadic macros
-(defmacro while (test &body)
-  `(let ((loop (fn () (if ,test (begin ,@body (loop))))))))
+;; Maps that use keyword symbols as keys are called records. 
+;; Keywords are symbols that evaluate to themselves they
+;; are used to represent named arguments and are often 
+;; used as keys in maps.
+:foo
+; => :foo
 
-(while (< i 10)
-  (println i)
-  (def i (+ i 1)))
+;; map update
+(Map.insert {:a 1 :b 2} :a 3)
 
-;; expands to:
-(let ((loop (fn () 
-              (if (< i 10) 
-                (begin 
-                  (println i) 
-                  (def i (+ i 1)) 
-                  (loop))))))
-  (loop))
+;; map access
+(Map.get {:a 1 :b 2} :a)
+(def m {:a 1 :b 2})
+(m.a)
 
-(let (fib n)
-  (if (< n 2) 
-      n 
-      (+ (fib (- n 1)) (fib (- n 2)))))
+;; map remove
+(Map.remove {:a 1 :b 2} :a)
 
-(let (fib n)
-  (if (< n 2) 
-      n 
-      (+ (fib (- n 1)) (fib (- n 2))))
-  (fib 10))
+;; sets
+#{1 2 3}
 
-(def x 1)
+;; this is equivalent to
+(Set.new 1 2 3)
 
-(defn id (x) x)
+;; Macros are rules for transforming terms at compile time.
+;; They are used to define new syntax and to optimize code.
+;; Macros are defined using the `macro` special form.
+(macro (if cond then else) 
+  `(match ,cond 
+     (#t ,then) 
+     (#f ,else)))
 
-(module List
-  (record Nil)
-  (record (Pair head tail)))
+;; Reader macros are rules for transforming terms at read time.
+;; They are used to define new syntax and to optimize code.
+;; The most common reader macro is the quote reader macro.
+;; Quote can be defined as a reader macro using the `reader` special form
+;; and template matching.
+(reader-macro (quote stream)
+  (match stream
+    ("'{term}" (quote term))))
 
-;; overload `display` for `List`
-(def (display xs)
-  (match xs
-    (Nil (println "[]"))
-    ((Pair x xs) (begin
-                   (print "[")
-                   (display x)
-                   (print ", ")
-                   (display xs)
-                   (print "]")))))
+;; module declarations
+(module Vector
+  (def (new) {:data []})
+  (def (new &xs) {:data xs}))
 
-(def (map f xs)
-  (match xs
-    (Nil Nil)
-    ((Pair x xs) (Pair (f x) (map f xs)))))
-
-;; `begin` expands to a sequence of `let` forms
-(macro (begin &body)
-  `(let ((,_)) (begin ,@(tail body)) ,_))
-
-(begin (println 1) (println 2) (println 3))
-
-;; expands to:
-(let ((_ (print 1))
-      (_ (print 2) (print 3))))
-
-
-(let ((x 1) 
-      (y 2))
-  (println (+ x y)))
-
-(let ((fib n
-        (if (< n 2) 
-            n 
-            (+ (fib (- n 1)) (fib (- n 2))))))
-  (fib 10))
+(def (fib n) 
+  (match n
+    (0 0)
+    (1 1)
+    (n (+ (fib (- n 1)) (fib (- n 2))))))

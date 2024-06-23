@@ -619,9 +619,17 @@ dependencies = [
 name = "lust"
 version = "0.1.0"
 dependencies = [
+ "clap",
  "env_logger",
+ "insta",
+ "itertools",
  "log",
- "lust-repl",
+ "notify",
+ "num-bigfloat",
+ "num-bigint",
+ "num-complex",
+ "num-rational",
+ "rustyline",
 ]
 
 [[package]]

@@ -27,28 +27,3 @@
       (String.get (Map.get lexer src) (Map.get lexer pos))
       :nil))
 
-(def (next-token lexer)
-  (match (peek-char lexer)
-         (:nil (token :eof (span (Map.get lexer pos) (Map.get lexer pos))))
-         (ch (if (whitespace? ch)
-                 (do
-                   (while (whitespace? (peek-char lexer))
-                          (Map.update lexer pos (fn (x) (+ x 1))))
-                   (next-token lexer))
-                 (if (digit? ch)
-                     (do
-                       (let start (Map.get lexer pos))
-                       (while (digit? (peek-char lexer))
-                              (Map.update lexer pos (fn (x) (+ x 1))))
-                       (token :number (span start (Map.get lexer pos))))
-                       
-                     (if (is-alpha? ch)
-                         (do
-                           (let start (Map.get lexer pos))
-                           (while (is-alphanumeric? (peek-char lexer))
-                                  (Map.update lexer pos (fn (x) (+ x 1))))
-                           (token :identifier (span start (Map.get lexer pos))))
-                           
-                         (do
-                           (Map.update lexer pos (fn (x) (+ x 1)))
-                           (token :unknown (span (Map.get lexer pos) (Map.get lexer pos))))))))))
