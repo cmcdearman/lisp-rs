@@ -108,3 +108,16 @@ x
 #u8(1 2 3)
 ; => #u8(1 2 3)
 
+(def (compose f g x) (f (g x)))
+; => compose : (a -> b) -> (c -> a) -> c -> b = <fn>
+
+; with type annotations
+(def (compose (a b c) 
+       (f : (a -> b)) 
+       (g : (c -> a)) 
+       (x : c) 
+      : c -> b)
+  (f (g x)))
+
+(-> (a b c) (-> a b) (-> c a) c b)
+(def (compose f g x) (f (g x)))
