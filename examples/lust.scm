@@ -4,7 +4,7 @@
 
 (def (lexer src) {:src src :pos 0})
 
-(macro (matches? obj . cases) 
+(def (matches? obj . cases) 
   (if (empty? cases) 
     false 
     (or (= obj (head cases)) (matches? obj (tail cases)))))
