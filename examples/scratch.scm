@@ -128,3 +128,7 @@
     (0 0)
     (1 1)
     (n (+ (fib (- n 1)) (fib (- n 2))))))
+
+;; comprehensions
+(for [x [1 2 3] y [4 5 6]] (+ x y))
+
